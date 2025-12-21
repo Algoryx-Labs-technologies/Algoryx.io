@@ -14,8 +14,8 @@ export function Hero() {
           {/* Left content */}
           <ScrollReveal>
             <div className="space-y-8">
-            <div className="inline-block">
-              <span className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm font-normal" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="inline-block w-full sm:w-auto -mt-4 sm:-mt-3">
+              <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-xs sm:text-sm md:text-base font-normal leading-relaxed break-words max-w-full">
               India's first edtech platform for algorithmic trading and quantitative research.
               </span>
             </div>
