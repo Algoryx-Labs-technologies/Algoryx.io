@@ -1,0 +1,15 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+
+@layer utilities {
+  @keyframes dash {
+    0%, 100% {
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dashoffset: 100;
+    }
+  }
+}
