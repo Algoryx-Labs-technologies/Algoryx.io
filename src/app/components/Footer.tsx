@@ -4,7 +4,7 @@ import { ScrollReveal } from './ScrollReveal';
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-white/10 bg-black/50 backdrop-blur-sm">
+    <footer className="relative border-t border-white/10 bg-black/50 backdrop-blur-sm font-footer">
       <div className="container mx-auto px-6 py-12">
         <ScrollReveal>
           <div className="grid md:grid-cols-4 gap-8 mb-12">

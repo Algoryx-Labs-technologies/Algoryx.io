@@ -29,7 +29,7 @@ const courses = [
 
 export function Courses() {
   return (
-    <section id="courses" className="py-24 relative">
+    <section id="courses" className="py-24 relative font-courses">
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-16">

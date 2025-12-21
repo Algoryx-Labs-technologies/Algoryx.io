@@ -27,7 +27,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 relative">
+    <section className="py-24 relative font-features">
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-16">

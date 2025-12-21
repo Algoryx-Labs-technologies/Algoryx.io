@@ -27,7 +27,7 @@ const benefits = [
 
 export function WhyAlgoryx() {
   return (
-    <section className="py-24 relative">
+    <section className="py-24 relative font-why-algoryx">
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-16">

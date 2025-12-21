@@ -5,7 +5,7 @@ import { ScrollReveal } from './ScrollReveal';
 
 export function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden font-hero">
       {/* Animated grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
       
@@ -15,7 +15,7 @@ export function Hero() {
           <ScrollReveal>
             <div className="space-y-8">
             <div className="inline-block">
-              <span className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm">
+              <span className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm font-normal" style={{ fontFamily: 'Inter, sans-serif' }}>
               India's first edtech platform for algorithmic trading and quantitative research.
               </span>
             </div>
@@ -30,7 +30,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-xl text-gray-400 max-w-lg">
+            <p className="text-xl text-gray-400 max-w-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
               Learn systematic trading and quantitative research for Indian markets.
             </p>
             

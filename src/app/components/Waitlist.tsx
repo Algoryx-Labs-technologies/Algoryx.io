@@ -20,7 +20,7 @@ export function Waitlist() {
   };
 
   return (
-    <section className="py-24 relative">
+    <section className="py-24 relative font-waitlist">
       <div className="container mx-auto px-6">
         <div className="relative max-w-4xl mx-auto">
           {/* Glowing background */}

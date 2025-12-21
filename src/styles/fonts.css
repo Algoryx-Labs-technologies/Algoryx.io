@@ -1,0 +1,45 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Font Family Classes */
+.font-header {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-hero {
+  font-family: 'Sora', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.font-features {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-courses {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-labs {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.font-why-algoryx {
+  font-family: 'Raleway', sans-serif;
+}
+
+.font-waitlist {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-footer {
+  font-family: 'Inter', sans-serif;
+}
+

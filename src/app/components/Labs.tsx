@@ -5,7 +5,7 @@ import { ScrollReveal } from './ScrollReveal';
 
 export function Labs() {
   return (
-    <section id="labs" className="py-12 md:py-16 lg:py-24 relative">
+    <section id="labs" className="py-12 md:py-16 lg:py-24 relative font-labs">
       <div className="container mx-auto px-4 sm:px-6">
         <ScrollReveal>
           <div className="relative bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm border border-blue-500/30 rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 overflow-hidden">
@@ -84,11 +84,11 @@ export function Labs() {
                     <div className="w-2.5 h-2.5 sm:w-3 md:w-3.5 sm:h-3 md:h-3.5 rounded-full bg-yellow-500/80"></div>
                     <div className="w-2.5 h-2.5 sm:w-3 md:w-3.5 sm:h-3 md:h-3.5 rounded-full bg-green-500/80"></div>
                   </div>
-                  <span className="ml-2 text-xs sm:text-sm text-gray-400 font-mono">strategy.py</span>
+                  <span className="ml-2 text-xs sm:text-sm text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>strategy.py</span>
                 </div>
                 
                 {/* Code content */}
-                <div className="p-4 sm:p-6 md:p-8 font-mono text-xs sm:text-sm md:text-base overflow-x-auto">
+                <div className="p-4 sm:p-6 md:p-8 text-xs sm:text-sm md:text-base overflow-x-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   <pre className="text-gray-300 leading-relaxed whitespace-pre">
                     <span className="text-purple-400">def</span> <span className="text-cyan-400">generate_signals</span><span className="text-white">(</span><span className="text-orange-400">data</span><span className="text-white">):</span>{'\n'}
                     {'    '}<span className="text-gray-500"># Calculate Moving Averages</span>{'\n'}
