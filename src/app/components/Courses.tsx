@@ -1,25 +1,25 @@
 import React from 'react';
-import { BookOpen, Code, Brain, ArrowRight, Lock } from 'lucide-react';
+import { GraduationCap, Code2, Sparkles, ArrowRight, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollReveal } from './ScrollReveal';
 
 const courses = [
   {
-    icon: BookOpen,
+    icon: GraduationCap,
     title: 'Algorithmic Trading Foundations',
     description: 'Master the fundamentals of systematic trading, from market microstructure to order execution strategies.',
     topics: ['Market Basics', 'Order Types', 'Risk Management', 'Strategy Design'],
     duration: '8 weeks',
   },
   {
-    icon: Code,
+    icon: Code2,
     title: 'Python for Quant Finance',
     description: 'Learn Python programming specifically for quantitative finance, data analysis, and automated trading systems.',
     topics: ['Pandas & NumPy', 'Data Analysis', 'API Integration', 'Automation'],
     duration: '6 weeks',
   },
   {
-    icon: Brain,
+    icon: Sparkles,
     title: 'ML for Trading Strategies',
     description: 'Apply machine learning techniques to develop predictive models and intelligent trading algorithms.',
     topics: ['ML Models', 'Feature Engineering', 'Model Validation', 'Deployment'],

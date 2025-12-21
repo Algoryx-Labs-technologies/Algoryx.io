@@ -1,5 +1,5 @@
 import React from 'react';
-import { Instagram, Twitter, Linkedin, Github } from 'lucide-react';
+import { Instagram, Twitter, Linkedin, Github, Sparkles } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Footer() {
@@ -12,7 +12,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
-                <span className="font-bold text-black text-sm">A</span>
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                 Algoryx

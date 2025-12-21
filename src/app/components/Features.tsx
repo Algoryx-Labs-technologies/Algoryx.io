@@ -1,25 +1,25 @@
 import React from 'react';
-import { TrendingUp, Brain, Target, Activity } from 'lucide-react';
+import { LineChart, Cpu, Crosshair, Gauge } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const features = [
   {
-    icon: TrendingUp,
+    icon: LineChart,
     title: 'Quant Trading Education',
     description: 'Master algorithmic trading with comprehensive courses covering strategy development, backtesting, and live deployment.',
   },
   {
-    icon: Target,
+    icon: Crosshair,
     title: 'India Market Focused Strategies',
     description: 'Learn trading strategies specifically designed for NSE and BSE, accounting for Indian market nuances and regulations.',
   },
   {
-    icon: Brain,
+    icon: Cpu,
     title: 'AI & ML Research Labs',
     description: 'Access cutting-edge machine learning tools and research infrastructure for developing intelligent trading systems.',
   },
   {
-    icon: Activity,
+    icon: Gauge,
     title: 'Real-world Projects & Backtesting',
     description: 'Build and test strategies on historical data with professional-grade backtesting infrastructure and real market scenarios.',
   },

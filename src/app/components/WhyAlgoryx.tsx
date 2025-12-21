@@ -1,25 +1,25 @@
 import React from 'react';
-import { Users, Target, Rocket, ShieldCheck } from 'lucide-react';
+import { UserCheck, Crosshair, Zap, Infinity } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const benefits = [
   {
-    icon: Users,
+    icon: UserCheck,
     title: 'Mentored by Top Engineering Talent',
     description: 'Learn from experienced quants, data scientists, and traders from leading firms and institutions.',
   },
   {
-    icon: Target,
+    icon: Crosshair,
     title: 'Built for Indian Traders & Students',
     description: 'Curriculum specifically designed for NSE/BSE markets with India-specific regulations and strategies.',
   },
   {
-    icon: Rocket,
+    icon: Zap,
     title: 'Practical, Project-Based Learning',
     description: 'Build real trading systems and strategies through hands-on projects with actual market data.',
   },
   {
-    icon: ShieldCheck,
+    icon: Infinity,
     title: 'Community & Lifetime Access',
     description: 'Join a vibrant community of quant traders with lifetime access to course materials and updates.',
   },

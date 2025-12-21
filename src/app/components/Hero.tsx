@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from './ui/button';
-import { ArrowRight, TrendingUp, ChevronRight, Activity, Target, BarChart3, Zap, Search } from 'lucide-react';
+import { ArrowRight, LineChart, ChevronRight, Gauge, Crosshair, BarChart3, Zap, Search } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 export function Hero() {
@@ -201,7 +201,7 @@ export function Hero() {
                   {/* Primary Metrics - Top Row */}
                   <div className="absolute top-12 right-12 bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-green-500/40 rounded-xl p-4 shadow-2xl hover:border-green-500/60 hover:scale-105 transition-all z-10">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <LineChart className="w-4 h-4 text-green-400" />
                       <span className="text-xs font-medium text-gray-300">Portfolio</span>
                     </div>
                     <div className="text-xl font-bold text-green-400">+24.8%</div>
@@ -209,7 +209,7 @@ export function Hero() {
 
                   <div className="absolute top-12 left-12 bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-blue-500/40 rounded-xl p-4 shadow-2xl hover:border-blue-500/60 hover:scale-105 transition-all z-10">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <Target className="w-4 h-4 text-blue-400" />
+                      <Crosshair className="w-4 h-4 text-blue-400" />
                       <span className="text-xs font-medium text-gray-300">Win Rate</span>
                     </div>
                     <div className="text-xl font-bold text-blue-400">68.5%</div>
@@ -226,7 +226,7 @@ export function Hero() {
 
                   <div className="absolute top-1/2 left-16 transform -translate-y-1/2 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-yellow-500/35 rounded-lg p-3 shadow-xl hover:border-yellow-500/55 hover:scale-105 transition-all z-10">
                     <div className="flex items-center gap-2 mb-1">
-                      <Activity className="w-3.5 h-3.5 text-yellow-400" />
+                      <Gauge className="w-3.5 h-3.5 text-yellow-400" />
                       <span className="text-xs text-gray-400">Volatility</span>
                     </div>
                     <div className="text-base font-bold text-yellow-400">12.4%</div>
