@@ -41,7 +41,7 @@ export function Labs() {
               </h2>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed">
-                Professional research and development services for traders, fund managers, and financial institutions.
+              Partner with our research team to develop bespoke trading algorithms, risk models, and quantitative strategies tailored to your specific needs.
               </p>
 
               <div className="space-y-2 md:space-y-3">
