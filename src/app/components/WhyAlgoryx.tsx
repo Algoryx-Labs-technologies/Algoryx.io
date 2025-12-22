@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserCheck, Crosshair, Zap, Infinity } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
@@ -24,6 +24,77 @@ const benefits = [
     description: 'Join a vibrant community of quant traders with lifetime access to course materials and updates.',
   },
 ];
+
+interface AnimatedCounterProps {
+  target: number;
+  suffix?: string;
+  isInfinity?: boolean;
+  duration?: number;
+}
+
+function AnimatedCounter({ target, suffix = '', isInfinity = false, duration = 2000 }: AnimatedCounterProps) {
+  const [count, setCount] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (isInfinity || hasAnimated) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          
+          const startTime = Date.now();
+          const startValue = 0;
+          const endValue = target;
+
+          const animate = () => {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function for smooth animation
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
+            
+            setCount(currentValue);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              setCount(endValue);
+            }
+          };
+
+          requestAnimationFrame(animate);
+          
+          if (ref.current) {
+            observer.unobserve(ref.current);
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+      observer.disconnect();
+    };
+  }, [target, duration, hasAnimated, isInfinity]);
+
+  if (isInfinity) {
+    return <span>∞</span>;
+  }
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
 
 export function WhyAlgoryx() {
   return (
@@ -76,31 +147,31 @@ export function WhyAlgoryx() {
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  15+
+                  <AnimatedCounter target={15} suffix="+" />
                 </div>
                 <div className="text-gray-400">Expert Instructors</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  50+
+                  <AnimatedCounter target={50} suffix="+" />
                 </div>
                 <div className="text-gray-400">Hours of Content</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  100%
+                  <AnimatedCounter target={100} suffix="%" />
                 </div>
                 <div className="text-gray-400">Hands-on Projects</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  ∞
+                  <AnimatedCounter target={0} isInfinity={true} />
                 </div>
                 <div className="text-gray-400">Lifetime Access</div>
               </div>
             </div>
           </div>
-        </div>
+          </div>
         </ScrollReveal>
       </div>
     </section>
