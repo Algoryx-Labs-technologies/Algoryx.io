@@ -212,3 +212,12 @@
 .code-flip-group:hover .code-flip-hover {
   transform: rotateY(180deg);
 }
+
+/* 3D Animation Support for Trading Demo */
+@supports (transform-style: preserve-3d) {
+  .laptop-3d-container {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}

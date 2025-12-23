@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollReveal } from './ScrollReveal';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { motion } from 'motion/react';
 
 // Generate realistic candlestick data
 interface Candlestick {
@@ -54,6 +54,11 @@ const normalizeCandles = (
 };
 
 export function TradingDemo() {
+  // Track if animation should run (triggered on scroll)
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
   const [candlestickData, setCandlestickData] = useState<Candlestick[]>(() => {
     const initialCandles = generateInitialCandles();
     return normalizeCandles(initialCandles);
@@ -71,6 +76,56 @@ export function TradingDemo() {
   
   // Code execution animation
   const [activeLine, setActiveLine] = useState(0);
+  
+  // Ref for code card to calculate 25% offset
+  const codeCardRef = useRef<HTMLDivElement>(null);
+  const [codeCardOffset, setCodeCardOffset] = useState(0);
+
+  // IntersectionObserver to trigger animation on scroll
+  useEffect(() => {
+    if (!sectionRef.current || hasAnimated) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setShouldAnimate(true);
+          setHasAnimated(true);
+          // Disconnect after first trigger
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0.2, // Trigger when 20% of the section is visible
+        rootMargin: '-50px 0px' // Start animation slightly before fully in view
+      }
+    );
+
+    observer.observe(sectionRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasAnimated]);
+
+  // Calculate code card offset (25% of its width)
+  useEffect(() => {
+    const calculateOffset = () => {
+      if (codeCardRef.current) {
+        const width = codeCardRef.current.offsetWidth;
+        setCodeCardOffset(width * 0.25);
+      }
+    };
+    
+    // Calculate on mount and when animation triggers
+    calculateOffset();
+    
+    // Recalculate when shouldAnimate changes (in case element wasn't measured yet)
+    if (shouldAnimate) {
+      // Small delay to ensure element is rendered
+      const timer = setTimeout(calculateOffset, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAnimate]);
   
   useEffect(() => {
     // Line-by-line execution animation
@@ -142,17 +197,42 @@ export function TradingDemo() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <section className="py-24 relative font-trading-demo">
+    <section ref={sectionRef} className="py-24 relative font-trading-demo">
       <div className="container mx-auto px-6">
-        <ScrollReveal>
-          <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto">
             {/* Laptop Container */}
             <div className="relative">
               {/* Gradient fade overlay at bottom */}
               <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none z-20"></div>
               
               {/* Laptop Frame */}
-              <div className="relative mx-auto" style={{ maxWidth: '900px' }}>
+              <motion.div 
+                className="relative mx-auto" 
+                style={{ 
+                  maxWidth: '900px',
+                  perspective: '1000px',
+                  transformStyle: 'preserve-3d'
+                }}
+                initial={{ 
+                  opacity: 0, 
+                  scale: 0.8,
+                  rotateX: -20
+                }}
+                animate={shouldAnimate ? { 
+                  opacity: 1, 
+                  scale: 1,
+                  rotateX: 0
+                } : { 
+                  opacity: 0, 
+                  scale: 0.8,
+                  rotateX: -20
+                }}
+                transition={{ 
+                  duration: 1.2, 
+                  delay: 0.2,
+                  ease: [0.25, 0.1, 0.25, 1]
+                }}
+              >
                 {/* Laptop Screen */}
                 <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-t-2xl border-4 border-slate-700 shadow-2xl overflow-hidden" style={{ 
                   maskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)',
@@ -440,10 +520,32 @@ export function TradingDemo() {
                   maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
                   WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)'
                 }}></div>
-              </div>
+              </motion.div>
 
               {/* Code Panel on Right with Flip Animation */}
-              <div className="absolute top-1/2 -translate-y-1/2 right-0 hidden lg:block z-10 code-flip-group" style={{ transform: 'translateY(-50%) translateX(25%)' }}>
+              <motion.div 
+                ref={codeCardRef}
+                className="absolute top-1/2 right-0 hidden lg:block z-10 code-flip-group" 
+                initial={{ 
+                  opacity: 0, 
+                  x: 200,
+                  y: '-50%'
+                }}
+                animate={shouldAnimate ? { 
+                  opacity: 1, 
+                  x: codeCardOffset,
+                  y: '-50%'
+                } : { 
+                  opacity: 0, 
+                  x: 200,
+                  y: '-50%'
+                }}
+                transition={{ 
+                  duration: 1.0, 
+                  delay: 0.4,
+                  ease: [0.25, 0.1, 0.25, 1]
+                }}
+              >
                 <div className="w-72 xl:w-80 perspective-1000">
                   <div className="relative w-full preserve-3d transition-transform duration-700 code-flip-hover">
                     {/* Front Side - Code */}
@@ -581,18 +683,35 @@ export function TradingDemo() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Tagline - Positioned at bottom left of laptop */}
-              <div className="absolute bottom-8 left-12 md:left-16 lg:left-20 z-30 pointer-events-none font-tagline">
+              <motion.div 
+                className="absolute bottom-8 left-12 md:left-16 lg:left-20 z-30 pointer-events-none font-tagline"
+                initial={{ 
+                  opacity: 0, 
+                  x: -200 
+                }}
+                animate={shouldAnimate ? { 
+                  opacity: 1, 
+                  x: 0 
+                } : { 
+                  opacity: 0, 
+                  x: -200 
+                }}
+                transition={{ 
+                  duration: 1.0, 
+                  delay: 0.6,
+                  ease: [0.25, 0.1, 0.25, 1]
+                }}
+              >
                 <p className="text-sm md:text-base text-gray-400 mb-1 italic">AlgoRyx</p>
                 <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-white italic">
                   Algorithms Over opinion.
                 </p>
-              </div>
+              </motion.div>
             </div>
           </div>
-        </ScrollReveal>
       </div>
     </section>
   );
