@@ -136,7 +136,7 @@ export function EducationDemo() {
     ];
 
     let lineIndex = 0;
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const addLine = () => {
       if (lineIndex < tradingMessages.length) {
@@ -532,7 +532,7 @@ export function EducationDemo() {
                     <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                   </div>
                   <span className="ml-2 text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                    quant_trader.py
+                    Bloomberg Terminal
                   </span>
                 </div>
                 
