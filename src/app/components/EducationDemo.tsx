@@ -10,7 +10,6 @@ export function EducationDemo() {
 
   // Code execution animation
   const [activeLine, setActiveLine] = useState(0);
-  const [currentModule, setCurrentModule] = useState(0);
 
   // Animated values for formulas
   const [formulaValues, setFormulaValues] = useState({
@@ -18,6 +17,10 @@ export function EducationDemo() {
     returns: 24.5,
     volatility: 13.2
   });
+
+  // Gaming PC ref
+  const gamingPCRef = useRef<HTMLDivElement>(null);
+  const [gamingPCOffset, setGamingPCOffset] = useState(0);
 
   // Terminal output lines
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
@@ -54,24 +57,11 @@ export function EducationDemo() {
     if (!shouldAnimate) return;
     
     const executionInterval = setInterval(() => {
-      setActiveLine(prev => (prev + 1) % 12);
+      setActiveLine(prev => (prev + 1) % 11);
     }, 2000);
     
     return () => {
       clearInterval(executionInterval);
-    };
-  }, [shouldAnimate]);
-
-  // Module rotation
-  useEffect(() => {
-    if (!shouldAnimate) return;
-    
-    const moduleInterval = setInterval(() => {
-      setCurrentModule(prev => (prev + 1) % 3);
-    }, 8000);
-    
-    return () => {
-      clearInterval(moduleInterval);
     };
   }, [shouldAnimate]);
 
@@ -90,6 +80,23 @@ export function EducationDemo() {
     return () => {
       clearInterval(formulaInterval);
     };
+  }, [shouldAnimate]);
+
+  // Calculate gaming PC offset (25% of its width)
+  useEffect(() => {
+    const calculateOffset = () => {
+      if (gamingPCRef.current) {
+        const width = gamingPCRef.current.offsetWidth;
+        setGamingPCOffset(width * 0.25);
+      }
+    };
+    
+    calculateOffset();
+    
+    if (shouldAnimate) {
+      const timer = setTimeout(calculateOffset, 100);
+      return () => clearTimeout(timer);
+    }
   }, [shouldAnimate]);
 
   // Calculate terminal offset (25% of its width)
@@ -160,60 +167,23 @@ export function EducationDemo() {
     };
   }, [shouldAnimate]);
 
-  const codeSnippets = [
-    {
-      title: 'Portfolio Optimization',
-      lines: [
-        { text: 'import numpy as np', type: 'import' },
-        { text: 'from scipy.optimize import minimize', type: 'import' },
-        { text: '', type: 'empty' },
-        { text: 'def portfolio_optimize(returns, cov_matrix):', type: 'def' },
-        { text: '    n = len(returns)', type: 'code' },
-        { text: '    def objective(weights):', type: 'def' },
-        { text: '        portfolio_return = np.dot(weights, returns)', type: 'code' },
-        { text: '        portfolio_risk = np.sqrt(', type: 'code' },
-        { text: '            np.dot(weights.T, np.dot(cov_matrix, weights))', type: 'code' },
-        { text: '        )', type: 'code' },
-        { text: '        return -portfolio_return / portfolio_risk', type: 'code' },
-        { text: '    return minimize(objective, ...)', type: 'return' },
-      ]
-    },
-    {
-      title: 'Moving Average Strategy',
-      lines: [
-        { text: 'import pandas as pd', type: 'import' },
-        { text: 'import numpy as np', type: 'import' },
-        { text: '', type: 'empty' },
-        { text: 'def moving_average_strategy(data, short=50, long=200):', type: 'def' },
-        { text: '    data[\'SMA_short\'] = data[\'Close\'].rolling(short).mean()', type: 'code' },
-        { text: '    data[\'SMA_long\'] = data[\'Close\'].rolling(long).mean()', type: 'code' },
-        { text: '    data[\'Signal\'] = 0', type: 'code' },
-        { text: '    data.loc[data[\'SMA_short\'] > data[\'SMA_long\'], \'Signal\'] = 1', type: 'code' },
-        { text: '    data.loc[data[\'SMA_short\'] < data[\'SMA_long\'], \'Signal\'] = -1', type: 'code' },
-        { text: '    return data', type: 'return' },
-      ]
-    },
-    {
-      title: 'Risk Metrics Calculation',
-      lines: [
-        { text: 'import numpy as np', type: 'import' },
-        { text: 'from scipy import stats', type: 'import' },
-        { text: '', type: 'empty' },
-        { text: 'def calculate_risk_metrics(returns):', type: 'def' },
-        { text: '    sharpe_ratio = np.mean(returns) / np.std(returns)', type: 'code' },
-        { text: '    var_95 = np.percentile(returns, 5)', type: 'code' },
-        { text: '    max_drawdown = np.min(np.cumsum(returns))', type: 'code' },
-        { text: '    volatility = np.std(returns) * np.sqrt(252)', type: 'code' },
-        { text: '    return {', type: 'code' },
-        { text: '        \'sharpe\': sharpe_ratio,', type: 'code' },
-        { text: '        \'var\': var_95,', type: 'code' },
-        { text: '        \'max_dd\': max_drawdown', type: 'code' },
-        { text: '    }', type: 'code' },
-      ]
-    }
-  ];
-
-  const currentCode = codeSnippets[currentModule];
+  // Fixed code snippet
+  const fixedCode = {
+    title: 'Portfolio Optimization',
+    lines: [
+      { text: 'import numpy as np', type: 'import' },
+      { text: 'from scipy.optimize import minimize', type: 'import' },
+      { text: '', type: 'empty' },
+      { text: 'def portfolio_optimize(returns, cov_matrix):', type: 'def' },
+      { text: '    n = len(returns)', type: 'code' },
+      { text: '    def objective(weights):', type: 'def' },
+      { text: '        portfolio_return = np.dot(weights, returns)', type: 'code' },
+      { text: '        portfolio_risk = np.sqrt(', type: 'code' },
+      { text: '            np.dot(weights.T, np.dot(cov_matrix, weights))', type: 'code' },
+      { text: '        )', type: 'code' },
+      { text: '        return -portfolio_return / portfolio_risk', type: 'code' },
+    ]
+  };
 
   return (
     <section ref={sectionRef} className="py-24 relative font-education-demo">
@@ -228,7 +198,7 @@ export function EducationDemo() {
             <motion.div 
               className="relative mx-auto" 
               style={{ 
-                maxWidth: '1000px',
+                maxWidth: '700px',
                 perspective: '1000px',
                 transformStyle: 'preserve-3d'
               }}
@@ -277,7 +247,7 @@ export function EducationDemo() {
                     <div 
                       className="bg-gradient-to-br from-slate-900 to-black overflow-hidden relative"
                       style={{ 
-                        minHeight: '500px',
+                        height: '400px',
                         borderRadius: '8px 8px 4px 4px',
                         transform: 'perspective(1200px) rotateX(-2deg) scale(0.98)',
                         transformOrigin: 'center center',
@@ -290,40 +260,25 @@ export function EducationDemo() {
                         background: 'radial-gradient(ellipse at center top, rgba(15, 23, 42, 0.3) 0%, transparent 50%), linear-gradient(to bottom, rgb(15, 23, 42) 0%, rgb(0, 0, 0) 100%)'
                       }}
                     >
-                    {/* Top Bar - Module Tabs */}
+                    {/* Top Bar - Code Editor Header */}
                     <div className="bg-slate-800/50 border-b border-white/10 px-6 py-3">
-                      <div className="flex gap-2">
-                        {codeSnippets.map((snippet, idx) => (
-                          <button
-                            key={idx}
-                            className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${
-                              currentModule === idx
-                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                                : 'text-gray-400 hover:text-gray-300 border border-transparent'
-                            }`}
-                          >
-                            {snippet.title}
-                          </button>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <Code2 className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          portfolio_optimize.py
+                        </span>
                       </div>
                     </div>
 
                     {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 h-full overflow-hidden">
                       {/* Left Column - Code Editor */}
-                      <div className="lg:col-span-2 space-y-4">
+                      <div className="lg:col-span-2 flex flex-col">
                         {/* Code Editor */}
-                        <div className="bg-slate-800/30 rounded-lg border border-white/5 overflow-hidden">
-                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border-b border-white/10">
-                            <Code2 className="w-4 h-4 text-gray-400" />
-                            <span className="text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                              {currentCode.title.toLowerCase().replace(/\s+/g, '_')}.py
-                            </span>
-                          </div>
-                          
-                          <div className="p-4 text-xs" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        <div className="bg-slate-800/30 rounded-lg border border-white/5 overflow-hidden flex-1 flex flex-col">
+                          <div className="p-3 text-xs flex-1 overflow-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                             <div className="text-gray-300 leading-relaxed">
-                              {currentCode.lines.map((line, index) => {
+                              {fixedCode.lines.map((line, index) => {
                                 const isActive = shouldAnimate && activeLine === index;
                                 let textColor = 'text-gray-300';
                                 
@@ -351,27 +306,27 @@ export function EducationDemo() {
                         </div>
 
                         {/* Formula Card */}
-                        <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calculator className="w-4 h-4 text-blue-400" />
-                            <h4 className="text-white text-sm font-semibold">Risk Metrics</h4>
+                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5 mt-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calculator className="w-3 h-3 text-blue-400" />
+                            <h4 className="text-white text-xs font-semibold">Risk Metrics</h4>
                           </div>
-                          <div className="space-y-2 text-xs">
+                          <div className="space-y-1 text-xs">
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">Sharpe Ratio:</span>
-                              <span className="text-green-400 font-mono">
+                              <span className="text-gray-400 text-[10px]">Sharpe Ratio:</span>
+                              <span className="text-green-400 font-mono text-[10px]">
                                 {formulaValues.sharpe.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">Annual Returns:</span>
-                              <span className="text-green-400 font-mono">
+                              <span className="text-gray-400 text-[10px]">Annual Returns:</span>
+                              <span className="text-green-400 font-mono text-[10px]">
                                 {formulaValues.returns.toFixed(1)}%
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">Volatility:</span>
-                              <span className="text-yellow-400 font-mono">
+                              <span className="text-gray-400 text-[10px]">Volatility:</span>
+                              <span className="text-yellow-400 font-mono text-[10px]">
                                 {formulaValues.volatility.toFixed(1)}%
                               </span>
                             </div>
@@ -380,34 +335,34 @@ export function EducationDemo() {
                       </div>
 
                       {/* Right Column - Learning Resources */}
-                      <div className="space-y-3">
-                        {/* Module Progress */}
-                        <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
+                      <div className="space-y-2 flex flex-col">
+                        {/* Progress */}
+                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-white text-sm font-semibold">Progress</h4>
-                            <span className="text-gray-500 text-xs">Module {currentModule + 1}/3</span>
+                            <h4 className="text-white text-xs font-semibold">Progress</h4>
+                            <span className="text-gray-500 text-[10px]">65%</span>
                           </div>
-                          <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <motion.div
                               className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
                               initial={{ width: '0%' }}
-                              animate={shouldAnimate ? { width: `${((currentModule + 1) / 3) * 100}%` } : { width: '0%' }}
+                              animate={shouldAnimate ? { width: '65%' } : { width: '0%' }}
                               transition={{ duration: 0.5 }}
                             />
                           </div>
                         </div>
 
                         {/* Learning Resources */}
-                        <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
-                          <h4 className="text-white text-sm font-semibold mb-3">Resources</h4>
-                          <div className="space-y-2">
+                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5 flex-1">
+                          <h4 className="text-white text-xs font-semibold mb-2">Resources</h4>
+                          <div className="space-y-1.5">
                             {[
                               { icon: BookOpen, title: 'Portfolio Theory', status: 'completed' },
                               { icon: TrendingUp, title: 'Risk Management', status: 'active' },
                               { icon: Code2, title: 'Python Basics', status: 'upcoming' },
                             ].map((resource, idx) => (
-                              <div key={idx} className="flex items-center gap-2 text-xs">
-                                <resource.icon className={`w-4 h-4 ${
+                              <div key={idx} className="flex items-center gap-1.5 text-[10px]">
+                                <resource.icon className={`w-3 h-3 ${
                                   resource.status === 'completed' ? 'text-green-400' :
                                   resource.status === 'active' ? 'text-blue-400' :
                                   'text-gray-500'
@@ -425,14 +380,14 @@ export function EducationDemo() {
                         </div>
 
                         {/* Formula Reference */}
-                        <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
-                          <h4 className="text-white text-sm font-semibold mb-2">Key Formula</h4>
-                          <div className="bg-slate-900/50 rounded p-3 text-xs font-mono text-gray-300">
-                            <div className="text-cyan-400 mb-1">Sharpe Ratio =</div>
-                            <div className="pl-4">
+                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5">
+                          <h4 className="text-white text-xs font-semibold mb-1.5">Key Formula</h4>
+                          <div className="bg-slate-900/50 rounded p-2 text-[10px] font-mono text-gray-300">
+                            <div className="text-cyan-400 mb-0.5">Sharpe Ratio =</div>
+                            <div className="pl-3 text-[9px]">
                               (Rₚ - Rf) / σₚ
                             </div>
-                            <div className="text-gray-500 text-[10px] mt-2">
+                            <div className="text-gray-500 text-[8px] mt-1.5">
                               Rₚ = Portfolio Return<br/>
                               Rf = Risk-free Rate<br/>
                               σₚ = Portfolio Volatility
@@ -455,6 +410,92 @@ export function EducationDemo() {
                 <div className="bg-gradient-to-b from-slate-700 to-slate-800 w-24 h-8 rounded-t-lg"></div>
                 {/* Stand Base */}
                 <div className="bg-gradient-to-b from-slate-800 to-slate-900 w-64 h-3 rounded-lg shadow-xl"></div>
+              </div>
+            </motion.div>
+
+            {/* Gaming PC on Left */}
+            <motion.div 
+              ref={gamingPCRef}
+              className="absolute top-1/2 left-0 hidden lg:block z-10" 
+              initial={{ 
+                opacity: 0, 
+                x: -200,
+                y: '-50%'
+              }}
+              animate={shouldAnimate ? { 
+                opacity: 1, 
+                x: -gamingPCOffset,
+                y: '-50%'
+              } : { 
+                opacity: 0, 
+                x: -200,
+                y: '-50%'
+              }}
+              transition={{ 
+                duration: 1.0, 
+                delay: 0.4,
+                ease: [0.25, 0.1, 0.25, 1]
+              }}
+            >
+              <div className="w-64 xl:w-72 relative">
+                {/* PC Case */}
+                <div className="relative bg-gradient-to-b from-slate-900 to-black border-2 border-slate-700 rounded-lg shadow-2xl overflow-hidden">
+                  {/* Glass Side Panel with RGB Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-500/5 to-purple-500/10 rounded-lg">
+                    {/* RGB Strip Effect */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-cyan-500 to-purple-500 opacity-60 animate-pulse"></div>
+                  </div>
+                  
+                  {/* Front Panel */}
+                  <div className="relative p-4 space-y-3">
+                    {/* Top - Power Button & I/O */}
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center">
+                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="w-1 h-4 bg-slate-600 rounded"></div>
+                        <div className="w-1 h-4 bg-slate-600 rounded"></div>
+                        <div className="w-1 h-4 bg-slate-600 rounded"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Middle - RGB Fans */}
+                    <div className="grid grid-cols-3 gap-2 py-2">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className="relative">
+                          <div className="w-full aspect-square rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                            {/* Fan blades with RGB glow */}
+                            <div className="absolute inset-0">
+                              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-purple-500/20 rounded-full animate-spin" style={{ animationDuration: '2s' }}></div>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-black border border-slate-600 relative z-10"></div>
+                          </div>
+                          {/* RGB glow effect */}
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500/30 via-cyan-500/30 to-purple-500/30 blur-sm animate-pulse"></div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Bottom - Brand/Logo Area */}
+                    <div className="pt-2 border-t border-slate-700">
+                      <div className="text-center">
+                        <div className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400">
+                          ALGORYX
+                        </div>
+                        <div className="text-[10px] text-gray-500 mt-1">QUANT RIG</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Side RGB Accent */}
+                  <div className="absolute right-0 top-1/4 bottom-1/4 w-0.5 bg-gradient-to-b from-blue-500 via-cyan-500 to-purple-500 opacity-80"></div>
+                </div>
+                
+                {/* Base/Stand */}
+                <div className="mt-2 flex justify-center">
+                  <div className="w-32 h-1 bg-gradient-to-b from-slate-800 to-slate-900 rounded-full"></div>
+                </div>
               </div>
             </motion.div>
 
