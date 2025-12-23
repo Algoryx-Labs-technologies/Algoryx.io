@@ -26,9 +26,9 @@ export default function App() {
           <Header />
           <Hero />
           <Features />
-          <WhyAlgoryx />
           <EducationDemo />
           <Courses />
+          <WhyAlgoryx />
           <TradingDemo />
           <Labs />
           <Waitlist />
