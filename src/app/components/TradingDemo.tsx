@@ -1,8 +1,111 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollReveal } from './ScrollReveal';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
+// Generate realistic candlestick data
+interface Candlestick {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  isUp?: boolean;
+}
+
+const generateInitialCandles = (): Array<{ open: number; high: number; low: number; close: number }> => {
+  const candles: Array<{ open: number; high: number; low: number; close: number }> = [];
+  let basePrice = 100;
+  const candleCount = 20;
+  
+  for (let i = 0; i < candleCount; i++) {
+    const volatility = Math.random() * 3 - 1.5;
+    const open = basePrice;
+    const close = basePrice + volatility;
+    const high = Math.max(open, close) + Math.random() * 2;
+    const low = Math.min(open, close) - Math.random() * 2;
+    
+    candles.push({ open, high, low, close });
+    basePrice = close;
+  }
+  
+  return candles;
+};
+
+const normalizeCandles = (
+  candles: Array<{ open: number; high: number; low: number; close: number }>
+): Candlestick[] => {
+  // Add padding to prevent candles from touching edges
+  const allValues = candles.flatMap(c => [c.high, c.low]);
+  const minPrice = Math.min(...allValues);
+  const maxPrice = Math.max(...allValues);
+  const range = maxPrice - minPrice;
+  const padding = range * 0.1; // 10% padding on top and bottom
+  
+  const adjustedMin = minPrice - padding;
+  const adjustedMax = maxPrice + padding;
+  const adjustedRange = adjustedMax - adjustedMin || 1;
+  
+  return candles.map(candle => ({
+    open: ((candle.open - adjustedMin) / adjustedRange) * 100,
+    high: ((candle.high - adjustedMin) / adjustedRange) * 100,
+    low: ((candle.low - adjustedMin) / adjustedRange) * 100,
+    close: ((candle.close - adjustedMin) / adjustedRange) * 100,
+    isUp: candle.close >= candle.open
+  }));
+};
+
 export function TradingDemo() {
+  const [candlestickData, setCandlestickData] = useState<Candlestick[]>(() => {
+    const initialCandles = generateInitialCandles();
+    return normalizeCandles(initialCandles);
+  });
+  
+  const rawCandlesRef = useRef<Array<{ open: number; high: number; low: number; close: number }>>(
+    generateInitialCandles()
+  );
+  const trendRef = useRef<'up' | 'down'>('up');
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCandlestickData(prev => {
+        // Remove the first candle (oldest)
+        const newRawCandles = rawCandlesRef.current.slice(1);
+        
+        // Get the last candle's close price
+        const lastCandle = rawCandlesRef.current[rawCandlesRef.current.length - 1];
+        const lastClose = lastCandle.close;
+        
+        // Generate new candle with realistic movement
+        // Alternate trend direction occasionally
+        if (Math.random() < 0.3) {
+          trendRef.current = trendRef.current === 'up' ? 'down' : 'up';
+        }
+        
+        const trend = trendRef.current;
+        const volatility = Math.random() * 2 + 0.5;
+        
+        const open = lastClose;
+        let close: number;
+        
+        if (trend === 'up') {
+          close = open + Math.random() * volatility + 0.3;
+        } else {
+          close = open - Math.random() * volatility - 0.3;
+        }
+        
+        const high = Math.max(open, close) + Math.random() * 1.5;
+        const low = Math.min(open, close) - Math.random() * 1.5;
+        
+        // Add new candle
+        newRawCandles.push({ open, high, low, close });
+        rawCandlesRef.current = newRawCandles;
+        
+        // Normalize with padding to keep all candles visible
+        return normalizeCandles(newRawCandles);
+      });
+    }, 1500); // Update every 1.5 seconds for smooth animation
+    
+    return () => clearInterval(interval);
+  }, []);
   return (
     <section className="py-24 relative font-trading-demo">
       <div className="container mx-auto px-6">
@@ -53,33 +156,89 @@ export function TradingDemo() {
                               </div>
                             </div>
 
-                            {/* Mini Chart */}
+                            {/* Candlestick Chart */}
                             <div className="h-32 bg-slate-900/50 rounded border border-white/5 relative overflow-hidden">
                               <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
-                                {/* Portfolio Line */}
-                                <path
-                                  d="M 0,80 Q 50,60 100,50 T 200,40 T 300,35"
-                                  fill="none"
-                                  stroke="#10b981"
-                                  strokeWidth="2"
-                                />
-                                {/* S&P 500 Line */}
-                                <path
-                                  d="M 0,85 Q 50,70 100,65 T 200,60 T 300,55"
-                                  fill="none"
-                                  stroke="#6b7280"
-                                  strokeWidth="1.5"
-                                  strokeDasharray="4,4"
-                                />
+                                {/* Grid lines */}
+                                {[20, 40, 60, 80].map((y) => (
+                                  <line
+                                    key={y}
+                                    x1="0"
+                                    y1={y}
+                                    x2="300"
+                                    y2={y}
+                                    stroke="#374151"
+                                    strokeWidth="0.5"
+                                    opacity="0.3"
+                                  />
+                                ))}
+                                
+                                {/* Candlesticks */}
+                                {candlestickData.map((candle, index) => {
+                                  const x = (index / (candlestickData.length - 1)) * 300;
+                                  const candleWidth = 8;
+                                  const xPos = x - candleWidth / 2;
+                                  
+                                  // High-Low wick
+                                  const highY = 100 - candle.high;
+                                  const lowY = 100 - candle.low;
+                                  const openY = 100 - candle.open;
+                                  const closeY = 100 - candle.close;
+                                  
+                                  const bodyTop = Math.min(openY, closeY);
+                                  const bodyBottom = Math.max(openY, closeY);
+                                  const bodyHeight = Math.abs(closeY - openY) || 1;
+                                  
+                                  const isNewest = index === candlestickData.length - 1;
+                                  
+                                  return (
+                                    <g 
+                                      key={`${index}-${candlestickData.length}`}
+                                      style={{
+                                        transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                                        transform: isNewest ? 'scale(1.05)' : 'scale(1)',
+                                        opacity: 1
+                                      }}
+                                    >
+                                      {/* High-Low wick */}
+                                      <line
+                                        x1={x}
+                                        y1={highY}
+                                        x2={x}
+                                        y2={lowY}
+                                        stroke={candle.isUp ? "#10b981" : "#ef4444"}
+                                        strokeWidth="1"
+                                        style={{
+                                          transition: 'y1 0.3s ease-out, y2 0.3s ease-out, stroke 0.3s ease-out',
+                                          filter: isNewest ? 'drop-shadow(0 0 2px rgba(16, 185, 129, 0.5))' : 'none'
+                                        }}
+                                      />
+                                      {/* Body */}
+                                      <rect
+                                        x={xPos}
+                                        y={bodyTop}
+                                        width={candleWidth}
+                                        height={bodyHeight}
+                                        fill={candle.isUp ? "#10b981" : "#ef4444"}
+                                        stroke={candle.isUp ? "#10b981" : "#ef4444"}
+                                        strokeWidth="0.5"
+                                        style={{
+                                          transition: 'y 0.3s ease-out, height 0.3s ease-out, fill 0.3s ease-out, stroke 0.3s ease-out',
+                                          filter: isNewest ? 'drop-shadow(0 0 3px rgba(16, 185, 129, 0.6))' : 'none'
+                                        }}
+                                      />
+                                    </g>
+                                  );
+                                })}
                               </svg>
                               <div className="absolute bottom-2 left-2 flex gap-3 text-xs">
                                 <div className="flex items-center gap-1">
-                                  <div className="w-2 h-0.5 bg-green-400"></div>
-                                  <span className="text-gray-400">Portfolio</span>
+                                  <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+                                  <span className="text-gray-400">Bullish</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <div className="w-2 h-0.5 bg-gray-500 border-dashed"></div>
-                                  <span className="text-gray-400">S&P 500</span>
+                                  <div className="w-2 h-2 bg-red-500 rounded-sm"></div>
+                                  <span className="text-gray-400">Bearish</span>
                                 </div>
                               </div>
                             </div>
