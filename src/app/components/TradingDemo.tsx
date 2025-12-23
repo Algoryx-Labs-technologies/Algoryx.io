@@ -64,6 +64,25 @@ export function TradingDemo() {
   );
   const trendRef = useRef<'up' | 'down'>('up');
   
+  // Animated PnL values
+  const [pnlAmount, setPnlAmount] = useState(31155.39);
+  const [pnlPercent, setPnlPercent] = useState(31.6);
+  const [pnlTrend, setPnlTrend] = useState<'up' | 'down'>('up');
+  
+  // Code execution animation
+  const [activeLine, setActiveLine] = useState(0);
+  
+  useEffect(() => {
+    // Line-by-line execution animation
+    const executionInterval = setInterval(() => {
+      setActiveLine(prev => (prev + 1) % 11); // 11 lines of code (0-10)
+    }, 2000);
+    
+    return () => {
+      clearInterval(executionInterval);
+    };
+  }, []);
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCandlestickData(prev => {
@@ -98,6 +117,22 @@ export function TradingDemo() {
         // Add new candle
         newRawCandles.push({ open, high, low, close });
         rawCandlesRef.current = newRawCandles;
+        
+        // Update PnL values based on trend
+        const isUp = trend === 'up';
+        setPnlTrend(isUp ? 'up' : 'down');
+        
+        // Animate PnL amount (last 2 digits)
+        setPnlAmount(prev => {
+          const change = isUp ? (Math.random() * 2 + 0.5) : -(Math.random() * 2 + 0.5);
+          return Math.max(30000, Math.min(35000, prev + change));
+        });
+        
+        // Animate PnL percentage (last digit)
+        setPnlPercent(prev => {
+          const change = isUp ? (Math.random() * 0.2 + 0.05) : -(Math.random() * 0.2 + 0.05);
+          return Math.max(30, Math.min(35, prev + change));
+        });
         
         // Normalize with padding to keep all candles visible
         return normalizeCandles(newRawCandles);
@@ -151,8 +186,35 @@ export function TradingDemo() {
                               </div>
                               <div className="text-right">
                                 <p className="text-gray-400 text-sm mb-1">Past year returns</p>
-                                <p className="text-green-400 text-xl font-bold">+$31,155.39</p>
-                                <p className="text-green-400 text-sm">+31.6%</p>
+                                <p className="text-green-400 text-xl font-bold">
+                                  +$
+                                  {Math.floor(pnlAmount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}.
+                                  <span 
+                                    key={`pnl-${Math.floor((pnlAmount % 1) * 100)}`}
+                                    className="inline-block transition-colors duration-300"
+                                    style={{ 
+                                      color: pnlTrend === 'up' ? '#10b981' : '#ef4444',
+                                      animation: 'fadeIn 0.5s ease-in-out'
+                                    }}
+                                  >
+                                    {Math.floor((pnlAmount % 1) * 100).toString().padStart(2, '0')}
+                                  </span>
+                                </p>
+                                <p className="text-green-400 text-sm">
+                                  +
+                                  {Math.floor(pnlPercent * 10) / 10}.
+                                  <span 
+                                    key={`percent-${Math.floor((pnlPercent * 10) % 10)}`}
+                                    className="inline-block transition-colors duration-300"
+                                    style={{ 
+                                      color: pnlTrend === 'up' ? '#10b981' : '#ef4444',
+                                      animation: 'fadeIn 0.5s ease-in-out'
+                                    }}
+                                  >
+                                    {Math.floor((pnlPercent * 10) % 10)}
+                                  </span>
+                                  %
+                                </p>
                               </div>
                             </div>
 
@@ -308,8 +370,12 @@ export function TradingDemo() {
                           {/* NVDA News */}
                           <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 bg-green-500/20 rounded flex items-center justify-center">
-                                <span className="text-green-400 text-xs font-bold">NV</span>
+                              <div className="w-6 h-6 rounded flex items-center justify-center overflow-hidden">
+                                <img 
+                                  src="https://images.financialmodelingprep.com/symbol/NVDA.png" 
+                                  alt="NVDA" 
+                                  className="w-full h-full object-contain"
+                                />
                               </div>
                               <span className="text-white text-sm font-semibold">NVDA</span>
                             </div>
@@ -319,18 +385,45 @@ export function TradingDemo() {
                             <p className="text-gray-500 text-xs">Today - Just now</p>
                           </div>
 
-                          {/* MSFT News */}
+                          {/* META News */}
                           <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-6 h-6 bg-blue-500/20 rounded flex items-center justify-center">
-                                <span className="text-blue-400 text-xs font-bold">MS</span>
+                              <div className="w-6 h-6 rounded flex items-center justify-center overflow-hidden">
+                                <img 
+                                  src="https://images.financialmodelingprep.com/symbol/META.png" 
+                                  alt="META" 
+                                  className="w-full h-full object-contain"
+                                />
                               </div>
-                              <span className="text-white text-sm font-semibold">MSFT</span>
+                              <span className="text-white text-sm font-semibold">META</span>
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed mb-2">
                               Microsoft cuts 3% of its 228,000 staff to streamline management...
                             </p>
                             <p className="text-gray-500 text-xs">Today - 2 minutes ago</p>
+                          </div>
+
+                          {/* AAPL News - Half in darkness */}
+                          <div className="bg-slate-800/30 rounded-lg p-4 border border-white/5 relative overflow-hidden">
+                            {/* Dark gradient overlay covering more than half */}
+                            <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-black via-black/90 via-black/60 to-transparent pointer-events-none z-10"></div>
+                            
+                            <div className="relative z-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded flex items-center justify-center overflow-hidden">
+                                  <img 
+                                    src="https://images.financialmodelingprep.com/symbol/AAPL.png" 
+                                    alt="AAPL" 
+                                    className="w-full h-full object-contain"
+                                  />
+                                </div>
+                                <span className="text-white text-sm font-semibold">AAPL</span>
+                              </div>
+                              <p className="text-gray-400 text-xs leading-relaxed mb-2">
+                                Apple announces new AI features for iPhone, driving innovation in mobile technology...
+                              </p>
+                              <p className="text-gray-500 text-xs opacity-30">Today - 5 minutes ago</p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -349,36 +442,143 @@ export function TradingDemo() {
                 }}></div>
               </div>
 
-              {/* Code Panel on Right */}
-              <div className="absolute top-1/2 -translate-y-1/2 right-0 hidden lg:block z-10" style={{ transform: 'translateY(-50%) translateX(25%)' }}>
-                <div className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl w-72 xl:w-80">
-                  {/* Code Editor Header */}
-                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/10">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+              {/* Code Panel on Right with Flip Animation */}
+              <div className="absolute top-1/2 -translate-y-1/2 right-0 hidden lg:block z-10 code-flip-group" style={{ transform: 'translateY(-50%) translateX(25%)' }}>
+                <div className="w-72 xl:w-80 perspective-1000">
+                  <div className="relative w-full preserve-3d transition-transform duration-700 code-flip-hover">
+                    {/* Front Side - Code */}
+                    <div className="relative w-full backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                      {/* Code Editor Header */}
+                      <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/10">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                          <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span className="ml-2 text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          strategy.py
+                        </span>
+                      </div>
+                      
+                      {/* Code Content */}
+                      <div className="p-4 text-xs relative" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        <div className="text-gray-300 leading-relaxed relative">
+                          {/* Line 0 - def */}
+                          <div className={`relative ${activeLine === 0 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            <span className="text-purple-400">def</span> <span className="text-cyan-400">generate_signals</span>(<span className="text-gray-300">data</span>):
+                            {activeLine === 0 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 1 - comment */}
+                          <div className={`relative ${activeLine === 1 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}<span className="text-gray-500"># Calculate Moving Averages</span>
+                            {activeLine === 1 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 2 - SMA_50 */}
+                          <div className={`relative ${activeLine === 2 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}data[<span className="text-green-400">'SMA_50'</span>] = data[<span className="text-green-400">'Close'</span>].rolling(
+                            {activeLine === 2 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 3 - window 50 */}
+                          <div className={`relative ${activeLine === 3 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'        '}window=<span className="text-yellow-400">50</span>).mean()
+                            {activeLine === 3 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 4 - SMA_200 */}
+                          <div className={`relative ${activeLine === 4 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}data[<span className="text-green-400">'SMA_200'</span>] = data[<span className="text-green-400">'Close'</span>].rolling(
+                            {activeLine === 4 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 5 - window 200 */}
+                          <div className={`relative ${activeLine === 5 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'        '}window=<span className="text-yellow-400">200</span>).mean()
+                            {activeLine === 5 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 6 - empty */}
+                          <div className={`relative ${activeLine === 6 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}
+                            {activeLine === 6 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 7 - comment */}
+                          <div className={`relative ${activeLine === 7 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}<span className="text-gray-500"># Generate Entry Signal</span>
+                            {activeLine === 7 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 8 - if statement */}
+                          <div className={`relative ${activeLine === 8 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}<span className="text-purple-400">if</span> data[<span className="text-green-400">'SMA_50'</span>] &gt; data[<span className="text-green-400">'SMA_200'</span>]:
+                            {activeLine === 8 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 9 - return BUY */}
+                          <div className={`relative ${activeLine === 9 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'        '}<span className="text-purple-400">return</span> <span className="text-green-400">"BUY"</span>
+                            {activeLine === 9 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                          {/* Line 10 - return HOLD */}
+                          <div className={`relative ${activeLine === 10 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
+                            {'    '}<span className="text-purple-400">return</span> <span className="text-green-400">"HOLD"</span>
+                            {activeLine === 10 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className="ml-2 text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                      strategy.py
-                    </span>
-                  </div>
-                  
-                  {/* Code Content */}
-                  <div className="p-4 text-xs" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                    <pre className="text-gray-300 leading-relaxed">
-                      <span className="text-purple-400">def</span> <span className="text-cyan-400">generate_signals</span>(<span className="text-gray-300">data</span>):{'\n'}
-                      {'    '}<span className="text-gray-500"># Calculate Moving Averages</span>{'\n'}
-                      {'    '}data[<span className="text-green-400">'SMA_50'</span>] = data[<span className="text-green-400">'Close'</span>].rolling({'\n'}
-                      {'        '}window=<span className="text-yellow-400">50</span>).mean(){'\n'}
-                      {'    '}data[<span className="text-green-400">'SMA_200'</span>] = data[<span className="text-green-400">'Close'</span>].rolling({'\n'}
-                      {'        '}window=<span className="text-yellow-400">200</span>).mean(){'\n'}
-                      {'    '}{'\n'}
-                      {'    '}<span className="text-gray-500"># Generate Entry Signal</span>{'\n'}
-                      {'    '}<span className="text-purple-400">if</span> data[<span className="text-green-400">'SMA_50'</span>] &gt; data[<span className="text-green-400">'SMA_200'</span>]:{'\n'}
-                      {'        '}<span className="text-purple-400">return</span> <span className="text-green-400">"BUY"</span>{'\n'}
-                      {'    '}<span className="text-purple-400">return</span> <span className="text-green-400">"HOLD"</span>
-                    </pre>
+
+                    {/* Back Side - Backtesting Results */}
+                    <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl rotate-y-180" style={{ transform: 'rotateY(180deg)' }}>
+                      {/* Header */}
+                      <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/10">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                          <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span className="ml-2 text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          backtest_results.py
+                        </span>
+                      </div>
+                      
+                      {/* Backtesting Content */}
+                      <div className="p-4 space-y-4">
+                        {/* Returns Distribution */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-semibold text-white mb-2">Returns Distribution</h3>
+                          <div className="bg-slate-800/50 rounded p-3 h-40">
+                            <svg className="w-full h-full" viewBox="0 0 200 80" preserveAspectRatio="none">
+                              {/* Histogram bars */}
+                              {[
+                                { x: 20, h: 15, color: '#ef4444' },
+                                { x: 40, h: 25, color: '#f59e0b' },
+                                { x: 60, h: 45, color: '#10b981' },
+                                { x: 80, h: 60, color: '#10b981' },
+                                { x: 100, h: 50, color: '#10b981' },
+                                { x: 120, h: 35, color: '#10b981' },
+                                { x: 140, h: 20, color: '#f59e0b' },
+                                { x: 160, h: 10, color: '#ef4444' },
+                              ].map((bar, i) => (
+                                <rect
+                                  key={i}
+                                  x={bar.x}
+                                  y={80 - bar.h}
+                                  width="15"
+                                  height={bar.h}
+                                  fill={bar.color}
+                                  opacity="0.7"
+                                />
+                              ))}
+                              {/* Zero line */}
+                              <line
+                                x1="0"
+                                y1="40"
+                                x2="200"
+                                y2="40"
+                                stroke="#6b7280"
+                                strokeWidth="1"
+                                strokeDasharray="2,2"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
