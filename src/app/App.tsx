@@ -4,6 +4,7 @@ import { Hero } from './components/Hero';
 import { Features } from './components/Features';
 import { Courses } from './components/Courses';
 import { WhyAlgoryx } from './components/WhyAlgoryx';
+import { EducationDemo } from './components/EducationDemo';
 import { TradingDemo } from './components/TradingDemo';
 import { Waitlist } from './components/Waitlist';
 import { Labs } from './components/Labs';
@@ -25,8 +26,9 @@ export default function App() {
           <Header />
           <Hero />
           <Features />
-          <Courses />
           <WhyAlgoryx />
+          <EducationDemo />
+          <Courses />
           <TradingDemo />
           <Labs />
           <Waitlist />
