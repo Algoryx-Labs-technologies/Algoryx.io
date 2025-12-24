@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
 import { Courses } from './components/Courses';
+import { AIDoubtTool } from './components/AIDoubtTool';
 import { WhyAlgoryx } from './components/WhyAlgoryx';
 import { EducationDemo } from './components/EducationDemo';
 import { TradingDemo } from './components/TradingDemo';
@@ -28,6 +29,7 @@ export default function App() {
           <Features />
           <EducationDemo />
           <Courses />
+          <AIDoubtTool />
           <WhyAlgoryx />
           <TradingDemo />
           <Labs />
