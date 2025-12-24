@@ -58,6 +58,7 @@ export function AIDoubtTool() {
   const [displayedAnswer, setDisplayedAnswer] = useState('');
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [hasEntered, setHasEntered] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const answerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -70,6 +71,10 @@ export function AIDoubtTool() {
         if (entry.isIntersecting && !hasAnimated) {
           setShouldAnimate(true);
           setHasAnimated(true);
+          // Trigger entrance animation only once
+          if (!hasEntered) {
+            setHasEntered(true);
+          }
         } else if (!entry.isIntersecting && hasAnimated) {
           setShouldAnimate(false);
         } else if (entry.isIntersecting && hasAnimated) {
@@ -168,44 +173,48 @@ export function AIDoubtTool() {
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 italic">
               <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                 AI-Powered Quant Assistant
               </span>
             </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto">
-              Get instant, personalized answers to your quant finance questions
+            <p className="text-base md:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto italic">
+              Get instant, personalized answers to your quant finance doubts.
             </p>
           </div>
         </ScrollReveal>
 
         <div className="flex justify-center items-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 50 }}
+            initial={{ opacity: 0, scale: 0.8, y: -100, rotate: -180 }}
             animate={
-              shouldAnimate
-                ? { opacity: 1, scale: 1, y: 0 }
-                : { opacity: 0, scale: 0.8, y: 50 }
+              hasEntered
+                ? { opacity: 1, scale: 1, y: 0, rotate: 0 }
+                : { opacity: 0, scale: 0.8, y: -100, rotate: -180 }
             }
-            transition={{ duration: 1, delay: 0.2 }}
+            transition={{ 
+              duration: 1.2, 
+              delay: 0.2,
+              ease: [0.25, 0.1, 0.25, 1]
+            }}
             className="relative"
           >
             {/* iPhone Frame - Reduced size */}
             <div className="relative w-[280px] h-[560px] md:w-[320px] md:h-[640px] mx-auto scale-90 md:scale-100">
-              {/* iPhone Outer Frame with shadow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 rounded-[3rem] p-2 shadow-2xl">
-                {/* Inner bezel */}
-                <div className="w-full h-full bg-black rounded-[2.5rem] overflow-hidden relative border-2 border-gray-700/50">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 md:w-32 h-5 md:h-6 bg-black rounded-b-xl md:rounded-b-2xl z-20">
-                    <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black rounded-b-xl md:rounded-b-2xl"></div>
+              {/* iPhone Outer Frame with ultra-minimal bezel */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 rounded-[2.5rem] p-[1px] shadow-[0_0_40px_rgba(0,0,0,0.8),0_20px_60px_rgba(0,0,0,0.6)]">
+                {/* Inner screen - true edge to edge */}
+                <div className="w-full h-full bg-black rounded-[2.4rem] overflow-hidden relative">
+                  {/* Minimal Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 md:w-28 h-4 md:h-5 bg-black rounded-b-lg md:rounded-b-xl z-20">
+                    <div className="absolute inset-0 bg-gradient-to-b from-gray-950 to-black rounded-b-lg md:rounded-b-xl"></div>
                   </div>
 
-                  {/* Status Bar */}
-                  <div className="absolute top-1.5 md:top-2 left-0 right-0 flex justify-between items-center px-6 md:px-8 z-10">
+                  {/* Status Bar - Edge to edge */}
+                  <div className="absolute top-1 md:top-1.5 left-0 right-0 flex justify-between items-center px-4 md:px-6 z-10">
                     <span className="text-white text-[10px] md:text-xs font-semibold">9:41</span>
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-1.5 md:w-4 md:h-2 border border-white rounded-sm">
+                      <div className="w-3 h-1.5 md:w-4 md:h-2 border border-white/90 rounded-sm">
                         <div className="w-3/4 h-full bg-white rounded-sm"></div>
                       </div>
                       <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -214,10 +223,10 @@ export function AIDoubtTool() {
                     </div>
                   </div>
 
-                  {/* App Content */}
-                  <div className="pt-10 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-black overflow-hidden flex flex-col">
+                  {/* App Content - Full screen */}
+                  <div className="pt-8 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-black overflow-hidden flex flex-col">
                     {/* Header with Logo */}
-                    <div className="flex flex-col items-center pt-5 pb-3 px-4 flex-shrink-0">
+                    <div className="flex flex-col items-center pt-4 pb-3 px-4 flex-shrink-0">
                       <motion.div
                         animate={{ rotate: [0, 360] }}
                         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
@@ -300,8 +309,8 @@ export function AIDoubtTool() {
                       </AnimatePresence>
                     </div>
 
-                    {/* Input Area - Fixed at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 pb-5 md:pb-6 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
+                    {/* Input Area - Fixed at bottom, edge to edge */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 pb-4 md:pb-5 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
                       <div className="flex items-start gap-2">
                         <div className="flex-1 bg-slate-800/70 rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-3 border border-white/10 min-w-0">
                           <p className="text-gray-400 text-xs md:text-sm leading-snug break-words line-clamp-2">{currentQA.question}</p>
@@ -313,8 +322,8 @@ export function AIDoubtTool() {
                     </div>
                   </div>
                   
-                  {/* Home Indicator */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 md:w-40 h-1 bg-white/30 rounded-full z-30"></div>
+                  {/* Minimal Home Indicator */}
+                  <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-28 md:w-36 h-0.5 bg-white/40 rounded-full z-30"></div>
                 </div>
               </div>
             </div>

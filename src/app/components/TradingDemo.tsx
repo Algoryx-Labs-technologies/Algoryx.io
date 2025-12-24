@@ -57,6 +57,7 @@ export function TradingDemo() {
   // Track if animation should run (triggered on scroll)
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [hasEntered, setHasEntered] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   const [candlestickData, setCandlestickData] = useState<Candlestick[]>(() => {
@@ -94,6 +95,10 @@ export function TradingDemo() {
         if (entry.isIntersecting && !hasAnimated) {
           setShouldAnimate(true);
           setHasAnimated(true);
+          // Trigger entrance animation only once
+          if (!hasEntered) {
+            setHasEntered(true);
+          }
         } else if (!entry.isIntersecting && hasAnimated) {
           // Stop animations when component is not visible
           setShouldAnimate(false);
@@ -275,7 +280,7 @@ export function TradingDemo() {
                   scale: 0.8,
                   rotateX: -20
                 }}
-                animate={shouldAnimate ? { 
+                animate={hasEntered ? { 
                   opacity: 1, 
                   scale: 1,
                   rotateX: 0
@@ -588,7 +593,7 @@ export function TradingDemo() {
                   x: 200,
                   y: '-50%'
                 }}
-                animate={shouldAnimate ? { 
+                animate={hasEntered ? { 
                   opacity: 1, 
                   x: codeCardOffset,
                   y: '-50%'
@@ -749,7 +754,7 @@ export function TradingDemo() {
                   opacity: 0, 
                   x: -200 
                 }}
-                animate={shouldAnimate ? { 
+                animate={hasEntered ? { 
                   opacity: 1, 
                   x: 0 
                 } : { 
