@@ -80,22 +80,30 @@ export function TradingDemo() {
   // Ref for code card to calculate 25% offset
   const codeCardRef = useRef<HTMLDivElement>(null);
   const [codeCardOffset, setCodeCardOffset] = useState(0);
+  
+  // Store interval refs for proper cleanup
+  const executionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const candlestickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // IntersectionObserver to trigger animation on scroll
+  // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
-    if (!sectionRef.current || hasAnimated) return;
+    if (!sectionRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setShouldAnimate(true);
           setHasAnimated(true);
-          // Disconnect after first trigger
-          observer.disconnect();
+        } else if (!entry.isIntersecting && hasAnimated) {
+          // Stop animations when component is not visible
+          setShouldAnimate(false);
+        } else if (entry.isIntersecting && hasAnimated) {
+          // Resume animations when component becomes visible again
+          setShouldAnimate(true);
         }
       },
       {
-        threshold: 0.2, // Trigger when 20% of the section is visible
+        threshold: 0.1, // Trigger when 10% of the section is visible
         rootMargin: '-50px 0px' // Start animation slightly before fully in view
       }
     );
@@ -128,18 +136,59 @@ export function TradingDemo() {
   }, [shouldAnimate]);
   
   useEffect(() => {
+    if (!shouldAnimate) {
+      // Clear intervals when animation should stop
+      if (executionIntervalRef.current) {
+        clearInterval(executionIntervalRef.current);
+        executionIntervalRef.current = null;
+      }
+      return;
+    }
+    
+    let isMounted = true;
+    
     // Line-by-line execution animation
-    const executionInterval = setInterval(() => {
+    executionIntervalRef.current = setInterval(() => {
+      if (!isMounted) {
+        if (executionIntervalRef.current) {
+          clearInterval(executionIntervalRef.current);
+          executionIntervalRef.current = null;
+        }
+        return;
+      }
       setActiveLine(prev => (prev + 1) % 11); // 11 lines of code (0-10)
     }, 2000);
     
     return () => {
-      clearInterval(executionInterval);
+      isMounted = false;
+      if (executionIntervalRef.current) {
+        clearInterval(executionIntervalRef.current);
+        executionIntervalRef.current = null;
+      }
     };
-  }, []);
+  }, [shouldAnimate]);
   
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (!shouldAnimate) {
+      // Clear intervals when animation should stop
+      if (candlestickIntervalRef.current) {
+        clearInterval(candlestickIntervalRef.current);
+        candlestickIntervalRef.current = null;
+      }
+      return;
+    }
+    
+    let isMounted = true;
+    
+    candlestickIntervalRef.current = setInterval(() => {
+      if (!isMounted) {
+        if (candlestickIntervalRef.current) {
+          clearInterval(candlestickIntervalRef.current);
+          candlestickIntervalRef.current = null;
+        }
+        return;
+      }
+      
       setCandlestickData(prev => {
         // Remove the first candle (oldest)
         const newRawCandles = rawCandlesRef.current.slice(1);
@@ -173,8 +222,13 @@ export function TradingDemo() {
         newRawCandles.push({ open, high, low, close });
         rawCandlesRef.current = newRawCandles;
         
-        // Update PnL values based on trend
-        const isUp = trend === 'up';
+        // Normalize with padding to keep all candles visible
+        return normalizeCandles(newRawCandles);
+      });
+      
+      // Update PnL values based on trend (only if still mounted)
+      if (isMounted) {
+        const isUp = trendRef.current === 'up';
         setPnlTrend(isUp ? 'up' : 'down');
         
         // Animate PnL amount (last 2 digits)
@@ -188,14 +242,17 @@ export function TradingDemo() {
           const change = isUp ? (Math.random() * 0.2 + 0.05) : -(Math.random() * 0.2 + 0.05);
           return Math.max(30, Math.min(35, prev + change));
         });
-        
-        // Normalize with padding to keep all candles visible
-        return normalizeCandles(newRawCandles);
-      });
+      }
     }, 1500); // Update every 1.5 seconds for smooth animation
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      isMounted = false;
+      if (candlestickIntervalRef.current) {
+        clearInterval(candlestickIntervalRef.current);
+        candlestickIntervalRef.current = null;
+      }
+    };
+  }, [shouldAnimate]);
   return (
     <section ref={sectionRef} className="py-24 relative font-trading-demo">
       <div className="container mx-auto px-6">

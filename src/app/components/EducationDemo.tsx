@@ -26,21 +26,32 @@ export function EducationDemo() {
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const terminalRef = useRef<HTMLDivElement>(null);
   const [terminalOffset, setTerminalOffset] = useState(0);
+  
+  // Store interval refs for proper cleanup
+  const executionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const formulaIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const terminalIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const terminalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // IntersectionObserver to trigger animation on scroll
+  // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
-    if (!sectionRef.current || hasAnimated) return;
+    if (!sectionRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setShouldAnimate(true);
           setHasAnimated(true);
-          observer.disconnect();
+        } else if (!entry.isIntersecting && hasAnimated) {
+          // Stop animations when component is not visible
+          setShouldAnimate(false);
+        } else if (entry.isIntersecting && hasAnimated) {
+          // Resume animations when component becomes visible again
+          setShouldAnimate(true);
         }
       },
       {
-        threshold: 0.2,
+        threshold: 0.1,
         rootMargin: '-50px 0px'
       }
     );
@@ -54,22 +65,56 @@ export function EducationDemo() {
 
   // Code line animation
   useEffect(() => {
-    if (!shouldAnimate) return;
+    if (!shouldAnimate) {
+      if (executionIntervalRef.current) {
+        clearInterval(executionIntervalRef.current);
+        executionIntervalRef.current = null;
+      }
+      return;
+    }
     
-    const executionInterval = setInterval(() => {
+    let isMounted = true;
+    
+    executionIntervalRef.current = setInterval(() => {
+      if (!isMounted) {
+        if (executionIntervalRef.current) {
+          clearInterval(executionIntervalRef.current);
+          executionIntervalRef.current = null;
+        }
+        return;
+      }
       setActiveLine(prev => (prev + 1) % 11);
     }, 2000);
     
     return () => {
-      clearInterval(executionInterval);
+      isMounted = false;
+      if (executionIntervalRef.current) {
+        clearInterval(executionIntervalRef.current);
+        executionIntervalRef.current = null;
+      }
     };
   }, [shouldAnimate]);
 
   // Animate formula values
   useEffect(() => {
-    if (!shouldAnimate) return;
+    if (!shouldAnimate) {
+      if (formulaIntervalRef.current) {
+        clearInterval(formulaIntervalRef.current);
+        formulaIntervalRef.current = null;
+      }
+      return;
+    }
     
-    const formulaInterval = setInterval(() => {
+    let isMounted = true;
+    
+    formulaIntervalRef.current = setInterval(() => {
+      if (!isMounted) {
+        if (formulaIntervalRef.current) {
+          clearInterval(formulaIntervalRef.current);
+          formulaIntervalRef.current = null;
+        }
+        return;
+      }
       setFormulaValues(prev => ({
         sharpe: Math.max(1.5, Math.min(2.2, prev.sharpe + (Math.random() * 0.1 - 0.05))),
         returns: Math.max(22, Math.min(27, prev.returns + (Math.random() * 0.3 - 0.15))),
@@ -78,7 +123,11 @@ export function EducationDemo() {
     }, 3000);
     
     return () => {
-      clearInterval(formulaInterval);
+      isMounted = false;
+      if (formulaIntervalRef.current) {
+        clearInterval(formulaIntervalRef.current);
+        formulaIntervalRef.current = null;
+      }
     };
   }, [shouldAnimate]);
 
@@ -118,7 +167,19 @@ export function EducationDemo() {
 
   // Terminal output animation
   useEffect(() => {
-    if (!shouldAnimate) return;
+    if (!shouldAnimate) {
+      if (terminalIntervalRef.current) {
+        clearInterval(terminalIntervalRef.current);
+        terminalIntervalRef.current = null;
+      }
+      if (terminalTimeoutRef.current) {
+        clearTimeout(terminalTimeoutRef.current);
+        terminalTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
 
     const tradingMessages = [
       '[INFO] Strategy initialized: Moving Average Crossover',
@@ -136,9 +197,16 @@ export function EducationDemo() {
     ];
 
     let lineIndex = 0;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const addLine = () => {
+      if (!isMounted) {
+        if (terminalIntervalRef.current) {
+          clearInterval(terminalIntervalRef.current);
+          terminalIntervalRef.current = null;
+        }
+        return;
+      }
+      
       if (lineIndex < tradingMessages.length) {
         setTerminalLines(prev => {
           const newLines = [...prev, tradingMessages[lineIndex]];
@@ -154,15 +222,22 @@ export function EducationDemo() {
     };
 
     // Initial delay, then add lines periodically
-    const initialTimer = setTimeout(() => {
-      addLine();
-      intervalId = setInterval(addLine, 2500);
+    terminalTimeoutRef.current = setTimeout(() => {
+      if (isMounted) {
+        addLine();
+        terminalIntervalRef.current = setInterval(addLine, 2500);
+      }
     }, 1000);
 
     return () => {
-      clearTimeout(initialTimer);
-      if (intervalId) {
-        clearInterval(intervalId);
+      isMounted = false;
+      if (terminalTimeoutRef.current) {
+        clearTimeout(terminalTimeoutRef.current);
+        terminalTimeoutRef.current = null;
+      }
+      if (terminalIntervalRef.current) {
+        clearInterval(terminalIntervalRef.current);
+        terminalIntervalRef.current = null;
       }
     };
   }, [shouldAnimate]);
