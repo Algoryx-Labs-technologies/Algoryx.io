@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { StockAnalyser } from './StockAnalyser';
 
 // Generate realistic candlestick data
 interface Candlestick {
@@ -85,6 +86,12 @@ export function TradingDemo() {
   // Store interval refs for proper cleanup
   const executionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const candlestickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const windowSwitchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Window switching state
+  const [activeWindow, setActiveWindow] = useState<'trading' | 'analyser'>('trading');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
@@ -258,6 +265,81 @@ export function TradingDemo() {
       }
     };
   }, [shouldAnimate]);
+
+  // Window switching animation - each view stays for 5 seconds
+  useEffect(() => {
+    if (!shouldAnimate || !hasEntered) {
+      // Clear interval and timeout when animation should stop
+      if (windowSwitchIntervalRef.current) {
+        clearInterval(windowSwitchIntervalRef.current);
+        windowSwitchIntervalRef.current = null;
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
+        initialTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    // Initial delay to show trading view for 5 seconds first
+    initialTimeoutRef.current = setTimeout(() => {
+      if (!isMounted) return;
+
+      setIsTransitioning(true);
+      
+      // Switch to analyser after transition starts
+      setTimeout(() => {
+        if (isMounted) {
+          setActiveWindow('analyser');
+          setTimeout(() => {
+            if (isMounted) {
+              setIsTransitioning(false);
+            }
+          }, 300); // Transition duration
+        }
+      }, 50);
+
+      // Then set up interval to switch every 5 seconds (5s trading + 5s analyser)
+      windowSwitchIntervalRef.current = setInterval(() => {
+        if (!isMounted) {
+          if (windowSwitchIntervalRef.current) {
+            clearInterval(windowSwitchIntervalRef.current);
+            windowSwitchIntervalRef.current = null;
+          }
+          return;
+        }
+
+        setIsTransitioning(true);
+        
+        // Switch window after a brief delay for transition start
+        setTimeout(() => {
+          if (isMounted) {
+            setActiveWindow(prev => prev === 'trading' ? 'analyser' : 'trading');
+            setTimeout(() => {
+              if (isMounted) {
+                setIsTransitioning(false);
+              }
+            }, 300); // Transition duration
+          }
+        }, 50);
+      }, 5000); // Switch every 5 seconds (each view stays for 5 seconds)
+    }, 5000); // Show trading view for 5 seconds first
+
+    return () => {
+      isMounted = false;
+      if (windowSwitchIntervalRef.current) {
+        clearInterval(windowSwitchIntervalRef.current);
+        windowSwitchIntervalRef.current = null;
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
+        initialTimeoutRef.current = null;
+      }
+    };
+  }, [shouldAnimate, hasEntered]);
+
   return (
     <section ref={sectionRef} className="py-24 relative font-trading-demo">
       <div className="container mx-auto px-6">
@@ -308,15 +390,44 @@ export function TradingDemo() {
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                     
-                    {/* Trading UI Content */}
-                    <div className="bg-gradient-to-br from-slate-900 to-black rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
-                      {/* Top Bar */}
-                      <div className="bg-slate-800/50 border-b border-white/10 px-6 py-4">
-                        {/* Top bar content can be empty or have other elements */}
-                      </div>
+                    {/* Window Container with MacBook-style switching */}
+                    <div className="relative bg-gradient-to-br from-slate-900 to-black rounded-lg overflow-hidden" style={{ minHeight: '500px', maxHeight: '500px' }}>
+                      <AnimatePresence mode="wait">
+                        {activeWindow === 'trading' ? (
+                          <motion.div
+                            key="trading"
+                            initial={{ 
+                              x: -100, 
+                              opacity: 0, 
+                              scale: 0.95,
+                              filter: 'blur(4px)'
+                            }}
+                            animate={{ 
+                              x: 0, 
+                              opacity: 1, 
+                              scale: 1,
+                              filter: 'blur(0px)'
+                            }}
+                            exit={{ 
+                              x: 100, 
+                              opacity: 0, 
+                              scale: 0.95,
+                              filter: 'blur(4px)'
+                            }}
+                            transition={{ 
+                              duration: 0.6,
+                              ease: [0.25, 0.1, 0.25, 1]
+                            }}
+                            className="absolute inset-0"
+                          >
+                            {/* Trading UI Content */}
+                            {/* Top Bar */}
+                            <div className="bg-slate-800/50 border-b border-white/10 px-6 py-4">
+                              {/* Top bar content can be empty or have other elements */}
+                            </div>
 
-                      {/* Main Content Grid */}
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-6">
+                            {/* Main Content Grid */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-6">
                         {/* Left Column - Portfolio & Chart */}
                         <div className="lg:col-span-2 space-y-4">
                           {/* Portfolio Summary */}
@@ -569,7 +680,39 @@ export function TradingDemo() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="analyser"
+                      initial={{ 
+                        x: 100, 
+                        opacity: 0, 
+                        scale: 0.95,
+                        filter: 'blur(4px)'
+                      }}
+                      animate={{ 
+                        x: 0, 
+                        opacity: 1, 
+                        scale: 1,
+                        filter: 'blur(0px)'
+                      }}
+                      exit={{ 
+                        x: -100, 
+                        opacity: 0, 
+                        scale: 0.95,
+                        filter: 'blur(4px)'
+                      }}
+                      transition={{ 
+                        duration: 0.6,
+                        ease: [0.25, 0.1, 0.25, 1]
+                      }}
+                      className="absolute inset-0"
+                    >
+                      <StockAnalyser />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
                   </div>
                 </div>
 
