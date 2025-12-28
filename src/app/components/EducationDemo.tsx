@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Code2, TrendingUp, Calculator } from 'lucide-react';
+import { EducationDashboard, EducationVideos, EducationCourses } from './EducationDashboard';
 
 export function EducationDemo() {
   // Track if animation should run (triggered on scroll)
@@ -33,6 +34,12 @@ export function EducationDemo() {
   const formulaIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const terminalIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const terminalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const windowSwitchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Window switching state
+  const [activeWindow, setActiveWindow] = useState<'dashboard' | 'videos' | 'courses'>('dashboard');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
@@ -247,23 +254,84 @@ export function EducationDemo() {
     };
   }, [shouldAnimate]);
 
-  // Fixed code snippet
-  const fixedCode = {
-    title: 'Portfolio Optimization',
-    lines: [
-      { text: 'import numpy as np', type: 'import' },
-      { text: 'from scipy.optimize import minimize', type: 'import' },
-      { text: '', type: 'empty' },
-      { text: 'def portfolio_optimize(returns, cov_matrix):', type: 'def' },
-      { text: '    n = len(returns)', type: 'code' },
-      { text: '    def objective(weights):', type: 'def' },
-      { text: '        portfolio_return = np.dot(weights, returns)', type: 'code' },
-      { text: '        portfolio_risk = np.sqrt(', type: 'code' },
-      { text: '            np.dot(weights.T, np.dot(cov_matrix, weights))', type: 'code' },
-      { text: '        )', type: 'code' },
-      { text: '        return -portfolio_return / portfolio_risk', type: 'code' },
-    ]
-  };
+  // Window switching animation - cycles through dashboard, videos, courses
+  useEffect(() => {
+    if (!shouldAnimate || !hasEntered) {
+      // Clear interval and timeout when animation should stop
+      if (windowSwitchIntervalRef.current) {
+        clearInterval(windowSwitchIntervalRef.current);
+        windowSwitchIntervalRef.current = null;
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
+        initialTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    // Initial delay to show dashboard for 5 seconds first
+    initialTimeoutRef.current = setTimeout(() => {
+      if (!isMounted) return;
+
+      setIsTransitioning(true);
+      
+      // Switch to videos after transition starts
+      setTimeout(() => {
+        if (isMounted) {
+          setActiveWindow('videos');
+          setTimeout(() => {
+            if (isMounted) {
+              setIsTransitioning(false);
+            }
+          }, 300); // Transition duration
+        }
+      }, 50);
+
+      // Then set up interval to switch every 5 seconds (5s dashboard + 5s videos + 5s courses)
+      windowSwitchIntervalRef.current = setInterval(() => {
+        if (!isMounted) {
+          if (windowSwitchIntervalRef.current) {
+            clearInterval(windowSwitchIntervalRef.current);
+            windowSwitchIntervalRef.current = null;
+          }
+          return;
+        }
+
+        setIsTransitioning(true);
+        
+        // Switch window after a brief delay for transition start
+        setTimeout(() => {
+          if (isMounted) {
+            setActiveWindow(prev => {
+              if (prev === 'dashboard') return 'videos';
+              if (prev === 'videos') return 'courses';
+              return 'dashboard';
+            });
+            setTimeout(() => {
+              if (isMounted) {
+                setIsTransitioning(false);
+              }
+            }, 300); // Transition duration
+          }
+        }, 50);
+      }, 5000); // Switch every 5 seconds
+    }, 5000); // Show dashboard for 5 seconds first
+
+    return () => {
+      isMounted = false;
+      if (windowSwitchIntervalRef.current) {
+        clearInterval(windowSwitchIntervalRef.current);
+        windowSwitchIntervalRef.current = null;
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
+        initialTimeoutRef.current = null;
+      }
+    };
+  }, [shouldAnimate, hasEntered]);
+
 
   return (
     <section ref={sectionRef} className="py-24 relative font-education-demo">
@@ -307,13 +375,11 @@ export function EducationDemo() {
                 maskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)'
               }}>
-                {/* Outer Bezel with Curve */}
+                {/* Outer Bezel */}
                 <div 
                   className="relative bg-gradient-to-br from-slate-800 to-slate-900 border-4 border-slate-700 shadow-2xl overflow-hidden"
                   style={{
-                    borderRadius: '16px 16px 8px 8px',
-                    transform: 'perspective(1500px) rotateX(3deg)',
-                    transformStyle: 'preserve-3d'
+                    borderRadius: '16px 16px 8px 8px'
                   }}
                 >
                   {/* Screen Bezel */}
@@ -323,159 +389,127 @@ export function EducationDemo() {
                       <div className="w-16 h-1 bg-slate-700 rounded-full"></div>
                     </div>
                     
-                    {/* Educational UI Content with Curved Screen Effect */}
+                    {/* Educational UI Content - Clear and Sharp */}
                     <div 
                       className="bg-gradient-to-br from-slate-900 to-black overflow-hidden relative"
                       style={{ 
                         height: '400px',
                         borderRadius: '8px 8px 4px 4px',
-                        transform: 'perspective(1200px) rotateX(-2deg) scale(0.98)',
-                        transformOrigin: 'center center',
                         boxShadow: `
                           inset 0 0 80px rgba(0, 0, 0, 0.6),
                           inset 0 0 30px rgba(0, 0, 0, 0.4),
                           inset 0 -20px 40px rgba(0, 0, 0, 0.3),
                           0 0 0 1px rgba(255, 255, 255, 0.05)
                         `,
-                        background: 'radial-gradient(ellipse at center top, rgba(15, 23, 42, 0.3) 0%, transparent 50%), linear-gradient(to bottom, rgb(15, 23, 42) 0%, rgb(0, 0, 0) 100%)'
+                        background: 'radial-gradient(ellipse at center top, rgba(15, 23, 42, 0.3) 0%, transparent 50%), linear-gradient(to bottom, rgb(15, 23, 42) 0%, rgb(0, 0, 0) 100%)',
+                        imageRendering: 'crisp-edges',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale'
                       }}
                     >
-                    {/* Top Bar - Code Editor Header */}
-                    <div className="bg-slate-800/50 border-b border-white/10 px-6 py-3">
-                      <div className="flex items-center gap-2">
-                        <Code2 className="w-4 h-4 text-gray-400" />
-                        <span className="text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                          portfolio_optimize.py
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 h-full overflow-hidden">
-                      {/* Left Column - Code Editor */}
-                      <div className="lg:col-span-2 flex flex-col">
-                        {/* Code Editor */}
-                        <div className="bg-slate-800/30 rounded-lg border border-white/5 overflow-hidden flex-1 flex flex-col">
-                          <div className="p-3 text-xs flex-1 overflow-auto" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                            <div className="text-gray-300 leading-relaxed">
-                              {fixedCode.lines.map((line, index) => {
-                                const isActive = shouldAnimate && activeLine === index;
-                                let textColor = 'text-gray-300';
-                                
-                                if (line.type === 'import') textColor = 'text-cyan-400';
-                                else if (line.type === 'def') textColor = 'text-purple-400';
-                                else if (line.type === 'return') textColor = 'text-yellow-400';
-                                else if (line.type === 'code') textColor = 'text-gray-300';
-                                
-                                return (
-                                  <div 
-                                    key={index}
-                                    className={`relative ${isActive ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}
-                                  >
-                                    <span className={textColor}>
-                                      {line.text || ' '}
-                                    </span>
-                                    {isActive && (
-                                      <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400 animate-pulse"></span>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Formula Card */}
-                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5 mt-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Calculator className="w-3 h-3 text-blue-400" />
-                            <h4 className="text-white text-xs font-semibold">Risk Metrics</h4>
-                          </div>
-                          <div className="space-y-1 text-xs">
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-400 text-[10px]">Sharpe Ratio:</span>
-                              <span className="text-green-400 font-mono text-[10px]">
-                                {formulaValues.sharpe.toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-400 text-[10px]">Annual Returns:</span>
-                              <span className="text-green-400 font-mono text-[10px]">
-                                {formulaValues.returns.toFixed(1)}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-400 text-[10px]">Volatility:</span>
-                              <span className="text-yellow-400 font-mono text-[10px]">
-                                {formulaValues.volatility.toFixed(1)}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Column - Learning Resources */}
-                      <div className="space-y-2 flex flex-col">
-                        {/* Progress */}
-                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-white text-xs font-semibold">Progress</h4>
-                            <span className="text-gray-500 text-[10px]">65%</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      {/* Window Container with tab switching */}
+                      <div className="relative h-full overflow-hidden">
+                        <AnimatePresence mode="wait">
+                          {activeWindow === 'dashboard' ? (
                             <motion.div
-                              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                              initial={{ width: '0%' }}
-                              animate={shouldAnimate ? { width: '65%' } : { width: '0%' }}
-                              transition={{ duration: 0.5 }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Learning Resources */}
-                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5 flex-1">
-                          <h4 className="text-white text-xs font-semibold mb-2">Resources</h4>
-                          <div className="space-y-1.5">
-                            {[
-                              { icon: BookOpen, title: 'Portfolio Theory', status: 'completed' },
-                              { icon: TrendingUp, title: 'Risk Management', status: 'active' },
-                              { icon: Code2, title: 'Python Basics', status: 'upcoming' },
-                            ].map((resource, idx) => (
-                              <div key={idx} className="flex items-center gap-1.5 text-[10px]">
-                                <resource.icon className={`w-3 h-3 ${
-                                  resource.status === 'completed' ? 'text-green-400' :
-                                  resource.status === 'active' ? 'text-blue-400' :
-                                  'text-gray-500'
-                                }`} />
-                                <span className={`${
-                                  resource.status === 'completed' ? 'text-gray-300' :
-                                  resource.status === 'active' ? 'text-blue-300' :
-                                  'text-gray-500'
-                                }`}>
-                                  {resource.title}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Formula Reference */}
-                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5">
-                          <h4 className="text-white text-xs font-semibold mb-1.5">Key Formula</h4>
-                          <div className="bg-slate-900/50 rounded p-2 text-[10px] font-mono text-gray-300">
-                            <div className="text-cyan-400 mb-0.5">Sharpe Ratio =</div>
-                            <div className="pl-3 text-[9px]">
-                              (Rₚ - Rf) / σₚ
-                            </div>
-                            <div className="text-gray-500 text-[8px] mt-1.5">
-                              Rₚ = Portfolio Return<br/>
-                              Rf = Risk-free Rate<br/>
-                              σₚ = Portfolio Volatility
-                            </div>
-                          </div>
-                        </div>
+                              key="dashboard"
+                              initial={{ 
+                                x: -100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              animate={{ 
+                                x: 0, 
+                                opacity: 1, 
+                                scale: 1
+                              }}
+                              exit={{ 
+                                x: 100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              transition={{ 
+                                duration: 0.6,
+                                ease: [0.25, 0.1, 0.25, 1]
+                              }}
+                              className="absolute inset-0"
+                              style={{
+                                imageRendering: 'crisp-edges',
+                                WebkitFontSmoothing: 'antialiased',
+                                MozOsxFontSmoothing: 'grayscale'
+                              }}
+                            >
+                              <EducationDashboard 
+                                shouldAnimate={shouldAnimate}
+                                activeLine={activeLine}
+                                formulaValues={formulaValues}
+                              />
+                            </motion.div>
+                          ) : activeWindow === 'videos' ? (
+                            <motion.div
+                              key="videos"
+                              initial={{ 
+                                x: 100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              animate={{ 
+                                x: 0, 
+                                opacity: 1, 
+                                scale: 1
+                              }}
+                              exit={{ 
+                                x: -100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              transition={{ 
+                                duration: 0.6,
+                                ease: [0.25, 0.1, 0.25, 1]
+                              }}
+                              className="absolute inset-0"
+                              style={{
+                                imageRendering: 'crisp-edges',
+                                WebkitFontSmoothing: 'antialiased',
+                                MozOsxFontSmoothing: 'grayscale'
+                              }}
+                            >
+                              <EducationVideos />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="courses"
+                              initial={{ 
+                                x: 100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              animate={{ 
+                                x: 0, 
+                                opacity: 1, 
+                                scale: 1
+                              }}
+                              exit={{ 
+                                x: -100, 
+                                opacity: 0, 
+                                scale: 0.95
+                              }}
+                              transition={{ 
+                                duration: 0.6,
+                                ease: [0.25, 0.1, 0.25, 1]
+                              }}
+                              className="absolute inset-0"
+                              style={{
+                                imageRendering: 'crisp-edges',
+                                WebkitFontSmoothing: 'antialiased',
+                                MozOsxFontSmoothing: 'grayscale'
+                              }}
+                            >
+                              <EducationCourses />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </div>
                     </div>
                   </div>
                 </div>
@@ -700,4 +734,5 @@ export function EducationDemo() {
     </section>
   );
 }
+
 
