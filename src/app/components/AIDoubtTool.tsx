@@ -59,8 +59,10 @@ export function AIDoubtTool() {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [hasEntered, setHasEntered] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const answerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const notificationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // IntersectionObserver to trigger animation on scroll
   useEffect(() => {
@@ -166,6 +168,55 @@ export function AIDoubtTool() {
     };
   }, [shouldAnimate, currentIndex]);
 
+  // Notification animation - show every 10 seconds, visible for 2 seconds (8 second gap)
+  useEffect(() => {
+    if (!shouldAnimate || !hasEntered) {
+      if (notificationIntervalRef.current) {
+        clearInterval(notificationIntervalRef.current);
+        notificationIntervalRef.current = null;
+      }
+      setShowNotification(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const showNotif = () => {
+      if (!isMounted) return;
+      setShowNotification(true);
+      
+      // Hide after 2 seconds
+      setTimeout(() => {
+        if (isMounted) {
+          setShowNotification(false);
+        }
+      }, 2000);
+    };
+
+    // Show first notification after 2 seconds
+    const initialTimeout = setTimeout(() => {
+      if (isMounted) {
+        showNotif();
+      }
+    }, 2000);
+
+    // Then show every 10 seconds (2s visible + 8s gap = 10s total)
+    notificationIntervalRef.current = setInterval(() => {
+      if (isMounted) {
+        showNotif();
+      }
+    }, 10000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(initialTimeout);
+      if (notificationIntervalRef.current) {
+        clearInterval(notificationIntervalRef.current);
+        notificationIntervalRef.current = null;
+      }
+    };
+  }, [shouldAnimate, hasEntered]);
+
   const currentQA = qaPairs[currentIndex];
 
   return (
@@ -222,6 +273,38 @@ export function AIDoubtTool() {
                       </svg>
                     </div>
                   </div>
+
+                  {/* iPhone Notification - Just below status bar */}
+                  <AnimatePresence>
+                    {showNotification && (
+                      <motion.div
+                        initial={{ y: -60, opacity: 0, scale: 0.95 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        exit={{ y: -60, opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="absolute top-6 md:top-7 left-2 right-2 z-50"
+                      >
+                        <div className="bg-white/95 backdrop-blur-xl rounded-xl md:rounded-2xl shadow-2xl border border-white/30 overflow-hidden">
+                          <div className="px-3 md:px-4 py-2 md:py-2.5">
+                            <div className="flex items-center gap-2.5 md:gap-3">
+                              {/* App Icon */}
+                              <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                <Sparkles className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 text-white" />
+                              </div>
+                              {/* Notification Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <p className="text-black text-[10px] md:text-xs font-semibold">Algoryx AI</p>
+                                  <p className="text-gray-500 text-[9px] md:text-[10px]">now</p>
+                                </div>
+                                <p className="text-gray-800 text-[10px] md:text-xs leading-tight font-medium">Coming Soon</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* App Content - Full screen */}
                   <div className="pt-8 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-black overflow-hidden flex flex-col">
