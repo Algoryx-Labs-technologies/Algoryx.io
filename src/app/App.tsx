@@ -8,6 +8,7 @@ import { WhyAlgoryx } from './components/WhyAlgoryx';
 import { EducationDemo } from './components/EducationDemo';
 import { TradingDemo } from './components/TradingDemo';
 import { Waitlist } from './components/Waitlist';
+import { WorkWithAlgoryxLabs } from './components/WorkWithAlgoryxLabs';
 import { Labs } from './components/Labs';
 import { Footer } from './components/Footer';
 
@@ -29,11 +30,12 @@ export default function App() {
           <Features />
           <EducationDemo />
           <Courses />
+          <Waitlist />
           <AIDoubtTool />
           <WhyAlgoryx />
           <TradingDemo />
           <Labs />
-          <Waitlist />
+          <WorkWithAlgoryxLabs />
           <Footer />
         </div>
       </div>

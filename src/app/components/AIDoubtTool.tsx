@@ -294,7 +294,7 @@ export function AIDoubtTool() {
                               {/* Notification Content */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <p className="text-black text-[10px] md:text-xs font-semibold">Algoryx AI</p>
+                                  <p className="text-black text-[10px] md:text-xs font-semibold">Alryx AI</p>
                                   <p className="text-gray-500 text-[9px] md:text-[10px]">now</p>
                                 </div>
                                 <p className="text-gray-800 text-[10px] md:text-xs leading-tight font-medium">Coming Soon</p>
