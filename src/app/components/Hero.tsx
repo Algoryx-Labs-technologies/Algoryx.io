@@ -12,7 +12,7 @@ export function Hero() {
       
       {/* Rotating Sphere Background - Right Side */}
       <div className="absolute inset-0 flex items-center justify-end pointer-events-none overflow-hidden">
-        <div className="relative w-[500px] h-[500px] lg:w-[600px] lg:h-[600px] mr-0 lg:mr-12">
+        <div className="relative w-[500px] h-[500px] lg:w-[600px] lg:h-[600px] mr-0 lg:mr-20">
           {/* Glowing orb effect behind sphere */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-blue-500/20 via-cyan-500/15 to-blue-500/20 rounded-full blur-3xl opacity-50"></div>
           
