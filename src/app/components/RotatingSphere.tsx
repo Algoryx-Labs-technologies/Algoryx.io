@@ -17,16 +17,19 @@ export function RotatingSphere() {
     const centerY = height / 2;
     const radius = Math.min(width, height) * 0.35;
 
-    // Floating text labels inside the sphere
+    // Floating text labels inside the sphere with connections
     const textLabels = [
-      { text: 'Research', lat: 0, lon: 0 },
-      { text: 'Portfolio', lat: Math.PI / 4, lon: Math.PI / 2 },
-      { text: 'Max Drawdown', lat: -Math.PI / 4, lon: Math.PI },
-      { text: 'Profit Factor', lat: Math.PI / 3, lon: -Math.PI / 2 },
-      { text: 'Sharpe Ratio', lat: -Math.PI / 3, lon: -Math.PI },
-      { text: 'Volatility', lat: Math.PI / 6, lon: Math.PI / 4 },
-      { text: 'Win Rate', lat: -Math.PI / 6, lon: -Math.PI / 4 },
+      { text: 'Research', lat: 0, lon: 0, connections: [1, 3] },
+      { text: 'Portfolio', lat: Math.PI / 4, lon: Math.PI / 2, connections: [0, 4] },
+      { text: 'Max Drawdown', lat: -Math.PI / 4, lon: Math.PI, connections: [4, 5] },
+      { text: 'Profit Factor', lat: Math.PI / 3, lon: -Math.PI / 2, connections: [0, 6] },
+      { text: 'Sharpe Ratio', lat: -Math.PI / 3, lon: -Math.PI, connections: [1, 2, 5] },
+      { text: 'Volatility', lat: Math.PI / 6, lon: Math.PI / 4, connections: [2, 4] },
+      { text: 'Win Rate', lat: -Math.PI / 6, lon: -Math.PI / 4, connections: [3] },
     ];
+
+    // Store text positions for connection lines
+    const textPositions: Array<{ x: number; y: number; z: number; screenX: number; screenY: number; visible: boolean }> = [];
 
     // Initial entrance animation state
     let rotationX = -Math.PI / 2; // Start from top (-90 degrees)
@@ -40,6 +43,15 @@ export function RotatingSphere() {
     // Easing function for smooth entrance
     const easeOutCubic = (t: number) => {
       return 1 - Math.pow(1 - t, 3);
+    };
+
+    // Dynamic color function based on rotation
+    const getDynamicColor = (angle: number, baseColor: number[]) => {
+      const hueShift = (Math.sin(angle) + 1) * 0.5; // 0 to 1
+      const r = Math.floor(baseColor[0] + (167 - baseColor[0]) * hueShift * 0.3);
+      const g = Math.floor(baseColor[1] + (211 - baseColor[1]) * hueShift * 0.3);
+      const b = Math.floor(baseColor[2] + (238 - baseColor[2]) * hueShift * 0.3);
+      return `rgba(${r}, ${g}, ${b}, ${0.3 + hueShift * 0.2})`;
     };
 
     const drawSphere = () => {
@@ -68,11 +80,13 @@ export function RotatingSphere() {
         floatTime += 0.01; // Update floating animation time
       }
 
-      // Draw longitude lines (vertical circles)
+      // Draw longitude lines (vertical circles) with dynamic colors
       for (let i = 0; i < 12; i++) {
         const angle = (i / 12) * Math.PI * 2;
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+        // Dynamic color based on rotation
+        const colorAngle = angle + rotationY;
+        ctx.strokeStyle = getDynamicColor(colorAngle, [59, 130, 246]);
         ctx.lineWidth = 1.5;
 
         for (let j = 0; j <= 100; j++) {
@@ -99,11 +113,13 @@ export function RotatingSphere() {
         ctx.stroke();
       }
 
-      // Draw latitude lines (horizontal circles)
+      // Draw latitude lines (horizontal circles) with dynamic colors
       for (let i = 0; i < 8; i++) {
         const lat = ((i / 8) - 0.5) * Math.PI;
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        // Dynamic color based on rotation
+        const colorAngle = lat + rotationY;
+        ctx.strokeStyle = getDynamicColor(colorAngle, [6, 182, 212]);
         ctx.lineWidth = 1.5;
 
         for (let j = 0; j <= 100; j++) {
@@ -130,6 +146,9 @@ export function RotatingSphere() {
         ctx.stroke();
       }
 
+      // Clear text positions array
+      textPositions.length = 0;
+
       // Draw floating text labels inside the sphere
       ctx.save();
       ctx.font = 'bold 14px Inter, sans-serif';
@@ -152,7 +171,9 @@ export function RotatingSphere() {
         const rotatedZ = y * Math.sin(rotationX) + z * Math.cos(rotationX);
 
         // Only draw if facing forward (z > -radius/2 for visibility)
-        if (rotatedZ > -radius * 0.5) {
+        const isVisible = rotatedZ > -radius * 0.5;
+        
+        if (isVisible) {
           // Perspective projection
           const scale = Math.max(0.3, 1 + rotatedZ / (radius * 2));
           const screenX = centerX + (x - centerX) * scale;
@@ -160,6 +181,9 @@ export function RotatingSphere() {
 
           // Calculate opacity based on depth
           const opacity = Math.min(1, Math.max(0.4, (rotatedZ + radius) / (radius * 1.5)));
+
+          // Store position for connection lines
+          textPositions[index] = { x, y, z, screenX, screenY, visible: true };
 
           // Draw text with glow effect
           ctx.globalAlpha = opacity;
@@ -170,10 +194,50 @@ export function RotatingSphere() {
           
           // Reset shadow
           ctx.shadowBlur = 0;
+        } else {
+          textPositions[index] = { x, y, z, screenX: 0, screenY: 0, visible: false };
         }
       });
 
       ctx.restore();
+
+      // Draw connection lines between related terms
+      textLabels.forEach((label, index) => {
+        if (!textPositions[index]?.visible) return;
+
+        label.connections.forEach((connectedIndex) => {
+          if (!textPositions[connectedIndex]?.visible) return;
+
+          const start = textPositions[index];
+          const end = textPositions[connectedIndex];
+
+          // Calculate distance in 3D space
+          const dx = end.x - start.x;
+          const dy = end.y - start.y;
+          const dz = end.z - start.z;
+          const distance3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          // Only draw if terms are reasonably close
+          if (distance3D < radius * 1.2) {
+            ctx.beginPath();
+            ctx.moveTo(start.screenX, start.screenY);
+            ctx.lineTo(end.screenX, end.screenY);
+
+            // Subtle animated connection line
+            const pulse = (Math.sin(floatTime * 2 + index) + 1) * 0.5;
+            const opacity = 0.2 + pulse * 0.2;
+            const colorAngle = rotationY + index;
+            const lineColor = getDynamicColor(colorAngle, [59, 130, 246]);
+            
+            ctx.strokeStyle = lineColor.replace(')', `, ${opacity})`).replace('rgba', 'rgba');
+            ctx.lineWidth = 0.8;
+            ctx.setLineDash([6, 4]);
+            ctx.lineDashOffset = floatTime * 8;
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        });
+      });
 
       animationFrameRef.current = requestAnimationFrame(drawSphere);
     };
