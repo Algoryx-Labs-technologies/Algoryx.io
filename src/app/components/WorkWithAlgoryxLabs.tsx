@@ -47,7 +47,7 @@ export function WorkWithAlgoryxLabs() {
   };
 
   return (
-    <section className="py-16 relative font-waitlist">
+    <section id="work-with-labs" className="py-16 relative font-waitlist">
       <div className="container mx-auto px-6">
         <div className="relative max-w-4xl mx-auto">
           {/* Glowing background */}

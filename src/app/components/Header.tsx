@@ -22,10 +22,12 @@ export function Header() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <a href="#home" className="text-gray-300 hover:text-white transition-colors">Home</a>
+            <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
             <a href="#courses" className="text-gray-300 hover:text-white transition-colors">Courses</a>
+            <a href="#ai-tool" className="text-gray-300 hover:text-white transition-colors">Alryx AI</a>
+            <a href="#why-algoryx" className="text-gray-300 hover:text-white transition-colors">Why Algoryx</a>
             <a href="#labs" className="text-gray-300 hover:text-white transition-colors">Labs</a>
-            <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
-            <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
+            <a href="#work-with-labs" className="text-gray-300 hover:text-white transition-colors">Connect</a>
           </div>
 
           {/* Auth Buttons */}
@@ -50,11 +52,13 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-4">
-            <a href="#home" className="block text-gray-300 hover:text-white transition-colors">Home</a>
-            <a href="#courses" className="block text-gray-300 hover:text-white transition-colors">Courses</a>
-            <a href="#labs" className="block text-gray-300 hover:text-white transition-colors">Labs</a>
-            <a href="#about" className="block text-gray-300 hover:text-white transition-colors">About</a>
-            <a href="#contact" className="block text-gray-300 hover:text-white transition-colors">Contact</a>
+            <a href="#home" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</a>
+            <a href="#features" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Features</a>
+            <a href="#courses" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Courses</a>
+            <a href="#ai-tool" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Alryx AI</a>
+            <a href="#why-algoryx" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Why Algoryx</a>
+            <a href="#labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Labs</a>
+            <a href="#work-with-labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Connect</a>
             <div className="flex flex-col space-y-2 pt-4">
               <Button variant="ghost" className="text-gray-300 hover:text-white w-full">
                 Login

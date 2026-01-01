@@ -220,7 +220,7 @@ export function AIDoubtTool() {
   const currentQA = qaPairs[currentIndex];
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 relative">
+    <section id="ai-tool" ref={sectionRef} className="py-12 md:py-16 relative">
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-8 md:mb-12">
