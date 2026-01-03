@@ -2,365 +2,125 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { FlaskConical, ArrowRight, Lock } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
+import { motion } from 'motion/react';
 
-// Code snippets with similar line counts and character counts
-const CODE_SNIPPETS = [
-  {
-    filename: 'strategy.py',
-    code: `def generate_signals(data):
-    # Calculate Moving Averages
-    data['SMA_50'] = data['Close'].rolling(window=50).mean()
-    data['SMA_200'] = data['Close'].rolling(window=200).mean()
-    
-    # Generate Entry Signal
-    if data['SMA_50'] > data['SMA_200']:
-        return "BUY"
-    return "HOLD"`
-  },
-  {
-    filename: 'risk_model.py',
-    code: `def calculate_risk(portfolio):
-    # Compute Value at Risk
-    returns = portfolio.pct_change()
-    var_95 = returns.quantile(0.05)
-    
-    # Risk Metrics
-    volatility = returns.std() * np.sqrt(252)
-    sharpe = returns.mean() / volatility
-    return {"VaR": var_95, "Sharpe": sharpe}`
-  },
-  {
-    filename: 'backtest.py',
-    code: `def run_backtest(strategy, data):
-    # Initialize portfolio
-    capital = 100000
-    positions = []
-    
-    # Execute strategy
-    for signal in strategy.generate(data):
-        if signal == "BUY":
-            positions.append(execute_trade())
-    return calculate_returns(positions)`
-  },
-  {
-    filename: 'ml_model.py',
-    code: `def train_predictor(features, target):
-    # Split data for training
-    X_train, X_test = train_test_split(features)
-    y_train, y_test = train_test_split(target)
-    
-    # Train model
-    model = RandomForestRegressor()
-    model.fit(X_train, y_train)
-    return model.predict(X_test)`
-  }
-];
-
-function CodeScanner() {
-  const [scanPosition, setScanPosition] = useState(0);
-  const [isScanning, setIsScanning] = useState(false);
-  const [hasScanned, setHasScanned] = useState(false);
-  const [currentCodeIndex, setCurrentCodeIndex] = useState(0);
-  const [displayedCode, setDisplayedCode] = useState('');
-  const [animationPhase, setAnimationPhase] = useState<'scanning' | 'backspacing' | 'typing' | 'idle'>('idle');
+function BloombergTerminal() {
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const codeRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const phaseRef = useRef<'scanning' | 'backspacing' | 'typing' | 'idle'>('idle');
-  const codeIndexRef = useRef(0);
-  const hasScannedOnceRef = useRef(false);
+  
+  // Terminal output lines
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const terminalIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const terminalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentSnippet = CODE_SNIPPETS[currentCodeIndex];
-
-  // Main animation cycle - runs once when hasScanned becomes true
+  // IntersectionObserver to trigger animation on scroll
   useEffect(() => {
-    if (!hasScanned) return;
-
-    let isMounted = true;
-    codeIndexRef.current = 0;
-    phaseRef.current = 'scanning';
-
-    const cleanup = () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-
-    const startScanning = () => {
-      if (!isMounted) return;
-      phaseRef.current = 'scanning';
-      setAnimationPhase('scanning');
-      setIsScanning(true);
-      setScanPosition(0);
-
-      const scanDuration = 2500;
-      const startTime = Date.now();
-
-      const animateScan = () => {
-        if (!isMounted || phaseRef.current !== 'scanning') return;
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / scanDuration, 1);
-        
-        const easeInOutCubic = progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-        if (codeRef.current) {
-          setScanPosition(easeInOutCubic * codeRef.current.offsetHeight);
-        }
-
-        if (progress < 1) {
-          animationRef.current = requestAnimationFrame(animateScan);
-        } else {
-          setIsScanning(false);
-          hasScannedOnceRef.current = true;
-          timeoutRef.current = setTimeout(() => {
-            if (isMounted) {
-              startBackspacing();
-            }
-          }, 1000);
-        }
-      };
-
-      animationRef.current = requestAnimationFrame(animateScan);
-    };
-
-    const startBackspacing = () => {
-      if (!isMounted) return;
-      phaseRef.current = 'backspacing';
-      setAnimationPhase('backspacing');
-      cleanup();
-      
-      const fullCode = CODE_SNIPPETS[codeIndexRef.current].code;
-      let currentLength = fullCode.length;
-      const backspaceSpeed = 30;
-
-      intervalRef.current = setInterval(() => {
-        if (!isMounted || phaseRef.current !== 'backspacing') {
-          cleanup();
-          return;
-        }
-        currentLength = Math.max(0, currentLength - 1);
-        setDisplayedCode(fullCode.substring(0, currentLength));
-
-        if (currentLength === 0) {
-          cleanup();
-          timeoutRef.current = setTimeout(() => {
-            if (isMounted) {
-              codeIndexRef.current = (codeIndexRef.current + 1) % CODE_SNIPPETS.length;
-              setCurrentCodeIndex(codeIndexRef.current);
-              startTyping();
-            }
-          }, 500);
-        }
-      }, backspaceSpeed);
-    };
-
-    const startTyping = () => {
-      if (!isMounted) return;
-      phaseRef.current = 'typing';
-      setAnimationPhase('typing');
-      cleanup();
-      
-      const fullCode = CODE_SNIPPETS[codeIndexRef.current].code;
-      let currentLength = 0;
-      const typeSpeed = 30;
-
-      intervalRef.current = setInterval(() => {
-        if (!isMounted || phaseRef.current !== 'typing') {
-          cleanup();
-          return;
-        }
-        currentLength = Math.min(fullCode.length, currentLength + 1);
-        setDisplayedCode(fullCode.substring(0, currentLength));
-
-        if (currentLength === fullCode.length) {
-          cleanup();
-          timeoutRef.current = setTimeout(() => {
-            if (isMounted) {
-              // After typing completes, go directly to backspacing (no more scanning)
-              startBackspacing();
-            }
-          }, 1000);
-        }
-      }, typeSpeed);
-    };
-
-    // Initialize with first code
-    setDisplayedCode(CODE_SNIPPETS[0].code);
-    startScanning();
-
-    return () => {
-      isMounted = false;
-      cleanup();
-    };
-  }, [hasScanned]);
-
-  // Initial intersection observer
-  useEffect(() => {
-    if (hasScanned) return;
+    if (!containerRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasScanned) {
-          setTimeout(() => {
-            if (codeRef.current) {
-              setHasScanned(true);
-            }
-          }, 300);
-
-          if (containerRef.current) {
-            observer.unobserve(containerRef.current);
-          }
+        if (entry.isIntersecting && !hasAnimated) {
+          setShouldAnimate(true);
+          setHasAnimated(true);
+        } else if (!entry.isIntersecting && hasAnimated) {
+          setShouldAnimate(false);
+        } else if (entry.isIntersecting && hasAnimated) {
+          setShouldAnimate(true);
         }
       },
-      { threshold: 0.3 }
+      {
+        threshold: 0.3
+      }
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    observer.observe(containerRef.current);
 
     return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
       observer.disconnect();
     };
-  }, [hasScanned]);
+  }, [hasAnimated]);
 
-  // Render code with syntax highlighting
-  const renderCode = () => {
-    if (!displayedCode) return null;
-    
-    const lines = displayedCode.split('\n');
-    return lines.map((line, lineIdx) => {
-      const parts: Array<{ text: string; className: string }> = [];
-      let currentText = '';
-      let inString = false;
-      let stringChar = '';
-      let inComment = false;
-      
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const remaining = line.substring(i);
-        
-        // Check for comments
-        if (!inString && char === '#') {
-          if (currentText) {
-            parts.push({ text: currentText, className: 'text-gray-300' });
-            currentText = '';
-          }
-          parts.push({ text: remaining, className: 'text-gray-500' });
-          break;
+  // Terminal output animation
+  useEffect(() => {
+    if (!shouldAnimate) {
+      if (terminalIntervalRef.current) {
+        clearInterval(terminalIntervalRef.current);
+        terminalIntervalRef.current = null;
+      }
+      if (terminalTimeoutRef.current) {
+        clearTimeout(terminalTimeoutRef.current);
+        terminalTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    let isMounted = true;
+
+    const tradingMessages = [
+      '[INFO] Strategy initialized: Moving Average Crossover',
+      '[DATA] Fetching market data for NIFTY50...',
+      '[SIGNAL] BUY signal detected at 18,450.25',
+      '[EXEC] Order placed: BUY 10 NIFTY50 @ 18,450.25',
+      '[FILL] Order filled: 10 NIFTY50 @ 18,450.25',
+      '[PNL] Position PnL: +₹1,250.00 (+0.68%)',
+      '[SIGNAL] SELL signal detected at 18,520.75',
+      '[EXEC] Order placed: SELL 10 NIFTY50 @ 18,520.75',
+      '[FILL] Order filled: 10 NIFTY50 @ 18,520.75',
+      '[PNL] Trade closed: +₹705.00 (+0.38%)',
+      '[RISK] Portfolio exposure: 45.2%',
+      '[METRICS] Sharpe Ratio: 1.85 | Max DD: -2.3%',
+    ];
+
+    let lineIndex = 0;
+
+    const addLine = () => {
+      if (!isMounted) {
+        if (terminalIntervalRef.current) {
+          clearInterval(terminalIntervalRef.current);
+          terminalIntervalRef.current = null;
         }
-        
-        // Check for strings
-        if (!inComment && (char === '"' || char === "'")) {
-          if (currentText) {
-            parts.push({ text: currentText, className: 'text-gray-300' });
-            currentText = '';
-          }
-          if (!inString) {
-            inString = true;
-            stringChar = char;
-            currentText = char;
-          } else if (char === stringChar) {
-            currentText += char;
-            parts.push({ text: currentText, className: 'text-green-400' });
-            currentText = '';
-            inString = false;
-          } else {
-            currentText += char;
-          }
-          continue;
-        }
-        
-        // Check for keywords (only when not in string)
-        if (!inString && !inComment) {
-          if (remaining.startsWith('def ')) {
-            if (currentText) {
-              parts.push({ text: currentText, className: 'text-gray-300' });
-              currentText = '';
-            }
-            parts.push({ text: 'def', className: 'text-purple-400' });
-            currentText = ' ';
-            i += 3;
-            continue;
-          }
-          if (remaining.startsWith('return ')) {
-            if (currentText.trim()) {
-              parts.push({ text: currentText, className: 'text-gray-300' });
-              currentText = '';
-            }
-            parts.push({ text: 'return', className: 'text-purple-400' });
-            currentText = ' ';
-            i += 6;
-            continue;
-          }
-          if (remaining.startsWith('if ')) {
-            if (currentText.trim()) {
-              parts.push({ text: currentText, className: 'text-gray-300' });
-              currentText = '';
-            }
-            parts.push({ text: 'if', className: 'text-purple-400' });
-            currentText = ' ';
-            i += 2;
-            continue;
-          }
-          
-          // Check for numbers
-          if (/\d/.test(char) && (i === 0 || !/\w/.test(line[i - 1]))) {
-            if (currentText) {
-              parts.push({ text: currentText, className: 'text-gray-300' });
-              currentText = '';
-            }
-            let num = char;
-            i++;
-            while (i < line.length && /\d/.test(line[i])) {
-              num += line[i];
-              i++;
-            }
-            i--;
-            parts.push({ text: num, className: 'text-yellow-400' });
-            continue;
-          }
-        }
-        
-        currentText += char;
+        return;
       }
       
-      if (currentText) {
-        parts.push({ text: currentText, className: inString ? 'text-green-400' : 'text-gray-300' });
+      if (lineIndex < tradingMessages.length) {
+        setTerminalLines(prev => {
+          const newLines = [...prev, tradingMessages[lineIndex]];
+          // Keep only last 8 lines visible
+          return newLines.slice(-8);
+        });
+        lineIndex++;
+      } else {
+        // Reset and loop
+        lineIndex = 0;
+        setTerminalLines([]);
       }
-      
-      return (
-        <React.Fragment key={lineIdx}>
-          {parts.map((part, partIdx) => (
-            <span key={partIdx} className={part.className}>
-              {part.text}
-            </span>
-          ))}
-          {lineIdx < lines.length - 1 && '\n'}
-        </React.Fragment>
-      );
-    });
-  };
+    };
+
+    // Initial delay, then add lines periodically
+    terminalTimeoutRef.current = setTimeout(() => {
+      if (isMounted) {
+        addLine();
+        terminalIntervalRef.current = setInterval(addLine, 2500);
+      }
+    }, 1000);
+
+    return () => {
+      isMounted = false;
+      if (terminalTimeoutRef.current) {
+        clearTimeout(terminalTimeoutRef.current);
+        terminalTimeoutRef.current = null;
+      }
+      if (terminalIntervalRef.current) {
+        clearInterval(terminalIntervalRef.current);
+        terminalIntervalRef.current = null;
+      }
+    };
+  }, [shouldAnimate]);
 
   return (
     <div ref={containerRef} className="w-full max-w-full sm:max-w-xl md:max-w-2xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-xl overflow-hidden shadow-2xl relative">
-      {/* Code editor header */}
+      {/* Terminal Header */}
       <div className="flex items-center gap-2 px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4 bg-slate-800/50 border-b border-white/10">
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 md:w-3.5 sm:h-3 md:h-3.5 rounded-full bg-red-500/80"></div>
@@ -368,55 +128,58 @@ function CodeScanner() {
           <div className="w-2.5 h-2.5 sm:w-3 md:w-3.5 sm:h-3 md:h-3.5 rounded-full bg-green-500/80"></div>
         </div>
         <span className="ml-2 text-xs sm:text-sm text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {currentSnippet.filename}
+          Bloomberg Terminal
         </span>
       </div>
       
-      {/* Code content with scanning effect */}
-      <div className="relative overflow-hidden">
-        {/* Initial overlay - covers code until scanning starts */}
-        {!hasScanned && (
-          <div className="absolute inset-0 bg-slate-900 pointer-events-none z-10" />
-        )}
-        
-        {/* Scanning overlay - black mask that reveals code from top to bottom */}
-        {isScanning && codeRef.current && animationPhase === 'scanning' && (
-          <div 
-            className="absolute inset-0 bg-slate-900 pointer-events-none z-10"
-            style={{
-              maskImage: `linear-gradient(to bottom, transparent 0%, transparent ${(scanPosition / codeRef.current.offsetHeight) * 100}%, black ${(scanPosition / codeRef.current.offsetHeight) * 100}%, black 100%)`,
-              WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, transparent ${(scanPosition / codeRef.current.offsetHeight) * 100}%, black ${(scanPosition / codeRef.current.offsetHeight) * 100}%, black 100%)`,
-            }}
-          />
-        )}
-        
-        {/* Scanning line with glow effect */}
-        {isScanning && codeRef.current && scanPosition < codeRef.current.offsetHeight && animationPhase === 'scanning' && (
-          <div
-            className="absolute left-0 right-0 pointer-events-none z-20"
-            style={{
-              top: `${scanPosition}px`,
-              transform: 'translateY(-50%)',
-            }}
-          >
-            <div className="h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-            <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent blur-sm -mt-0.5" />
+      {/* Terminal Content */}
+      <div className="p-4 sm:p-6 md:p-8 text-xs sm:text-sm md:text-base bg-black/30 relative overflow-hidden min-h-[200px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <div className="text-gray-300 leading-relaxed space-y-1">
+          {/* Terminal prompt */}
+          <div className="text-green-400 mb-2">
+            <span className="text-cyan-400">algoryx@quant</span>
+            <span className="text-gray-500">:</span>
+            <span className="text-blue-400">~/trading</span>
+            <span className="text-gray-500">$</span>
+            <span className="ml-2 text-gray-400">python quant_trader.py</span>
           </div>
-        )}
-
-        {/* Code content */}
-        <div 
-          ref={codeRef}
-          className="p-4 sm:p-6 md:p-8 text-xs sm:text-sm md:text-base overflow-x-auto relative z-0 min-h-[200px]" 
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          <pre className="text-gray-300 leading-relaxed whitespace-pre">
-            {renderCode()}
-            {/* Cursor blink effect during typing/backspacing */}
-            {(animationPhase === 'typing' || animationPhase === 'backspacing') && (
-              <span className="inline-block w-2 h-4 bg-cyan-400 ml-0.5 animate-pulse" />
-            )}
-          </pre>
+          
+          {/* Terminal output lines */}
+          {terminalLines.length === 0 && (
+            <div className="text-gray-500 animate-pulse">
+              <span className="inline-block w-2 h-4 bg-gray-500 mr-1"></span>
+              Starting trading engine...
+            </div>
+          )}
+          
+          {terminalLines.map((line, index) => {
+            let lineColor = 'text-gray-300';
+            if (line.includes('[INFO]')) lineColor = 'text-blue-400';
+            else if (line.includes('[DATA]')) lineColor = 'text-cyan-400';
+            else if (line.includes('[SIGNAL]')) lineColor = 'text-yellow-400';
+            else if (line.includes('[EXEC]')) lineColor = 'text-purple-400';
+            else if (line.includes('[FILL]')) lineColor = 'text-green-400';
+            else if (line.includes('[PNL]')) lineColor = 'text-green-300';
+            else if (line.includes('[RISK]')) lineColor = 'text-orange-400';
+            else if (line.includes('[METRICS]')) lineColor = 'text-blue-300';
+            
+            return (
+              <motion.div
+                key={index}
+                className={lineColor}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {line}
+              </motion.div>
+            );
+          })}
+          
+          {/* Cursor */}
+          {shouldAnimate && (
+            <span className="inline-block w-2 h-4 bg-cyan-400 ml-1 animate-pulse"></span>
+          )}
         </div>
       </div>
     </div>
@@ -494,9 +257,9 @@ export function Labs() {
               </Button>
             </div>
 
-            {/* Right side - Code display */}
+            {/* Right side - Terminal display */}
             <div className="flex items-center justify-center lg:justify-end mt-8 lg:mt-0">
-              <CodeScanner />
+              <BloombergTerminal />
             </div>
           </div>
         </div>
