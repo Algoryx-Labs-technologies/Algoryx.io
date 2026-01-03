@@ -54,6 +54,59 @@ const normalizeCandles = (
   }));
 };
 
+// Code snippets with similar line counts and character counts
+const CODE_SNIPPETS = [
+  {
+    filename: 'strategy.py',
+    code: `def generate_signals(data):
+    # Calculate Moving Averages
+    data['SMA_50'] = data['Close'].rolling(window=50).mean()
+    data['SMA_200'] = data['Close'].rolling(window=200).mean()
+    
+    # Generate Entry Signal
+    if data['SMA_50'] > data['SMA_200']:
+        return "BUY"
+    return "HOLD"`
+  },
+  {
+    filename: 'risk_model.py',
+    code: `def calculate_risk(portfolio):
+    # Compute Value at Risk
+    returns = portfolio.pct_change()
+    var_95 = returns.quantile(0.05)
+    
+    # Risk Metrics
+    volatility = returns.std() * np.sqrt(252)
+    sharpe = returns.mean() / volatility
+    return {"VaR": var_95, "Sharpe": sharpe}`
+  },
+  {
+    filename: 'backtest.py',
+    code: `def run_backtest(strategy, data):
+    # Initialize portfolio
+    capital = 100000
+    positions = []
+    
+    # Execute strategy
+    for signal in strategy.generate(data):
+        if signal == "BUY":
+            positions.append(execute_trade())
+    return calculate_returns(positions)`
+  },
+  {
+    filename: 'ml_model.py',
+    code: `def train_predictor(features, target):
+    # Split data for training
+    X_train, X_test = train_test_split(features)
+    y_train, y_test = train_test_split(target)
+    
+    # Train model
+    model = RandomForestRegressor()
+    model.fit(X_train, y_train)
+    return model.predict(X_test)`
+  }
+];
+
 export function TradingDemo() {
   // Track if animation should run (triggered on scroll)
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -76,15 +129,27 @@ export function TradingDemo() {
   const [pnlPercent, setPnlPercent] = useState(31.6);
   const [pnlTrend, setPnlTrend] = useState<'up' | 'down'>('up');
   
-  // Code execution animation
-  const [activeLine, setActiveLine] = useState(0);
+  // Code scanning animation (from Labs.tsx)
+  const [scanPosition, setScanPosition] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
+  const [hasScanned, setHasScanned] = useState(false);
+  const [currentCodeIndex, setCurrentCodeIndex] = useState(0);
+  const [displayedCode, setDisplayedCode] = useState('');
+  const [animationPhase, setAnimationPhase] = useState<'scanning' | 'backspacing' | 'typing' | 'idle'>('idle');
+  const codeCardContainerRef = useRef<HTMLDivElement>(null);
+  const codeContentRef = useRef<HTMLDivElement>(null);
+  const codeAnimationRef = useRef<number | null>(null);
+  const codeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const codeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const codePhaseRef = useRef<'scanning' | 'backspacing' | 'typing' | 'idle'>('idle');
+  const codeIndexRef = useRef(0);
+  const hasScannedOnceRef = useRef(false);
   
   // Ref for code card to calculate 25% offset
   const codeCardRef = useRef<HTMLDivElement>(null);
   const [codeCardOffset, setCodeCardOffset] = useState(0);
   
   // Store interval refs for proper cleanup
-  const executionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const candlestickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const windowSwitchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -147,38 +212,171 @@ export function TradingDemo() {
     }
   }, [shouldAnimate]);
   
+  // Code scanning animation - Main animation cycle
   useEffect(() => {
-    if (!shouldAnimate) {
-      // Clear intervals when animation should stop
-      if (executionIntervalRef.current) {
-        clearInterval(executionIntervalRef.current);
-        executionIntervalRef.current = null;
-      }
-      return;
-    }
-    
+    if (!hasScanned || !hasEntered) return;
+
     let isMounted = true;
-    
-    // Line-by-line execution animation
-    executionIntervalRef.current = setInterval(() => {
-      if (!isMounted) {
-        if (executionIntervalRef.current) {
-          clearInterval(executionIntervalRef.current);
-          executionIntervalRef.current = null;
-        }
-        return;
+    codeIndexRef.current = 0;
+    codePhaseRef.current = 'scanning';
+
+    const cleanup = () => {
+      if (codeAnimationRef.current) {
+        cancelAnimationFrame(codeAnimationRef.current);
+        codeAnimationRef.current = null;
       }
-      setActiveLine(prev => (prev + 1) % 11); // 11 lines of code (0-10)
-    }, 2000);
-    
-    return () => {
-      isMounted = false;
-      if (executionIntervalRef.current) {
-        clearInterval(executionIntervalRef.current);
-        executionIntervalRef.current = null;
+      if (codeIntervalRef.current) {
+        clearInterval(codeIntervalRef.current);
+        codeIntervalRef.current = null;
+      }
+      if (codeTimeoutRef.current) {
+        clearTimeout(codeTimeoutRef.current);
+        codeTimeoutRef.current = null;
       }
     };
-  }, [shouldAnimate]);
+
+    const startScanning = () => {
+      if (!isMounted) return;
+      codePhaseRef.current = 'scanning';
+      setAnimationPhase('scanning');
+      setIsScanning(true);
+      setScanPosition(0);
+
+      const scanDuration = 2500;
+      const startTime = Date.now();
+
+      const animateScan = () => {
+        if (!isMounted || codePhaseRef.current !== 'scanning') return;
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / scanDuration, 1);
+        
+        const easeInOutCubic = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        if (codeContentRef.current) {
+          setScanPosition(easeInOutCubic * codeContentRef.current.offsetHeight);
+        }
+
+        if (progress < 1) {
+          codeAnimationRef.current = requestAnimationFrame(animateScan);
+        } else {
+          setIsScanning(false);
+          hasScannedOnceRef.current = true;
+          codeTimeoutRef.current = setTimeout(() => {
+            if (isMounted) {
+              startBackspacing();
+            }
+          }, 1000);
+        }
+      };
+
+      codeAnimationRef.current = requestAnimationFrame(animateScan);
+    };
+
+    const startBackspacing = () => {
+      if (!isMounted) return;
+      codePhaseRef.current = 'backspacing';
+      setAnimationPhase('backspacing');
+      cleanup();
+      
+      const fullCode = CODE_SNIPPETS[codeIndexRef.current].code;
+      let currentLength = fullCode.length;
+      const backspaceSpeed = 30;
+
+      codeIntervalRef.current = setInterval(() => {
+        if (!isMounted || codePhaseRef.current !== 'backspacing') {
+          cleanup();
+          return;
+        }
+        currentLength = Math.max(0, currentLength - 1);
+        setDisplayedCode(fullCode.substring(0, currentLength));
+
+        if (currentLength === 0) {
+          cleanup();
+          codeTimeoutRef.current = setTimeout(() => {
+            if (isMounted) {
+              codeIndexRef.current = (codeIndexRef.current + 1) % CODE_SNIPPETS.length;
+              setCurrentCodeIndex(codeIndexRef.current);
+              startTyping();
+            }
+          }, 500);
+        }
+      }, backspaceSpeed);
+    };
+
+    const startTyping = () => {
+      if (!isMounted) return;
+      codePhaseRef.current = 'typing';
+      setAnimationPhase('typing');
+      cleanup();
+      
+      const fullCode = CODE_SNIPPETS[codeIndexRef.current].code;
+      let currentLength = 0;
+      const typeSpeed = 30;
+
+      codeIntervalRef.current = setInterval(() => {
+        if (!isMounted || codePhaseRef.current !== 'typing') {
+          cleanup();
+          return;
+        }
+        currentLength = Math.min(fullCode.length, currentLength + 1);
+        setDisplayedCode(fullCode.substring(0, currentLength));
+
+        if (currentLength === fullCode.length) {
+          cleanup();
+          codeTimeoutRef.current = setTimeout(() => {
+            if (isMounted) {
+              // After typing completes, go directly to backspacing (no more scanning)
+              startBackspacing();
+            }
+          }, 1000);
+        }
+      }, typeSpeed);
+    };
+
+    // Initialize with first code
+    setDisplayedCode(CODE_SNIPPETS[0].code);
+    startScanning();
+
+    return () => {
+      isMounted = false;
+      cleanup();
+    };
+  }, [hasScanned, hasEntered]);
+
+  // Initial intersection observer for code scanning
+  useEffect(() => {
+    if (hasScanned || !hasEntered) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasScanned) {
+          setTimeout(() => {
+            if (codeContentRef.current) {
+              setHasScanned(true);
+            }
+          }, 300);
+
+          if (codeCardContainerRef.current) {
+            observer.unobserve(codeCardContainerRef.current);
+          }
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (codeCardContainerRef.current) {
+      observer.observe(codeCardContainerRef.current);
+    }
+
+    return () => {
+      if (codeCardContainerRef.current) {
+        observer.unobserve(codeCardContainerRef.current);
+      }
+      observer.disconnect();
+    };
+  }, [hasScanned, hasEntered]);
   
   useEffect(() => {
     if (!shouldAnimate) {
@@ -754,7 +952,7 @@ export function TradingDemo() {
                 <div className="w-72 xl:w-80 perspective-1000">
                   <div className="relative w-full preserve-3d transition-transform duration-700 code-flip-hover">
                     {/* Front Side - Code */}
-                    <div className="relative w-full backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                    <div ref={codeCardContainerRef} className="relative w-full backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                       {/* Code Editor Header */}
                       <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/10">
                         <div className="flex gap-1.5">
@@ -763,68 +961,170 @@ export function TradingDemo() {
                           <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                         </div>
                         <span className="ml-2 text-xs text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                          strategy.py
+                          {CODE_SNIPPETS[currentCodeIndex].filename}
                         </span>
                       </div>
                       
-                      {/* Code Content */}
-                      <div className="p-4 text-xs relative" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        <div className="text-gray-300 leading-relaxed relative">
-                          {/* Line 0 - def */}
-                          <div className={`relative ${activeLine === 0 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            <span className="text-purple-400">def</span> <span className="text-cyan-400">generate_signals</span>(<span className="text-gray-300">data</span>):
-                            {activeLine === 0 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
+                      {/* Code Content with scanning effect */}
+                      <div className="relative overflow-hidden">
+                        {/* Initial overlay - covers code until scanning starts */}
+                        {!hasScanned && (
+                          <div className="absolute inset-0 bg-slate-900 pointer-events-none z-10" />
+                        )}
+                        
+                        {/* Scanning overlay - black mask that reveals code from top to bottom */}
+                        {isScanning && codeContentRef.current && animationPhase === 'scanning' && (
+                          <div 
+                            className="absolute inset-0 bg-slate-900 pointer-events-none z-10"
+                            style={{
+                              maskImage: `linear-gradient(to bottom, transparent 0%, transparent ${(scanPosition / codeContentRef.current.offsetHeight) * 100}%, black ${(scanPosition / codeContentRef.current.offsetHeight) * 100}%, black 100%)`,
+                              WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, transparent ${(scanPosition / codeContentRef.current.offsetHeight) * 100}%, black ${(scanPosition / codeContentRef.current.offsetHeight) * 100}%, black 100%)`,
+                            }}
+                          />
+                        )}
+                        
+                        {/* Scanning line with glow effect */}
+                        {isScanning && codeContentRef.current && scanPosition < codeContentRef.current.offsetHeight && animationPhase === 'scanning' && (
+                          <div
+                            className="absolute left-0 right-0 pointer-events-none z-20"
+                            style={{
+                              top: `${scanPosition}px`,
+                              transform: 'translateY(-50%)',
+                            }}
+                          >
+                            <div className="h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+                            <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent blur-sm -mt-0.5" />
                           </div>
-                          {/* Line 1 - comment */}
-                          <div className={`relative ${activeLine === 1 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}<span className="text-gray-500"># Calculate Moving Averages</span>
-                            {activeLine === 1 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 2 - SMA_50 */}
-                          <div className={`relative ${activeLine === 2 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}data[<span className="text-green-400">'SMA_50'</span>] = data[<span className="text-green-400">'Close'</span>].rolling(
-                            {activeLine === 2 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 3 - window 50 */}
-                          <div className={`relative ${activeLine === 3 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'        '}window=<span className="text-yellow-400">50</span>).mean()
-                            {activeLine === 3 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 4 - SMA_200 */}
-                          <div className={`relative ${activeLine === 4 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}data[<span className="text-green-400">'SMA_200'</span>] = data[<span className="text-green-400">'Close'</span>].rolling(
-                            {activeLine === 4 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 5 - window 200 */}
-                          <div className={`relative ${activeLine === 5 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'        '}window=<span className="text-yellow-400">200</span>).mean()
-                            {activeLine === 5 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 6 - empty */}
-                          <div className={`relative ${activeLine === 6 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}
-                            {activeLine === 6 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 7 - comment */}
-                          <div className={`relative ${activeLine === 7 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}<span className="text-gray-500"># Generate Entry Signal</span>
-                            {activeLine === 7 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 8 - if statement */}
-                          <div className={`relative ${activeLine === 8 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}<span className="text-purple-400">if</span> data[<span className="text-green-400">'SMA_50'</span>] &gt; data[<span className="text-green-400">'SMA_200'</span>]:
-                            {activeLine === 8 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 9 - return BUY */}
-                          <div className={`relative ${activeLine === 9 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'        '}<span className="text-purple-400">return</span> <span className="text-green-400">"BUY"</span>
-                            {activeLine === 9 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
-                          {/* Line 10 - return HOLD */}
-                          <div className={`relative ${activeLine === 10 ? 'bg-blue-500/10' : ''} transition-colors duration-300 px-1 -mx-1 rounded`}>
-                            {'    '}<span className="text-purple-400">return</span> <span className="text-green-400">"HOLD"</span>
-                            {activeLine === 10 && <span className="absolute right-2 top-0 w-0.5 h-4 bg-cyan-400"></span>}
-                          </div>
+                        )}
+
+                        {/* Code content */}
+                        <div 
+                          ref={codeContentRef}
+                          className="p-4 text-xs relative z-0 min-h-[200px] overflow-hidden" 
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                        >
+                          <pre className="text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                            {(() => {
+                              if (!displayedCode) return null;
+                              
+                              const lines = displayedCode.split('\n');
+                              return lines.map((line, lineIdx) => {
+                                const parts: Array<{ text: string; className: string }> = [];
+                                let currentText = '';
+                                let inString = false;
+                                let stringChar = '';
+                                let inComment = false;
+                                
+                                for (let i = 0; i < line.length; i++) {
+                                  const char = line[i];
+                                  const remaining = line.substring(i);
+                                  
+                                  // Check for comments
+                                  if (!inString && char === '#') {
+                                    if (currentText) {
+                                      parts.push({ text: currentText, className: 'text-gray-300' });
+                                      currentText = '';
+                                    }
+                                    parts.push({ text: remaining, className: 'text-gray-500' });
+                                    break;
+                                  }
+                                  
+                                  // Check for strings
+                                  if (!inComment && (char === '"' || char === "'")) {
+                                    if (currentText) {
+                                      parts.push({ text: currentText, className: 'text-gray-300' });
+                                      currentText = '';
+                                    }
+                                    if (!inString) {
+                                      inString = true;
+                                      stringChar = char;
+                                      currentText = char;
+                                    } else if (char === stringChar) {
+                                      currentText += char;
+                                      parts.push({ text: currentText, className: 'text-green-400' });
+                                      currentText = '';
+                                      inString = false;
+                                    } else {
+                                      currentText += char;
+                                    }
+                                    continue;
+                                  }
+                                  
+                                  // Check for keywords (only when not in string)
+                                  if (!inString && !inComment) {
+                                    if (remaining.startsWith('def ')) {
+                                      if (currentText) {
+                                        parts.push({ text: currentText, className: 'text-gray-300' });
+                                        currentText = '';
+                                      }
+                                      parts.push({ text: 'def', className: 'text-purple-400' });
+                                      currentText = ' ';
+                                      i += 3;
+                                      continue;
+                                    }
+                                    if (remaining.startsWith('return ')) {
+                                      if (currentText.trim()) {
+                                        parts.push({ text: currentText, className: 'text-gray-300' });
+                                        currentText = '';
+                                      }
+                                      parts.push({ text: 'return', className: 'text-purple-400' });
+                                      currentText = ' ';
+                                      i += 6;
+                                      continue;
+                                    }
+                                    if (remaining.startsWith('if ')) {
+                                      if (currentText.trim()) {
+                                        parts.push({ text: currentText, className: 'text-gray-300' });
+                                        currentText = '';
+                                      }
+                                      parts.push({ text: 'if', className: 'text-purple-400' });
+                                      currentText = ' ';
+                                      i += 2;
+                                      continue;
+                                    }
+                                    
+                                    // Check for numbers
+                                    if (/\d/.test(char) && (i === 0 || !/\w/.test(line[i - 1]))) {
+                                      if (currentText) {
+                                        parts.push({ text: currentText, className: 'text-gray-300' });
+                                        currentText = '';
+                                      }
+                                      let num = char;
+                                      i++;
+                                      while (i < line.length && /\d/.test(line[i])) {
+                                        num += line[i];
+                                        i++;
+                                      }
+                                      i--;
+                                      parts.push({ text: num, className: 'text-yellow-400' });
+                                      continue;
+                                    }
+                                  }
+                                  
+                                  currentText += char;
+                                }
+                                
+                                if (currentText) {
+                                  parts.push({ text: currentText, className: inString ? 'text-green-400' : 'text-gray-300' });
+                                }
+                                
+                                return (
+                                  <React.Fragment key={lineIdx}>
+                                    {parts.map((part, partIdx) => (
+                                      <span key={partIdx} className={part.className}>
+                                        {part.text}
+                                      </span>
+                                    ))}
+                                    {lineIdx < lines.length - 1 && '\n'}
+                                  </React.Fragment>
+                                );
+                              });
+                            })()}
+                            {/* Cursor blink effect during typing/backspacing */}
+                            {(animationPhase === 'typing' || animationPhase === 'backspacing') && (
+                              <span className="inline-block w-2 h-4 bg-cyan-400 ml-0.5 animate-pulse" />
+                            )}
+                          </pre>
                         </div>
                       </div>
                     </div>
