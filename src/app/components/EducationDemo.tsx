@@ -271,7 +271,7 @@ export function EducationDemo() {
 
     let isMounted = true;
 
-    // Initial delay to show dashboard for 5 seconds first
+    // Initial delay to show dashboard for 8 seconds first
     initialTimeoutRef.current = setTimeout(() => {
       if (!isMounted) return;
 
@@ -289,7 +289,7 @@ export function EducationDemo() {
         }
       }, 50);
 
-      // Then set up interval to switch every 5 seconds (5s dashboard + 5s courses + 5s backtesting)
+      // Then set up interval to switch every 8 seconds (8s dashboard + 8s courses + 8s backtesting)
       windowSwitchIntervalRef.current = setInterval(() => {
         if (!isMounted) {
           if (windowSwitchIntervalRef.current) {
@@ -316,8 +316,8 @@ export function EducationDemo() {
             }, 300); // Transition duration
           }
         }, 50);
-      }, 5000); // Switch every 5 seconds
-    }, 5000); // Show dashboard for 5 seconds first
+      }, 8000); // Switch every 8 seconds
+    }, 8000); // Show dashboard for 8 seconds first
 
     return () => {
       isMounted = false;
