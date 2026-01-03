@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Code2, TrendingUp, Calculator } from 'lucide-react';
-import { EducationDashboard, EducationVideos, EducationCourses, EducationBacktesting } from './EducationDashboard';
+import { EducationDashboard, EducationCourses, EducationBacktesting } from './EducationDashboard';
 
 export function EducationDemo() {
   // Track if animation should run (triggered on scroll)
@@ -38,7 +38,7 @@ export function EducationDemo() {
   const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Window switching state
-  const [activeWindow, setActiveWindow] = useState<'dashboard' | 'videos' | 'courses' | 'backtesting'>('dashboard');
+  const [activeWindow, setActiveWindow] = useState<'dashboard' | 'courses' | 'backtesting'>('dashboard');
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // IntersectionObserver to trigger animation on scroll and track visibility
@@ -277,10 +277,10 @@ export function EducationDemo() {
 
       setIsTransitioning(true);
       
-      // Switch to videos after transition starts
+      // Switch to courses after transition starts
       setTimeout(() => {
         if (isMounted) {
-          setActiveWindow('videos');
+          setActiveWindow('courses');
           setTimeout(() => {
             if (isMounted) {
               setIsTransitioning(false);
@@ -289,7 +289,7 @@ export function EducationDemo() {
         }
       }, 50);
 
-      // Then set up interval to switch every 5 seconds (5s dashboard + 5s videos + 5s courses + 5s backtesting)
+      // Then set up interval to switch every 5 seconds (5s dashboard + 5s courses + 5s backtesting)
       windowSwitchIntervalRef.current = setInterval(() => {
         if (!isMounted) {
           if (windowSwitchIntervalRef.current) {
@@ -305,8 +305,7 @@ export function EducationDemo() {
         setTimeout(() => {
           if (isMounted) {
             setActiveWindow(prev => {
-              if (prev === 'dashboard') return 'videos';
-              if (prev === 'videos') return 'courses';
+              if (prev === 'dashboard') return 'courses';
               if (prev === 'courses') return 'backtesting';
               return 'dashboard';
             });
@@ -445,37 +444,6 @@ export function EducationDemo() {
                                 activeLine={activeLine}
                                 formulaValues={formulaValues}
                               />
-                            </motion.div>
-                          ) : activeWindow === 'videos' ? (
-                            <motion.div
-                              key="videos"
-                              initial={{ 
-                                x: 100, 
-                                opacity: 0, 
-                                scale: 0.95
-                              }}
-                              animate={{ 
-                                x: 0, 
-                                opacity: 1, 
-                                scale: 1
-                              }}
-                              exit={{ 
-                                x: -100, 
-                                opacity: 0, 
-                                scale: 0.95
-                              }}
-                              transition={{ 
-                                duration: 0.6,
-                                ease: [0.25, 0.1, 0.25, 1]
-                              }}
-                              className="absolute inset-0"
-                              style={{
-                                imageRendering: 'crisp-edges',
-                                WebkitFontSmoothing: 'antialiased',
-                                MozOsxFontSmoothing: 'grayscale'
-                              }}
-                            >
-                              <EducationVideos />
                             </motion.div>
                           ) : activeWindow === 'courses' ? (
                             <motion.div
