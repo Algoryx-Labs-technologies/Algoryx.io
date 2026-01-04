@@ -23,12 +23,13 @@ export function EducationDemo() {
   // Store interval refs for proper cleanup
   const executionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const formulaIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const windowSwitchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  
   // Window switching state
   const [activeWindow, setActiveWindow] = useState<'dashboard' | 'courses' | 'backtesting'>('dashboard');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const screenContainerRef = useRef<HTMLDivElement>(null);
+  const [viewedTabs, setViewedTabs] = useState<Set<'dashboard' | 'courses' | 'backtesting'>>(new Set(['dashboard']));
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
@@ -133,83 +134,97 @@ export function EducationDemo() {
   }, [shouldAnimate]);
 
 
-  // Window switching animation - cycles through dashboard, videos, courses
+  // Wheel-based tab switching with smooth snap
   useEffect(() => {
-    if (!shouldAnimate || !hasEntered) {
-      // Clear interval and timeout when animation should stop
-      if (windowSwitchIntervalRef.current) {
-        clearInterval(windowSwitchIntervalRef.current);
-        windowSwitchIntervalRef.current = null;
-      }
-      if (initialTimeoutRef.current) {
-        clearTimeout(initialTimeoutRef.current);
-        initialTimeoutRef.current = null;
-      }
-      return;
-    }
+    if (!screenContainerRef.current || !hasEntered) return;
 
-    let isMounted = true;
+    const container = screenContainerRef.current;
+    const sectionHeight = 600;
+    const tabPositions = {
+      dashboard: 0,
+      courses: sectionHeight,
+      backtesting: sectionHeight * 2
+    };
 
-    // Initial delay to show dashboard for 8 seconds first
-    initialTimeoutRef.current = setTimeout(() => {
-      if (!isMounted) return;
+    let isScrolling = false;
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
-      setIsTransitioning(true);
-      
-      // Switch to courses after transition starts
-      setTimeout(() => {
-        if (isMounted) {
-          setActiveWindow('courses');
-          setTimeout(() => {
-            if (isMounted) {
-              setIsTransitioning(false);
-            }
-          }, 300); // Transition duration
-        }
-      }, 50);
-
-      // Then set up interval to switch every 8 seconds (8s dashboard + 8s courses + 8s backtesting)
-      windowSwitchIntervalRef.current = setInterval(() => {
-        if (!isMounted) {
-          if (windowSwitchIntervalRef.current) {
-            clearInterval(windowSwitchIntervalRef.current);
-            windowSwitchIntervalRef.current = null;
-          }
-          return;
-        }
-
-        setIsTransitioning(true);
-        
-        // Switch window after a brief delay for transition start
-        setTimeout(() => {
-          if (isMounted) {
-            setActiveWindow(prev => {
-              if (prev === 'dashboard') return 'courses';
-              if (prev === 'courses') return 'backtesting';
-              return 'dashboard';
-            });
-            setTimeout(() => {
-              if (isMounted) {
-                setIsTransitioning(false);
-              }
-            }, 300); // Transition duration
-          }
-        }, 50);
-      }, 8000); // Switch every 8 seconds
-    }, 8000); // Show dashboard for 8 seconds first
-
-    return () => {
-      isMounted = false;
-      if (windowSwitchIntervalRef.current) {
-        clearInterval(windowSwitchIntervalRef.current);
-        windowSwitchIntervalRef.current = null;
-      }
-      if (initialTimeoutRef.current) {
-        clearTimeout(initialTimeoutRef.current);
-        initialTimeoutRef.current = null;
+    const getCurrentTab = (): 'dashboard' | 'courses' | 'backtesting' => {
+      const scrollTop = container.scrollTop;
+      // Use a threshold to determine which tab we're closest to
+      if (scrollTop < sectionHeight * 0.5) {
+        return 'dashboard';
+      } else if (scrollTop < sectionHeight * 1.5) {
+        return 'courses';
+      } else {
+        return 'backtesting';
       }
     };
-  }, [shouldAnimate, hasEntered]);
+
+    const snapToTab = (targetTab: 'dashboard' | 'courses' | 'backtesting') => {
+      if (isScrolling) return;
+      
+      isScrolling = true;
+      const targetPosition = tabPositions[targetTab];
+      
+      container.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      });
+
+      setActiveWindow(targetTab);
+      setViewedTabs(prev => new Set([...prev, targetTab]));
+
+      // Reset scrolling flag after animation completes
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false;
+      }, 800); // Slightly longer to ensure animation completes
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (isScrolling) {
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault();
+      
+      const deltaY = e.deltaY;
+      const threshold = 30; // Minimum scroll delta to trigger tab change
+
+      // Only change tab if scroll is significant enough
+      if (Math.abs(deltaY) < threshold) return;
+
+      // Get current tab based on actual scroll position
+      const currentTab = getCurrentTab();
+
+      if (deltaY > 0) {
+        // Scrolling down - go to next tab
+        if (currentTab === 'dashboard') {
+          snapToTab('courses');
+        } else if (currentTab === 'courses') {
+          snapToTab('backtesting');
+        }
+        // If already at backtesting, do nothing
+      } else {
+        // Scrolling up - go to previous tab
+        if (currentTab === 'backtesting') {
+          snapToTab('courses');
+        } else if (currentTab === 'courses') {
+          snapToTab('dashboard');
+        }
+        // If already at dashboard, do nothing
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [hasEntered]);
 
 
   return (
@@ -246,11 +261,13 @@ export function EducationDemo() {
             >
               {/* Simple Screen Frame */}
               <div className="relative bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-                {/* Screen Content */}
+                {/* Screen Content - Scrollable Container */}
                 <div 
-                  className="bg-gradient-to-br from-slate-900 to-black relative"
+                  ref={screenContainerRef}
+                  className="bg-gradient-to-br from-slate-900 to-black relative overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                   style={{ 
                     height: '600px',
+                    scrollSnapType: 'y mandatory',
                     boxShadow: `
                       inset 0 0 80px rgba(0, 0, 0, 0.6),
                       inset 0 0 30px rgba(0, 0, 0, 0.4),
@@ -262,112 +279,61 @@ export function EducationDemo() {
                     MozOsxFontSmoothing: 'grayscale'
                   }}
                 >
-                  {/* Window Container with tab switching */}
-                  <div className="relative w-full h-full overflow-hidden">
-                    <AnimatePresence mode="wait" initial={false}>
-                      {activeWindow === 'dashboard' ? (
-                        <motion.div
-                          key="dashboard"
-                          initial={hasEntered ? { 
-                            x: -100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          } : {
-                            x: 0,
-                            opacity: 1,
-                            scale: 1
-                          }}
-                          animate={{ 
-                            x: 0, 
-                            opacity: 1, 
-                            scale: 1
-                          }}
-                          exit={{ 
-                            x: 100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          }}
-                          transition={{ 
-                            duration: 0.6,
-                            ease: [0.25, 0.1, 0.25, 1]
-                          }}
-                          className="absolute inset-0 w-full h-full"
-                          style={{
-                            imageRendering: 'crisp-edges',
-                            WebkitFontSmoothing: 'antialiased',
-                            MozOsxFontSmoothing: 'grayscale'
-                          }}
-                        >
-                          <EducationDashboard 
-                            shouldAnimate={shouldAnimate}
-                            activeLine={activeLine}
-                            formulaValues={formulaValues}
-                          />
-                        </motion.div>
-                      ) : activeWindow === 'courses' ? (
-                        <motion.div
-                          key="courses"
-                          initial={{ 
-                            x: 100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          }}
-                          animate={{ 
-                            x: 0, 
-                            opacity: 1, 
-                            scale: 1
-                          }}
-                          exit={{ 
-                            x: -100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          }}
-                          transition={{ 
-                            duration: 0.6,
-                            ease: [0.25, 0.1, 0.25, 1]
-                          }}
-                          className="absolute inset-0 w-full h-full"
-                          style={{
-                            imageRendering: 'crisp-edges',
-                            WebkitFontSmoothing: 'antialiased',
-                            MozOsxFontSmoothing: 'grayscale'
-                          }}
-                        >
-                          <EducationCourses />
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="backtesting"
-                          initial={{ 
-                            x: 100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          }}
-                          animate={{ 
-                            x: 0, 
-                            opacity: 1, 
-                            scale: 1
-                          }}
-                          exit={{ 
-                            x: -100, 
-                            opacity: 0, 
-                            scale: 0.95
-                          }}
-                          transition={{ 
-                            duration: 0.6,
-                            ease: [0.25, 0.1, 0.25, 1]
-                          }}
-                          className="absolute inset-0 w-full h-full"
-                          style={{
-                            imageRendering: 'crisp-edges',
-                            WebkitFontSmoothing: 'antialiased',
-                            MozOsxFontSmoothing: 'grayscale'
-                          }}
-                        >
-                          <EducationBacktesting />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                  {/* Window Container with tab switching - Scrollable content */}
+                  <div 
+                    className="relative w-full"
+                    style={{ 
+                      height: '1800px'
+                    }}
+                  >
+                    {/* Dashboard Section - First 600px */}
+                    <div 
+                      className="w-full"
+                      style={{ 
+                        height: '600px',
+                        scrollSnapAlign: 'start',
+                        scrollSnapStop: 'always',
+                        imageRendering: 'crisp-edges',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale'
+                      }}
+                    >
+                      <EducationDashboard 
+                        shouldAnimate={shouldAnimate}
+                        activeLine={activeLine}
+                        formulaValues={formulaValues}
+                      />
+                    </div>
+
+                    {/* Courses Section - Second 600px */}
+                    <div 
+                      className="w-full"
+                      style={{ 
+                        height: '600px',
+                        scrollSnapAlign: 'start',
+                        scrollSnapStop: 'always',
+                        imageRendering: 'crisp-edges',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale'
+                      }}
+                    >
+                      <EducationCourses />
+                    </div>
+
+                    {/* Backtesting Section - Third 600px */}
+                    <div 
+                      className="w-full"
+                      style={{ 
+                        height: '600px',
+                        scrollSnapAlign: 'start',
+                        scrollSnapStop: 'always',
+                        imageRendering: 'crisp-edges',
+                        WebkitFontSmoothing: 'antialiased',
+                        MozOsxFontSmoothing: 'grayscale'
+                      }}
+                    >
+                      <EducationBacktesting />
+                    </div>
                   </div>
                 </div>
               </div>
