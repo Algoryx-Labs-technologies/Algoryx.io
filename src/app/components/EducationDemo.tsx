@@ -188,8 +188,6 @@ export function EducationDemo() {
         return;
       }
 
-      e.preventDefault();
-      
       const deltaY = e.deltaY;
       const threshold = 30; // Minimum scroll delta to trigger tab change
 
@@ -202,19 +200,24 @@ export function EducationDemo() {
       if (deltaY > 0) {
         // Scrolling down - go to next tab
         if (currentTab === 'dashboard') {
+          e.preventDefault();
           snapToTab('courses');
         } else if (currentTab === 'courses') {
+          e.preventDefault();
           snapToTab('backtesting');
+        } else if (currentTab === 'backtesting') {
+          // On last tab, allow page to scroll - don't prevent default
+          return;
         }
-        // If already at backtesting, do nothing
       } else {
         // Scrolling up - go to previous tab
+        e.preventDefault();
         if (currentTab === 'backtesting') {
           snapToTab('courses');
         } else if (currentTab === 'courses') {
           snapToTab('dashboard');
         }
-        // If already at dashboard, do nothing
+        // If already at dashboard, do nothing (allow page scroll up)
       }
     };
 
