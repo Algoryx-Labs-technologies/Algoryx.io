@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar } from 'lucide-react';
 
 interface StockPrice {
@@ -6,6 +6,13 @@ interface StockPrice {
   price: number;
   change: number;
   changePercent: number;
+}
+
+interface ChartData {
+  quarter: string;
+  closing: number;
+  opening: number;
+  volume: number;
 }
 
 export function StockAnalyser() {
@@ -21,6 +28,55 @@ export function StockAnalyser() {
     { symbol: 'NFLX', price: 425.67, change: 3.45, changePercent: 0.82 },
     { symbol: 'AMD', price: 128.34, change: -2.10, changePercent: -1.61 },
   ]);
+
+  // Quarterly data for charts (Q1 2014 to Q4 2017)
+  const quarters = ['Q1 2014', 'Q2 2014', 'Q3 2014', 'Q4 2014', 'Q1 2015', 'Q2 2015', 'Q3 2015', 'Q4 2015', 
+                    'Q1 2016', 'Q2 2016', 'Q3 2016', 'Q4 2016', 'Q1 2017', 'Q2 2017', 'Q3 2017', 'Q4 2017'];
+  
+  // Initialize graph data with base values
+  const [closingOpeningData, setClosingOpeningData] = useState<ChartData[]>(() => {
+    return quarters.map((quarter, i) => {
+      const baseValue = 0.02 + Math.sin(i * 0.4) * 0.03;
+      return {
+        quarter,
+        closing: baseValue,
+        opening: baseValue - 0.005,
+        volume: 50 + Math.sin(i * 0.3) * 30
+      };
+    });
+  });
+
+  const [volumeData, setVolumeData] = useState(() => {
+    return quarters.map((quarter, i) => ({
+      quarter,
+      volume: 80 + Math.sin(i * 0.25) * 50
+    }));
+  });
+
+  // Animate graph data every 1 second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setClosingOpeningData(prev => prev.map((data, i) => {
+        const baseValue = 0.02 + Math.sin(i * 0.4) * 0.03;
+        const randomOffset = (Math.random() - 0.5) * 0.01;
+        const volumeVariation = Math.random() * 20;
+        
+        return {
+          ...data,
+          closing: baseValue + randomOffset,
+          opening: baseValue + randomOffset - 0.005,
+          volume: 50 + Math.sin(i * 0.3) * 30 + volumeVariation
+        };
+      }));
+
+      setVolumeData(prev => prev.map((data, i) => ({
+        ...data,
+        volume: 80 + Math.sin(i * 0.25) * 50 + Math.random() * 30
+      })));
+    }, 1000); // Update every 1 second
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Animate stock prices
   useEffect(() => {
@@ -42,22 +98,6 @@ export function StockAnalyser() {
 
     return () => clearInterval(interval);
   }, []);
-
-  // Generate quarterly data for charts (Q1 2014 to Q4 2017)
-  const quarters = ['Q1 2014', 'Q2 2014', 'Q3 2014', 'Q4 2014', 'Q1 2015', 'Q2 2015', 'Q3 2015', 'Q4 2015', 
-                    'Q1 2016', 'Q2 2016', 'Q3 2016', 'Q4 2016', 'Q1 2017', 'Q2 2017', 'Q3 2017', 'Q4 2017'];
-  
-  const closingOpeningData = quarters.map((_, i) => ({
-    quarter: quarters[i],
-    closing: 0.02 + Math.sin(i * 0.4) * 0.03 + Math.random() * 0.01,
-    opening: 0.02 + Math.sin(i * 0.4) * 0.03 + Math.random() * 0.01 - 0.005,
-    volume: 50 + Math.sin(i * 0.3) * 30 + Math.random() * 20
-  }));
-
-  const volumeData = quarters.map((_, i) => ({
-    quarter: quarters[i],
-    volume: 80 + Math.sin(i * 0.25) * 50 + Math.random() * 30
-  }));
 
   return (
     <div className="bg-gradient-to-br from-slate-900 to-black h-full flex flex-col overflow-hidden">
@@ -171,12 +211,16 @@ export function StockAnalyser() {
                       height={barHeight}
                       fill={isPositive ? "#10b981" : "#ef4444"}
                       opacity="0.6"
+                      style={{
+                        transition: 'y 0.8s ease-out, height 0.8s ease-out, fill 0.8s ease-out'
+                      }}
                     />
                   );
                 })}
                 
                 {/* Closing line */}
                 <polyline
+                  key={`closing-${closingOpeningData.map(d => d.closing).join(',')}`}
                   points={closingOpeningData.map((data, i) => {
                     const x = (i / (closingOpeningData.length - 1)) * 800;
                     const y = 120 - (data.closing * 2000);
@@ -185,10 +229,14 @@ export function StockAnalyser() {
                   fill="none"
                   stroke="#3b82f6"
                   strokeWidth="2"
+                  style={{
+                    transition: 'all 0.8s ease-out'
+                  }}
                 />
                 
                 {/* Opening line */}
                 <polyline
+                  key={`opening-${closingOpeningData.map(d => d.opening).join(',')}`}
                   points={closingOpeningData.map((data, i) => {
                     const x = (i / (closingOpeningData.length - 1)) * 800;
                     const y = 120 - (data.opening * 2000);
@@ -199,6 +247,9 @@ export function StockAnalyser() {
                   strokeWidth="1.5"
                   strokeDasharray="3,3"
                   opacity="0.7"
+                  style={{
+                    transition: 'all 0.8s ease-out'
+                  }}
                 />
               </svg>
               <div className="absolute bottom-1 left-1 flex gap-2 text-xs">
@@ -248,6 +299,9 @@ export function StockAnalyser() {
                       height={barHeight}
                       fill="#3b82f6"
                       opacity="0.7"
+                      style={{
+                        transition: 'y 0.8s ease-out, height 0.8s ease-out'
+                      }}
                     />
                   );
                 })}
