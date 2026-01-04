@@ -313,7 +313,7 @@ export function StockAnalyser() {
         {/* Right Panel - Stocks Summary */}
         <div className="col-span-3 bg-slate-800/30 rounded-lg p-3 border border-white/5 overflow-hidden flex flex-col">
           <h4 className="text-white text-xs font-semibold mb-2">Stocks Summary</h4>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-white/10">
