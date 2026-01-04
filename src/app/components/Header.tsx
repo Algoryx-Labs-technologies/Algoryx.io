@@ -32,7 +32,7 @@ export function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="text-gray-300 hover:text-white">
+            <Button variant="ghost" className="!text-gray-300 hover:!text-white hover:!bg-white/10 bg-transparent">
               Login
             </Button>
             <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0">
@@ -60,7 +60,7 @@ export function Header() {
             <a href="#labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Labs</a>
             <a href="#work-with-labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Connect</a>
             <div className="flex flex-col space-y-2 pt-4">
-              <Button variant="ghost" className="text-gray-300 hover:text-white w-full">
+              <Button variant="ghost" className="!text-gray-300 hover:!text-white hover:!bg-white/10 bg-transparent w-full">
                 Login
               </Button>
               <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 w-full">
