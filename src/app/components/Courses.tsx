@@ -95,7 +95,13 @@ export function Courses() {
               {/* CTA */}
               <Button
                 variant="ghost"
-                className="w-full group-hover:bg-blue-500/10 group-hover:text-blue-400 transition-colors"
+                className="w-full !text-gray-300 hover:!text-white hover:!bg-white/10 bg-transparent"
+                onClick={() => {
+                  const waitlistSection = document.getElementById('waitlist');
+                  if (waitlistSection) {
+                    waitlistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
               >
                 Notify Me
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
