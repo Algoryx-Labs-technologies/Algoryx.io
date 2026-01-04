@@ -42,27 +42,29 @@ export function Features() {
         </div>
         </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {features.map((feature, index) => (
             <ScrollReveal key={index} delay={index * 0.1}>
               <div
-                className="group relative bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+                className="group relative bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] h-full flex flex-col"
               >
               {/* Icon */}
-              <div className="mb-4 w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="mb-4 w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
                 <feature.icon className="w-6 h-6 text-blue-400" />
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold mb-3 text-white">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
+              <div className="flex-1 flex flex-col">
+                <h3 className="text-xl font-bold mb-3 text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-400 leading-relaxed flex-1">
+                  {feature.description}
+                </p>
+              </div>
 
               {/* Hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 rounded-2xl transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 rounded-2xl transition-all duration-300 pointer-events-none"></div>
             </div>
             </ScrollReveal>
           ))}
