@@ -13,6 +13,7 @@ const benefits = [
     title: 'Built for Indian Traders & Students',
     description: 'Curriculum specifically designed for NSE/BSE markets with India-specific regulations and strategies.',
   },
+
   {
     icon: Zap,
     title: 'Practical, Project-Based Learning',
@@ -177,3 +178,4 @@ export function WhyAlgoryx() {
     </section>
   );
 }
+
