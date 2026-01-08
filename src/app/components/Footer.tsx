@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Instagram, Twitter, Linkedin, Github, Sparkles, Check } from 'lucide-react';
+import { Instagram, Twitter, Linkedin, Youtube, Sparkles, Check, Send } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import {
   Dialog,
@@ -179,6 +179,14 @@ export function Footer() {
                 <Twitter className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
               </a>
               <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/50 rounded-lg flex items-center justify-center transition-all group"
+              >
+                <Youtube className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
+              </a>
+              <a
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -187,12 +195,12 @@ export function Footer() {
                 <Linkedin className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
               </a>
               <a
-                href="https://github.com"
+                href="https://t.me"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/50 rounded-lg flex items-center justify-center transition-all group"
               >
-                <Github className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                <Send className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
               </a>
             </div>
             
