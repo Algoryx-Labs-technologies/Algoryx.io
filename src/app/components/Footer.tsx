@@ -32,8 +32,8 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer">
-      <div className="container mx-auto px-6 py-12">
+    <footer className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer overflow-hidden">
+      <div className="container mx-auto px-6 py-12 relative z-10">
         <ScrollReveal>
           <div className="grid md:grid-cols-6 gap-8 mb-12">
           {/* Brand */}
@@ -243,6 +243,13 @@ export function Footer() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Large background "Algoryx" text */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <h1 className="text-9xl md:text-[200px] font-bold text-gray-800 opacity-40 tracking-wider">
+          Algoryx.io
+        </h1>
       </div>
 
       {/* Privacy Policy Dialog */}
