@@ -40,23 +40,23 @@ const faqData = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-16 relative">
+    <section id="faq" className="py-12 relative">
       <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <ScrollReveal>
             {/* Title and Subtitle */}
-            <div className="text-center mb-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
                 Frequently Asked Questions
               </h2>
-              <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              <p className="text-base text-gray-400 max-w-xl mx-auto">
                 Quick answers to help you understand how Algoryx fits into your trading journey.
               </p>
             </div>
 
             {/* FAQ Container */}
             <div className="relative">
-              <div className="bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 md:p-8">
+              <div className="bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-5 md:p-6">
                 <Accordion type="single" collapsible className="w-full">
                   {faqData.map((faq, index) => (
                     <AccordionItem
@@ -64,10 +64,10 @@ export function FAQ() {
                       value={`item-${index}`}
                       className="border-b border-slate-700/50 last:border-b-0"
                     >
-                      <AccordionTrigger className="text-white hover:text-gray-300 text-left py-4 text-base md:text-lg font-medium">
+                      <AccordionTrigger className="text-white hover:text-gray-300 text-left py-3 text-sm md:text-base font-medium">
                         {faq.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-gray-400 text-sm md:text-base leading-relaxed">
+                      <AccordionContent className="text-gray-400 text-sm leading-relaxed">
                         {faq.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -77,8 +77,8 @@ export function FAQ() {
             </div>
 
             {/* Footer Call to Action */}
-            <div className="text-center mt-8">
-              <p className="text-gray-400">
+            <div className="text-center mt-6">
+              <p className="text-gray-400 text-sm">
                 Still have questions?{' '}
                 <a
                   href="#work-with-labs"
