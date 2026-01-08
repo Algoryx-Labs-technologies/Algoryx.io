@@ -46,28 +46,28 @@ export function FAQ() {
           <ScrollReveal>
             {/* Title and Subtitle */}
             <div className="text-center mb-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
                 Frequently Asked Questions
               </h2>
-              <p className="text-base text-gray-400 max-w-xl mx-auto">
+              <p className="text-base text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
                 Quick answers to help you understand how Algoryx fits into your trading journey.
               </p>
             </div>
 
             {/* FAQ Container */}
             <div className="relative">
-              <div className="bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-5 md:p-6">
+              <div className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-300/50 dark:border-slate-700/50 rounded-xl p-5 md:p-6">
                 <Accordion type="single" collapsible className="w-full">
                   {faqData.map((faq, index) => (
                     <AccordionItem
                       key={index}
                       value={`item-${index}`}
-                      className="border-b border-slate-700/50 last:border-b-0"
+                      className="border-b border-slate-300/50 dark:border-slate-700/50 last:border-b-0"
                     >
-                      <AccordionTrigger className="text-white hover:text-gray-300 text-left py-3 text-sm md:text-base font-medium">
+                      <AccordionTrigger className="text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 text-left py-3 text-sm md:text-base font-medium">
                         {faq.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-gray-400 text-sm leading-relaxed">
+                      <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                         {faq.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -78,14 +78,14 @@ export function FAQ() {
 
             {/* Footer Call to Action */}
             <div className="text-center mt-6">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Still have questions?{' '}
                 <a
                   href="#work-with-labs"
-                  className="text-white font-semibold hover:text-cyan-400 transition-colors inline-flex items-center gap-1"
+                  className="text-gray-900 dark:text-white font-semibold hover:text-blue-600 dark:hover:text-cyan-400 transition-colors inline-flex items-center gap-1"
                 >
                   Contact Us
-                  <span className="text-cyan-400">→</span>
+                  <span className="text-blue-600 dark:text-cyan-400">→</span>
                 </a>
               </p>
             </div>

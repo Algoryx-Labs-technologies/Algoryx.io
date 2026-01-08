@@ -44,7 +44,7 @@ export function Hero() {
               </span>
             </h1>
             
-            <p className="text-xl text-gray-400 max-w-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
               Learn systematic trading and quantitative research for Indian markets.
             </p>
             
@@ -59,7 +59,7 @@ export function Hero() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="group border-white/40 hover:border-white/60 bg-transparent hover:bg-white/10 text-white hover:text-white border-2 transition-all duration-300 text-base px-8 h-12"
+                className="group border-gray-300 dark:border-white/40 hover:border-gray-400 dark:hover:border-white/60 bg-transparent hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white hover:text-gray-900 dark:hover:text-white border-2 transition-all duration-300 text-base px-8 h-12"
               >
                 Explore Courses
                 <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -69,16 +69,16 @@ export function Hero() {
             {/* Stats */}
             <div className="flex gap-8 pt-8">
               <div>
-                <div className="text-3xl font-bold text-white">500+</div>
-                <div className="text-sm text-gray-500">Early Signups</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-500">Early Signups</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">10+</div>
-                <div className="text-sm text-gray-500">Expert Mentors</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">10+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-500">Expert Mentors</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">100%</div>
-                <div className="text-sm text-gray-500">India Focused</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">100%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-500">India Focused</div>
               </div>
             </div>
           </div>
