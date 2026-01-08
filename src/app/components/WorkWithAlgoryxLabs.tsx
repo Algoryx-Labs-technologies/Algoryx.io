@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -10,6 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 import { ScrollReveal } from './ScrollReveal';
 
 export function WorkWithAlgoryxLabs() {
@@ -20,6 +28,8 @@ export function WorkWithAlgoryxLabs() {
     requirement: '',
     hearAboutUs: '',
   });
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +42,11 @@ export function WorkWithAlgoryxLabs() {
     
     // Handle form submission
     console.log('Form submitted:', formData);
+    
+    // Show checkmark and open success dialog
+    setFormSubmitted(true);
+    setSuccessDialogOpen(true);
+    
     // Reset form
     setFormData({
       fullName: '',
@@ -40,6 +55,11 @@ export function WorkWithAlgoryxLabs() {
       requirement: '',
       hearAboutUs: '',
     });
+    
+    // Reset to submit button after 2 seconds
+    setTimeout(() => {
+      setFormSubmitted(false);
+    }, 2000);
   };
 
   const handleChange = (field: string, value: string) => {
@@ -161,9 +181,13 @@ export function WorkWithAlgoryxLabs() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 h-10 text-base font-semibold"
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 h-10 text-base font-semibold flex items-center justify-center"
                   >
-                    Submit Requirement
+                    {formSubmitted ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      'Submit Requirement'
+                    )}
                   </Button>
                 </div>
               </form>
@@ -171,6 +195,23 @@ export function WorkWithAlgoryxLabs() {
           </ScrollReveal>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+        <DialogContent className="max-w-md bg-gradient-to-br from-slate-900 to-slate-800 border-blue-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white text-2xl flex items-center gap-2">
+              <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                <Check className="w-6 h-6 text-green-400" />
+              </div>
+              Success!
+            </DialogTitle>
+            <DialogDescription className="text-gray-300 pt-4">
+              Our team will reach out to you. Thanks for showing interest in Algoryx!
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Instagram, Twitter, Linkedin, Github, Sparkles } from 'lucide-react';
+import { Instagram, Twitter, Linkedin, Github, Sparkles, Check } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import {
   Dialog,
@@ -8,17 +8,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 
 export function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle newsletter subscription
+    console.log('Newsletter subscription:', newsletterEmail);
+    setNewsletterSubmitted(true);
+    setNewsletterEmail('');
+    
+    // Reset to submit button after 2 seconds
+    setTimeout(() => {
+      setNewsletterSubmitted(false);
+    }, 2000);
+  };
 
   return (
     <footer className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer">
       <div className="container mx-auto px-6 py-12">
         <ScrollReveal>
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
+          <div className="grid md:grid-cols-6 gap-8 mb-12">
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -34,28 +51,77 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Company */}
           <div>
-            <h4 className="font-bold text-white mb-4">Quick Links</h4>
+            <h4 className="font-bold text-white mb-4">Company</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#home" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Home
+                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  About
                 </a>
               </li>
               <li>
-                <a href="#courses" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Courses
+                <a href="#careers" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Careers
                 </a>
               </li>
+              <li>
+                <a href="#blog" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Contact
+                </a>
+              </li>
+              <li>
+                <a href="#help" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Help
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Courses */}
+          <div>
+            <h4 className="font-bold text-white mb-4">Courses</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="#courses" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  All Courses
+                </a>
+              </li>
+              <li>
+                <a href="#beginner" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Beginner
+                </a>
+              </li>
+              <li>
+                <a href="#advanced" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Advanced
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Solutions */}
+          <div>
+            <h4 className="font-bold text-white mb-4">Solutions</h4>
+            <ul className="space-y-2">
               <li>
                 <a href="#labs" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Labs
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  About
+                <a href="#tools" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Tools
+                </a>
+              </li>
+              <li>
+                <a href="#research" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Research
                 </a>
               </li>
             </ul>
@@ -95,7 +161,7 @@ export function Footer() {
           {/* Social */}
           <div>
             <h4 className="font-bold text-white mb-4">Connect</h4>
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-6">
               <a
                 href="https://instagram.com"
                 target="_blank"
@@ -128,6 +194,31 @@ export function Footer() {
               >
                 <Github className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
               </a>
+            </div>
+            
+            {/* Newsletter */}
+            <div className="space-y-3">
+              <h5 className="text-white text-sm font-semibold">Newsletter</h5>
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Your email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 rounded-md flex-1 h-10"
+                />
+                <Button
+                  type="submit"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-md px-4 h-10 font-medium flex items-center justify-center"
+                >
+                  {newsletterSubmitted ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+              </form>
+              <p className="text-gray-400 text-xs">Don't miss any update!</p>
             </div>
           </div>
         </div>
