@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GraduationCap, Code2, Sparkles, ArrowRight, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollReveal } from './ScrollReveal';
@@ -28,8 +28,38 @@ const courses = [
 ];
 
 export function Courses() {
+  const [hasShined, setHasShined] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // IntersectionObserver to trigger shine animation on first scroll
+  useEffect(() => {
+    if (!sectionRef.current || hasShined) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasShined) {
+          // Small delay to sync with scroll animation
+          setTimeout(() => {
+            setHasShined(true);
+          }, 300);
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '-50px 0px'
+      }
+    );
+
+    observer.observe(sectionRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasShined]);
+
   return (
-    <section id="courses" className="py-24 relative font-courses">
+    <section ref={sectionRef} id="courses" className="py-24 relative font-courses">
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-16">
@@ -109,6 +139,26 @@ export function Courses() {
 
               {/* Decorative element */}
               <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl group-hover:scale-[1.8] group-hover:from-blue-500/50 group-hover:to-cyan-500/50 group-hover:blur-[60px] transition-all duration-500"></div>
+              
+              {/* Mirror shine overlay */}
+              {hasShined && (
+                <div 
+                  className="absolute inset-0 pointer-events-none z-30 rounded-2xl overflow-hidden"
+                >
+                  <div
+                    className="absolute w-full h-full"
+                    style={{
+                      background: 'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%, transparent 100%)',
+                      transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
+                      animation: 'mirrorShine 1.5s ease-out',
+                      animationDelay: `${index * 0.2}s`,
+                      animationFillMode: 'forwards',
+                      width: '200%',
+                      height: '200%'
+                    }}
+                  />
+                </div>
+              )}
             </div>
             </ScrollReveal>
           ))}

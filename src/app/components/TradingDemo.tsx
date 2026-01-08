@@ -157,6 +157,9 @@ export function TradingDemo() {
   // Window switching state
   const [activeWindow, setActiveWindow] = useState<'trading' | 'analyser'>('trading');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Mirror shine animation state
+  const [hasShined, setHasShined] = useState(false);
 
   // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
@@ -170,6 +173,12 @@ export function TradingDemo() {
           // Trigger entrance animation only once
           if (!hasEntered) {
             setHasEntered(true);
+          }
+          // Trigger mirror shine animation
+          if (!hasShined) {
+            setTimeout(() => {
+              setHasShined(true);
+            }, 500);
           }
         } else if (!entry.isIntersecting && hasAnimated) {
           // Stop animations when component is not visible
@@ -190,7 +199,7 @@ export function TradingDemo() {
     return () => {
       observer.disconnect();
     };
-  }, [hasAnimated]);
+  }, [hasAnimated, hasEntered, hasShined]);
 
   // Calculate code card offset (25% of its width)
   useEffect(() => {
@@ -580,6 +589,25 @@ export function TradingDemo() {
                   maskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)',
                   WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)'
                 }}>
+                  {/* Mirror shine overlay for laptop screen */}
+                  {hasShined && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none z-40 rounded-t-2xl overflow-hidden"
+                    >
+                      <div
+                        className="absolute w-full h-full"
+                        style={{
+                          background: 'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%, transparent 100%)',
+                          transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
+                          animation: 'mirrorShine 2s ease-out',
+                          animationDelay: '0.8s',
+                          animationFillMode: 'forwards',
+                          width: '200%',
+                          height: '200%'
+                        }}
+                      />
+                    </div>
+                  )}
                   {/* Screen Bezel */}
                   <div className="bg-black rounded-t-lg p-2">
                     <div className="flex items-center gap-2 mb-2">
@@ -953,6 +981,25 @@ export function TradingDemo() {
                   <div className="relative w-full preserve-3d transition-transform duration-700 code-flip-hover">
                     {/* Front Side - Code */}
                     <div ref={codeCardContainerRef} className="relative w-full backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                      {/* Mirror shine overlay for code card */}
+                      {hasShined && (
+                        <div 
+                          className="absolute inset-0 pointer-events-none z-40 rounded-xl overflow-hidden"
+                        >
+                          <div
+                            className="absolute w-full h-full"
+                            style={{
+                              background: 'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%, transparent 100%)',
+                              transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
+                              animation: 'mirrorShine 2s ease-out',
+                              animationDelay: '1.2s',
+                              animationFillMode: 'forwards',
+                              width: '200%',
+                              height: '200%'
+                            }}
+                          />
+                        </div>
+                      )}
                       {/* Code Editor Header */}
                       <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-white/10">
                         <div className="flex gap-1.5">
