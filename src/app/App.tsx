@@ -28,7 +28,7 @@ export default function App() {
           <Header />
           <Hero />
           <Features />
-          <EducationDemo />
+          {/* <EducationDemo /> */}
           <Courses />
           <Waitlist />
           <AIDoubtTool />

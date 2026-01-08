@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Button } from './ui/button';
 import { Menu, X, Sparkles } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/10 font-header">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-transparent font-header">
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -30,15 +29,8 @@ export function Header() {
             <a href="#work-with-labs" className="text-gray-300 hover:text-white transition-colors">Connect</a>
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="!text-gray-300 hover:!text-white hover:!bg-white/10 bg-transparent">
-              Login
-            </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0">
-              Sign Up
-            </Button>
-          </div>
+          {/* Spacer to maintain original layout position */}
+          <div className="hidden md:block"></div>
 
           {/* Mobile Menu Button */}
           <button
@@ -59,17 +51,10 @@ export function Header() {
             <a href="#why-algoryx" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Why Algoryx</a>
             <a href="#labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Labs</a>
             <a href="#work-with-labs" className="block text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>Connect</a>
-            <div className="flex flex-col space-y-2 pt-4">
-              <Button variant="ghost" className="!text-gray-300 hover:!text-white hover:!bg-white/10 bg-transparent w-full">
-                Login
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 w-full">
-                Sign Up
-              </Button>
-            </div>
           </div>
         )}
       </nav>
     </header>
   );
 }
+
