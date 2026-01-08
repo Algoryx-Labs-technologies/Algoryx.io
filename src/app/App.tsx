@@ -9,6 +9,7 @@ import { EducationDemo } from './components/EducationDemo';
 import { TradingDemo } from './components/TradingDemo';
 import { Waitlist } from './components/Waitlist';
 import { WorkWithAlgoryxLabs } from './components/WorkWithAlgoryxLabs';
+import { FAQ } from './components/FAQ';
 import { Labs } from './components/Labs';
 import { Footer } from './components/Footer';
 
@@ -36,6 +37,7 @@ export default function App() {
           <TradingDemo />
           <Labs />
           <WorkWithAlgoryxLabs />
+          <FAQ />
           <Footer />
         </div>
       </div>
