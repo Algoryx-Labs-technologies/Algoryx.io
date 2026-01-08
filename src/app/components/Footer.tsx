@@ -15,7 +15,7 @@ export function Footer() {
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
 
   return (
-    <footer className="relative border-t border-white/10 bg-black/50 backdrop-blur-sm font-footer">
+    <footer className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer">
       <div className="container mx-auto px-6 py-12">
         <ScrollReveal>
           <div className="grid md:grid-cols-4 gap-8 mb-12">
@@ -134,18 +134,16 @@ export function Footer() {
         </ScrollReveal>
 
         {/* Bottom bar */}
-        <ScrollReveal delay={0.2}>
-          <div className="pt-8 border-t border-white/10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">
-              © Algoryx 2025. All rights reserved.
+        <div className="pt-8 border-t border-white/10 dark:border-white/10 border-gray-300/30">
+          <div className="flex flex-col gap-2">
+            <p className="text-gray-300 dark:text-gray-400 text-gray-700 text-sm">
+              © 2026 Algoryx, All rights reserved.
             </p>
-            <p className="text-gray-500 text-xs text-center md:text-right max-w-md">
-              Disclaimer: Trading in financial markets involves substantial risk. Past performance is not indicative of future results.
+            <p className="text-gray-400 dark:text-gray-500 text-gray-600 text-xs leading-relaxed">
+              Algoryx, Algorix, Algoryx.io, Algorix.io, Algoryx.in, Algorix.in
             </p>
           </div>
         </div>
-        </ScrollReveal>
       </div>
 
       {/* Privacy Policy Dialog */}
