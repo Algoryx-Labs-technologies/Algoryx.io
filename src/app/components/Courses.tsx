@@ -48,7 +48,7 @@ export function Courses() {
           {courses.map((course, index) => (
             <ScrollReveal key={index} delay={index * 0.15}>
               <div
-                className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-all duration-300 overflow-hidden"
+                className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all duration-300 overflow-hidden"
               >
               {/* Coming Soon Ribbon */}
               <div className="absolute top-0 right-0 z-20">
@@ -61,8 +61,8 @@ export function Courses() {
               </div>
 
               {/* Icon */}
-              <div className="mb-6 w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <course.icon className="w-8 h-8 text-blue-400" />
+              <div className="mb-6 w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300">
+                <course.icon className="w-8 h-8 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
 
               {/* Content */}
@@ -108,7 +108,7 @@ export function Courses() {
               </Button>
 
               {/* Decorative element */}
-              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl group-hover:scale-[1.8] group-hover:from-blue-500/50 group-hover:to-cyan-500/50 group-hover:blur-[60px] transition-all duration-500"></div>
             </div>
             </ScrollReveal>
           ))}
