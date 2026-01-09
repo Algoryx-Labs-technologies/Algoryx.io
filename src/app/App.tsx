@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
+import { LaptopDemo } from './components/LaptopDemo';
 import { Features } from './components/Features';
 import { Courses } from './components/Courses';
 import { AIDoubtTool } from './components/AIDoubtTool';
@@ -28,6 +29,7 @@ export default function App() {
         <div className="relative z-10">
           <Header />
           <Hero />
+          <LaptopDemo />
           <Features />
           {/* <EducationDemo /> */}
           <Courses />

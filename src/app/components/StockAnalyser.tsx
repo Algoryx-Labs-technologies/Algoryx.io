@@ -1,5 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, TrendingUp } from 'lucide-react';
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from './ui/chart';
 
 interface StockPrice {
   symbol: string;
@@ -311,45 +326,96 @@ export function StockAnalyser() {
         </div>
 
         {/* Right Panel - Stocks Summary */}
-        <div className="col-span-3 bg-slate-800/30 rounded-lg p-3 border border-white/5 overflow-hidden flex flex-col">
-          <h4 className="text-white text-xs font-semibold mb-2">Stocks Summary</h4>
-          <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left text-gray-400 py-1 pr-2">Description</th>
-                  <th className="text-right text-gray-400 py-1 px-1">Last 7 Days</th>
-                  <th className="text-right text-gray-400 py-1 px-1">Last 30 Days</th>
-                  <th className="text-right text-gray-400 py-1 pl-1">Selected Days</th>
-                </tr>
-              </thead>
-              <tbody className="text-white">
-                <tr className="border-b border-white/5">
-                  <td className="py-1.5 pr-2">Volume</td>
-                  <td className="text-right px-1">2.40M</td>
-                  <td className="text-right px-1">3.86M</td>
-                  <td className="text-right pl-1">4.25M</td>
-                </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-1.5 pr-2">High Price</td>
-                  <td className="text-right px-1">1.78K</td>
-                  <td className="text-right px-1">1.79K</td>
-                  <td className="text-right pl-1">2.07K</td>
-                </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-1.5 pr-2">Low Price</td>
-                  <td className="text-right px-1">3.88</td>
-                  <td className="text-right px-1">3.50</td>
-                  <td className="text-right pl-1">1.50</td>
-                </tr>
-                <tr>
-                  <td className="py-1.5 pr-2">Closing Price</td>
-                  <td className="text-right px-1">107.17</td>
-                  <td className="text-right px-1">106.52</td>
-                  <td className="text-right pl-1">86.37</td>
-                </tr>
-              </tbody>
-            </table>
+        <div className="col-span-3 flex flex-col gap-3 overflow-hidden">
+          <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5 overflow-hidden flex flex-col">
+            <h4 className="text-white text-xs font-semibold mb-2">Stocks Summary</h4>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left text-gray-400 py-1 pr-2">Description</th>
+                    <th className="text-right text-gray-400 py-1 px-1">Last 7 Days</th>
+                    <th className="text-right text-gray-400 py-1 px-1">Last 30 Days</th>
+                    <th className="text-right text-gray-400 py-1 pl-1">Selected Days</th>
+                  </tr>
+                </thead>
+                <tbody className="text-white">
+                  <tr className="border-b border-white/5">
+                    <td className="py-1.5 pr-2">Volume</td>
+                    <td className="text-right px-1">2.40M</td>
+                    <td className="text-right px-1">3.86M</td>
+                    <td className="text-right pl-1">4.25M</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-1.5 pr-2">High Price</td>
+                    <td className="text-right px-1">1.78K</td>
+                    <td className="text-right px-1">1.79K</td>
+                    <td className="text-right pl-1">2.07K</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-1.5 pr-2">Low Price</td>
+                    <td className="text-right px-1">3.88</td>
+                    <td className="text-right px-1">3.50</td>
+                    <td className="text-right pl-1">1.50</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5 pr-2">Closing Price</td>
+                    <td className="text-right px-1">107.17</td>
+                    <td className="text-right px-1">106.52</td>
+                    <td className="text-right pl-1">86.37</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Radar Chart */}
+          <div className="bg-slate-800/30 rounded-lg border border-white/5 overflow-hidden">
+            <Card className="bg-transparent border-0">
+              <CardHeader className="items-center pb-4 px-3 pt-3">
+                <CardTitle className="text-white text-xs font-semibold">Radar Chart</CardTitle>
+                <CardDescription className="text-gray-400 text-xs">
+                  Showing total Investments for the last 6 months
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-0 px-3">
+                <ChartContainer
+                  config={{
+                    desktop: {
+                      label: "Desktop",
+                      color: "#3b82f6",
+                    },
+                  }}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RadarChart data={[
+                    { month: "January", desktop: 186 },
+                    { month: "February", desktop: 305 },
+                    { month: "March", desktop: 237 },
+                    { month: "April", desktop: 273 },
+                    { month: "May", desktop: 209 },
+                    { month: "June", desktop: 214 },
+                  ]}>
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <PolarAngleAxis dataKey="month" />
+                    <PolarGrid />
+                    <Radar
+                      dataKey="desktop"
+                      fill="#3b82f6"
+                      fillOpacity={0.6}
+                    />
+                  </RadarChart>
+                </ChartContainer>
+              </CardContent>
+              <CardFooter className="flex-col gap-2 text-sm px-3 pb-3">
+                <div className="flex items-center gap-2 leading-none font-medium text-white text-xs">
+                  Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+                </div>
+                <div className="text-gray-400 flex items-center gap-2 leading-none text-xs">
+                  January - June 2024
+                </div>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </div>

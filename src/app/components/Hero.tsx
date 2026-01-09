@@ -2,12 +2,11 @@ import React from 'react';
 import { Button } from './ui/button';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
-import { MacbookScroll } from './ui/macbook-scroll';
 import { Spotlight } from './ui/spotlight';
 
 export function Hero() {
   return (
-    <section id="home" className="relative min-h-screen flex flex-col items-center overflow-hidden font-hero bg-black/[0.96]">
+    <section id="home" className="relative min-h-screen flex flex-col items-center overflow-hidden font-hero">
       {/* Animated grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
       
@@ -81,17 +80,6 @@ export function Hero() {
             </div>
           </div>
         </ScrollReveal>
-
-        {/* Bottom Section - Macbook Scroll */}
-        <div className="w-full flex justify-center items-center mt-8 lg:mt-12">
-          <div className="relative w-full max-w-5xl">
-            <MacbookScroll
-              title={null}
-              src={undefined}
-              showGradient={false}
-            />
-          </div>
-        </div>
       </div>
     </section>
   );
