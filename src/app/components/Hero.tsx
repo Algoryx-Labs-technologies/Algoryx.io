@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { Spotlight } from './ui/spotlight';
+import { EncryptedText } from './ui/encrypted-text';
 
 export function Hero() {
   return (
@@ -41,8 +42,13 @@ export function Hero() {
               </span>
             </div>
             
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Learn systematic trading and quantitative research for Indian markets.
+            <p className="text-xl md:text-2xl" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <EncryptedText
+                text="Learn systematic trading and quantitative research for Indian markets."
+                encryptedClassName="text-gray-500 dark:text-gray-500"
+                revealedClassName="text-gray-600 dark:text-gray-400"
+                revealDelayMs={50}
+              />
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
