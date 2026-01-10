@@ -21,7 +21,7 @@ export function Hero() {
         {/* Top Section - Heading */}
         <ScrollReveal>
           <div className="text-center mb-12 lg:mb-16">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-6">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-hero-heading leading-tight mb-6 tracking-tight">
               <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
                 Algorithms Over
               </span>
