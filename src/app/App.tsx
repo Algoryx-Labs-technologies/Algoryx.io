@@ -29,7 +29,7 @@ export default function App() {
         <div className="relative z-10">
           <Header />
           <Hero />
-          <LaptopDemo />
+          {/* <LaptopDemo /> */}
           <Features />
           {/* <EducationDemo /> */}
           <Courses />

@@ -159,7 +159,8 @@ export function TradingDemo() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   
   // Mirror shine animation state
-  const [hasShined, setHasShined] = useState(false);
+  const [shineKey, setShineKey] = useState(0);
+  const prevActiveWindowRef = useRef<'trading' | 'analyser'>('trading');
 
   // IntersectionObserver to trigger animation on scroll and track visibility
   useEffect(() => {
@@ -175,11 +176,9 @@ export function TradingDemo() {
             setHasEntered(true);
           }
           // Trigger mirror shine animation
-          if (!hasShined) {
-            setTimeout(() => {
-              setHasShined(true);
-            }, 500);
-          }
+          setTimeout(() => {
+            setShineKey(1);
+          }, 500);
         } else if (!entry.isIntersecting && hasAnimated) {
           // Stop animations when component is not visible
           setShouldAnimate(false);
@@ -199,7 +198,30 @@ export function TradingDemo() {
     return () => {
       observer.disconnect();
     };
-  }, [hasAnimated, hasEntered, hasShined]);
+  }, [hasAnimated, hasEntered]);
+
+  // Trigger shine effect on tab/window change
+  useEffect(() => {
+    if (!hasEntered || !shouldAnimate) return;
+    
+    // Only trigger if window actually changed (not on initial mount)
+    if (prevActiveWindowRef.current !== activeWindow) {
+      // Trigger shine when activeWindow changes (after transition completes)
+      const timeout = setTimeout(() => {
+        setShineKey(prev => prev + 1);
+      }, 350); // Wait for transition to complete (300ms transition + 50ms delay)
+
+      // Update ref for next comparison
+      prevActiveWindowRef.current = activeWindow;
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    } else {
+      // Update ref on initial mount
+      prevActiveWindowRef.current = activeWindow;
+    }
+  }, [activeWindow, hasEntered, shouldAnimate]);
 
   // Calculate code card offset (25% of its width)
   useEffect(() => {
@@ -590,8 +612,9 @@ export function TradingDemo() {
                   WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 100%)'
                 }}>
                   {/* Mirror shine overlay for laptop screen */}
-                  {hasShined && (
+                  {shineKey > 0 && (
                     <div 
+                      key={`laptop-shine-${shineKey}`}
                       className="absolute inset-0 pointer-events-none z-40 rounded-t-2xl overflow-hidden"
                     >
                       <div
@@ -982,8 +1005,9 @@ export function TradingDemo() {
                     {/* Front Side - Code */}
                     <div ref={codeCardContainerRef} className="relative w-full backface-hidden bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                       {/* Mirror shine overlay for code card */}
-                      {hasShined && (
+                      {shineKey > 0 && (
                         <div 
+                          key={`code-shine-${shineKey}`}
                           className="absolute inset-0 pointer-events-none z-40 rounded-xl overflow-hidden"
                         >
                           <div

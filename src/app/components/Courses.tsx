@@ -28,21 +28,25 @@ const courses = [
 ];
 
 export function Courses() {
-  const [hasShined, setHasShined] = useState(false);
+  const [shineKey, setShineKey] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  const shineIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   // IntersectionObserver to trigger shine animation on first scroll
   useEffect(() => {
-    if (!sectionRef.current || hasShined) return;
+    if (!sectionRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasShined) {
-          // Small delay to sync with scroll animation
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+          // Initial delay to sync with scroll animation
           setTimeout(() => {
-            setHasShined(true);
+            setShineKey(1);
           }, 300);
-          observer.disconnect();
+        } else if (!entry.isIntersecting && isVisible) {
+          setIsVisible(false);
         }
       },
       {
@@ -56,7 +60,33 @@ export function Courses() {
     return () => {
       observer.disconnect();
     };
-  }, [hasShined]);
+  }, [isVisible]);
+
+  // Repeat shine animation every 4 seconds
+  useEffect(() => {
+    if (!isVisible) {
+      if (shineIntervalRef.current) {
+        clearInterval(shineIntervalRef.current);
+        shineIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Start interval after initial delay
+    const initialTimeout = setTimeout(() => {
+      shineIntervalRef.current = setInterval(() => {
+        setShineKey(prev => prev + 1);
+      }, 4000);
+    }, 1800); // Wait for first animation to complete (300ms delay + 1500ms animation)
+
+    return () => {
+      clearTimeout(initialTimeout);
+      if (shineIntervalRef.current) {
+        clearInterval(shineIntervalRef.current);
+        shineIntervalRef.current = null;
+      }
+    };
+  }, [isVisible]);
 
   return (
     <section ref={sectionRef} id="courses" className="py-24 relative font-courses">
@@ -141,8 +171,9 @@ export function Courses() {
               <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl group-hover:scale-[1.8] group-hover:from-blue-500/50 group-hover:to-cyan-500/50 group-hover:blur-[60px] transition-all duration-500"></div>
               
               {/* Mirror shine overlay */}
-              {hasShined && (
+              {shineKey > 0 && (
                 <div 
+                  key={`shine-${shineKey}-${index}`}
                   className="absolute inset-0 pointer-events-none z-30 rounded-2xl overflow-hidden"
                 >
                   <div
