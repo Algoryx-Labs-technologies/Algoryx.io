@@ -18,8 +18,19 @@ export function Hero() {
       />
       
       <div className="container mx-auto px-6 py-12 lg:py-20 relative z-10 w-full flex flex-col items-center">
-        {/* Top Section - Heading */}
+        {/* Top Section - Tagline */}
         <ScrollReveal>
+          <div className="text-center mb-8 lg:mb-12">
+            <div className="inline-block">
+              <span className="inline-block px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm md:text-base font-normal leading-relaxed">
+                India's first edtech platform for algorithmic trading and quantitative research.
+              </span>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* Main Heading */}
+        <ScrollReveal delay={0.1}>
           <div className="text-center mb-12 lg:mb-16">
             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-hero-heading leading-tight mb-6 tracking-tight">
               <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
@@ -34,15 +45,9 @@ export function Hero() {
         </ScrollReveal>
 
         {/* Middle Section - Content */}
-        <ScrollReveal delay={0.1}>
+        <ScrollReveal delay={0.2}>
           <div className="flex flex-col items-center text-center space-y-8 max-w-3xl mb-12 lg:mb-16">
-            <div className="inline-block">
-              <span className="inline-block px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm md:text-base font-normal leading-relaxed">
-                India's first edtech platform for algorithmic trading and quantitative research.
-              </span>
-            </div>
-            
-            <p className="text-xl md:text-2xl" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-xl md:text-2xl lg:text-3xl" style={{ fontFamily: 'Inter, sans-serif' }}>
               <EncryptedText
                 text="Learn systematic trading and quantitative research for Indian markets."
                 encryptedClassName="text-gray-500 dark:text-gray-500"
@@ -54,7 +59,8 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-base px-8 h-12"
+                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-base md:text-lg px-8 md:px-9 h-12"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 Join the Waitlist
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -62,7 +68,8 @@ export function Hero() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="group border-gray-300 dark:border-white/40 hover:border-gray-400 dark:hover:border-white/60 bg-transparent hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white hover:text-gray-900 dark:hover:text-white border-2 transition-all duration-300 text-base px-8 h-12"
+                className="group border-gray-300 dark:border-white/40 hover:border-gray-400 dark:hover:border-white/60 bg-transparent hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white hover:text-gray-900 dark:hover:text-white border-2 transition-all duration-300 text-base md:text-lg px-8 md:px-9 h-12"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 Explore Courses
                 <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -70,18 +77,18 @@ export function Hero() {
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap justify-center gap-8 pt-8">
+            <div className="flex flex-wrap justify-center gap-8 pt-8" style={{ fontFamily: 'Inter, sans-serif' }}>
               <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-500">Early Signups</div>
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">500+</div>
+                <div className="text-sm md:text-base text-gray-600 dark:text-gray-500">Early Signups</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">10+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-500">Expert Mentors</div>
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">10+</div>
+                <div className="text-sm md:text-base text-gray-600 dark:text-gray-500">Expert Mentors</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">100%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-500">India Focused</div>
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">100%</div>
+                <div className="text-sm md:text-base text-gray-600 dark:text-gray-500">India Focused</div>
               </div>
             </div>
           </div>
