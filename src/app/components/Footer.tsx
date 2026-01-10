@@ -247,7 +247,12 @@ export function Footer() {
 
       {/* Large background "Algoryx" text */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <h1 className="text-9xl md:text-[200px] font-bold text-gray-800 opacity-40 tracking-wider">
+        <h1 className="text-9xl md:text-[200px] font-bold text-gray-800 dark:text-gray-800 opacity-40 tracking-wider" style={{
+          textShadow: `
+            0 0 20px rgba(59, 130, 246, 0.15),
+            0 0 40px rgba(59, 130, 246, 0.1)
+          `
+        }}>
           Algoryx.io
         </h1>
       </div>

@@ -20,12 +20,10 @@ export function Hero() {
       <div className="container mx-auto px-6 py-12 lg:py-20 relative z-10 w-full flex flex-col items-center">
         {/* Top Section - Tagline */}
         <ScrollReveal>
-          <div className="text-center mb-8 lg:mb-12">
-            <div className="inline-block">
-              <span className="inline-block px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-sm md:text-base font-normal leading-relaxed">
-                India's first edtech platform for algorithmic trading and quantitative research.
-              </span>
-            </div>
+          <div className="text-center mb-10 lg:mb-14">
+          <p className="text-xs md:text-sm text-gray-400 dark:text-gray-500 font-light tracking-[0.2em] uppercase" style={{ fontFamily: 'Inter, sans-serif' }}>
+          India's first edtech platform for algorithmic trading and quantitative research
+            </p>
           </div>
         </ScrollReveal>
 
