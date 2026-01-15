@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Calendar } from '../components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Calendar as CalendarIcon, Clock, TrendingUp, Activity } from 'lucide-react';
 import { format } from 'date-fns';
+import { Sidebar } from '../components/Sidebar';
 
 export function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
-      <div className="relative">
+    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex">
+      <Sidebar />
+      
+      <div className="flex-1 relative md:ml-64">
         {/* Background gradient effects - matching landing theme */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
