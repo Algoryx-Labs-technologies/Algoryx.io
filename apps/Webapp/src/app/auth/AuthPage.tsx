@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User } from 'lucide-react';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -48,7 +48,7 @@ export function AuthPage() {
           <CardHeader className="space-y-3 text-center px-8 pt-8 relative z-10">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300">
-                <span className="text-blue-400 group-hover:text-blue-300 font-bold text-2xl font-hero transition-colors">A</span>
+                <User className="w-8 h-8 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
             </div>
             <CardTitle className="text-3xl md:text-4xl font-semibold font-hero text-white">
