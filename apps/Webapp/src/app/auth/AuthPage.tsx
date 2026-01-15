@@ -30,7 +30,7 @@ export function AuthPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-lg">
+      <div className="relative w-full max-w-2xl">
         {/* Background gradient effects - matching landing theme */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
