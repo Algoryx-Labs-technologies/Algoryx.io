@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User } from 'lucide-react';
+import { ForgotPassword } from './ForgotPassword';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -11,12 +12,17 @@ export function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     name: '',
   });
+
+  if (showForgotPassword) {
+    return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,13 +47,13 @@ export function AuthPage() {
         {/* Animated grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
-        <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-2xl hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all duration-300 overflow-hidden relative z-10">
+        <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden relative z-10">
           {/* Decorative element */}
-          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl group-hover:scale-[1.8] group-hover:from-blue-500/50 group-hover:to-cyan-500/50 group-hover:blur-[60px] transition-all duration-500"></div>
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-full blur-xl group-hover:scale-[1.5] group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:blur-2xl transition-all duration-500"></div>
           
           <CardHeader className="space-y-3 text-center px-8 pt-8 relative z-10">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300">
                 <User className="w-8 h-8 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
             </div>
@@ -156,6 +162,7 @@ export function AuthPage() {
                 <div className="flex items-center justify-end">
                   <button
                     type="button"
+                    onClick={() => setShowForgotPassword(true)}
                     className="text-sm font-footer text-blue-400 hover:text-blue-300 hover:underline transition-colors"
                   >
                     Forgot password?
