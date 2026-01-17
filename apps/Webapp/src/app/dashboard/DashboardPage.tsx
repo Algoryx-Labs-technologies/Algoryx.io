@@ -30,26 +30,30 @@ export function DashboardPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
         {/* Content - Full height, no scrolling */}
-        <div className="relative z-10 h-full w-full px-6 flex flex-col overflow-hidden">
-          {/* Welcome Message - Compact */}
-          <div className="mb-0 flex-shrink-0 pt-4">
-            <h2 className="text-base md:text-lg font-bold font-hero">
-              <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent dark:from-white dark:via-blue-400 dark:to-cyan-300">
-                Welcome to AlgoryxLabs
+        <div className="relative z-10 h-full w-full px-8 flex flex-col overflow-hidden">
+          {/* Welcome Message - Enhanced and Personalized */}
+          <div className="mb-2 flex-shrink-0 pt-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-hero tracking-tight">
+              <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent dark:from-blue-300 dark:via-cyan-200 dark:to-blue-400">
+                {(() => {
+                  const hour = new Date().getHours();
+                  if (hour < 12) return "Good Morning";
+                  if (hour < 17) return "Good Afternoon";
+                  return "Good Evening";
+                })()}
               </span>
-            </h2>
-          </div>
-
-          {/* Dashboard Title - Compact */}
-          <div className="mb-0.5 flex-shrink-0">
-            <h1 className="text-sm md:text-base font-semibold font-hero text-gray-400 dark:text-gray-500">
-              Dashboard
+              <span className="text-white dark:text-white ml-3">
+                John
+              </span>
             </h1>
+            <p className="text-xl md:text-2xl text-gray-300 dark:text-gray-300 mt-3 font-serif italic tracking-wide">
+              Welcome back to <span className="text-blue-400 dark:text-blue-400 font-semibold not-italic">AlgoryxLabs</span> <span className="mx-2 text-gray-500 dark:text-gray-500">•</span> <span className="text-gray-400 dark:text-gray-400">Dashboard</span>
+            </p>
           </div>
 
           {/* Widgets Grid - Centered vertically with equal gaps */}
           <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="grid grid-cols-12 gap-2 auto-rows-fr max-w-[95%] max-h-[70%] w-full">
+            <div className="grid grid-cols-12 gap-2 auto-rows-fr max-w-[88%] max-h-[70%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
             <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-1">
               <CalendarWidget />
