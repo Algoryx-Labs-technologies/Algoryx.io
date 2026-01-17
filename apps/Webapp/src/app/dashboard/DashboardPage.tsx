@@ -30,10 +30,10 @@ export function DashboardPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
         {/* Content - Full height, no scrolling */}
-        <div className="relative z-10 h-full w-full px-3 py-2 flex flex-col overflow-hidden">
+        <div className="relative z-10 h-full w-full px-6 flex flex-col overflow-hidden">
           {/* Welcome Message - Compact */}
-          <div className="mb-1 flex-shrink-0">
-            <h2 className="text-lg md:text-xl font-bold font-hero">
+          <div className="mb-0 flex-shrink-0 pt-4">
+            <h2 className="text-base md:text-lg font-bold font-hero">
               <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent dark:from-white dark:via-blue-400 dark:to-cyan-300">
                 Welcome to AlgoryxLabs
               </span>
@@ -41,42 +41,44 @@ export function DashboardPage() {
           </div>
 
           {/* Dashboard Title - Compact */}
-          <div className="mb-2 flex-shrink-0">
-            <h1 className="text-base md:text-lg font-semibold font-hero text-gray-400 dark:text-gray-500">
+          <div className="mb-0.5 flex-shrink-0">
+            <h1 className="text-sm md:text-base font-semibold font-hero text-gray-400 dark:text-gray-500">
               Dashboard
             </h1>
           </div>
 
-          {/* Widgets Grid - Fitted to fill entire space, no gaps on sides */}
-          <div className="grid grid-cols-12 gap-2 flex-1 min-h-0 auto-rows-fr">
+          {/* Widgets Grid - Centered vertically with equal gaps */}
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="grid grid-cols-12 gap-2 auto-rows-fr max-w-[95%] max-h-[70%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
-            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0">
+            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-1">
               <CalendarWidget />
             </div>
             
             {/* Projects & Requirements - Center Top, 1 row */}
-            <div className="col-span-12 md:col-span-6 min-h-0">
+            <div className="col-span-12 md:col-span-6 min-h-0 m-1">
               <ProjectsAndRequirementsWidget />
             </div>
             
             {/* Messages - Top Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
               <InboxWidget />
             </div>
             
             {/* Profile - Below Projects & Requirements, Left */}
-            <div className="col-span-12 md:col-span-3 min-h-0">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
               <ProfileWidget />
             </div>
             
             {/* Notifications - Below Projects & Requirements, Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
               <NotificationsWidget />
             </div>
             
             {/* News - Bottom Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
               <NewsWidget />
+            </div>
             </div>
           </div>
         </div>

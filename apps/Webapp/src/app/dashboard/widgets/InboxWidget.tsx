@@ -10,22 +10,22 @@ export function InboxWidget() {
   ];
 
   return (
-    <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
-      <CardHeader className="px-4 pt-4 pb-2 flex-shrink-0">
-        <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-2">
-          <Mail className="h-4 w-4 text-blue-400" />
+    <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
+      <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
+        <CardTitle className="text-base font-semibold font-hero text-white flex items-center gap-1.5">
+          <Mail className="h-3.5 w-3.5 text-blue-400" />
           Messages
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-xs mt-1">
+        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
           Your latest messages
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-4 pb-4 flex-1 overflow-y-auto">
-        <div className="space-y-2">
+      <CardContent className="px-3 pb-3 flex-1 overflow-y-auto">
+        <div className="space-y-1.5">
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex items-start gap-2 p-2 rounded-lg border border-white/5 hover:bg-slate-800/70 transition-colors cursor-pointer ${
+              className={`flex items-start gap-1.5 p-1.5 rounded-lg border border-white/5 hover:bg-slate-800/70 transition-colors cursor-pointer ${
                 message.unread ? 'bg-slate-800/70' : 'bg-slate-800/50'
               }`}
             >
