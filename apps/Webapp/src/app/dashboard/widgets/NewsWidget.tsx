@@ -12,11 +12,11 @@ export function NewsWidget() {
   return (
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
-        <CardTitle className="text-base font-semibold font-hero text-white flex items-center gap-1.5">
-          <Newspaper className="h-3.5 w-3.5 text-blue-400" />
+        <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+          <Newspaper className="h-5 w-5 text-blue-400" />
           News
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
           Latest updates and announcements
         </CardDescription>
       </CardHeader>
@@ -27,10 +27,10 @@ export function NewsWidget() {
               key={index}
               className="flex flex-col gap-0.5 p-1.5 rounded-lg bg-slate-800/50 border border-white/5 hover:bg-slate-800/70 transition-colors cursor-pointer"
             >
-              <p className="text-xs text-white font-footer font-medium">
+              <p className="text-sm text-white font-footer font-medium">
                 {news.title}
               </p>
-              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-footer">
+              <div className="flex items-center gap-1.5 text-sm text-gray-400 font-footer">
                 <span>{news.category}</span>
                 <span>•</span>
                 <span>{news.time}</span>

@@ -63,11 +63,11 @@ export function NotificationsWidget() {
   return (
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
-        <CardTitle className="text-base font-semibold font-hero text-white flex items-center gap-1.5">
-          <Bell className="h-3.5 w-3.5 text-blue-400" />
+        <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+          <Bell className="h-5 w-5 text-blue-400" />
           Notifications
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
           {notifications.filter(n => n.unread).length} unread
         </CardDescription>
       </CardHeader>
@@ -82,12 +82,12 @@ export function NotificationsWidget() {
             >
               <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${getNotificationColor(notification.type)}`}></div>
               <div className="flex-1 min-w-0">
-                <p className={`text-xs font-footer font-medium ${
+                <p className={`text-sm font-footer font-medium ${
                   notification.unread ? 'text-white' : 'text-gray-300'
                 }`}>
                   {notification.title}
                 </p>
-                <p className="text-xs text-gray-500 font-footer mt-0.5">
+                <p className="text-sm text-gray-500 font-footer mt-0.5">
                   {notification.time}
                 </p>
               </div>
