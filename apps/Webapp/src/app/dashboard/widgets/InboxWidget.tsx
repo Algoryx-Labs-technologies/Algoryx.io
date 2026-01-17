@@ -6,7 +6,6 @@ export function InboxWidget() {
     { sender: 'John Doe', subject: 'Project Update Required', time: '10:30 AM', unread: true },
     { sender: 'Sarah Smith', subject: 'Meeting Scheduled', time: '09:15 AM', unread: true },
     { sender: 'Team Lead', subject: 'Weekly Report', time: 'Yesterday', unread: false },
-    { sender: 'Client', subject: 'Feedback Request', time: '2 days ago', unread: false },
   ];
 
   return (
@@ -20,7 +19,7 @@ export function InboxWidget() {
           Your latest messages
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-3 pb-3 flex-1 overflow-y-auto">
+      <CardContent className="px-3 pb-3 flex-1 overflow-hidden">
         <div className="space-y-1.5">
           {messages.map((message, index) => (
             <div
