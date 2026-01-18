@@ -6,10 +6,12 @@ import { InboxWidget } from './widgets/InboxWidget';
 import { ProfileWidget } from './widgets/ProfileWidget';
 import { NotificationsWidget } from './widgets/NotificationsWidget';
 import { useSidebar } from '../contexts/SidebarContext';
+import { useShineEffect } from '../contexts/ShineEffectContext';
 import { cn } from '../components/ui/utils';
 
 export function DashboardPage() {
   const { isCollapsed } = useSidebar();
+  const { shouldShine } = useShineEffect();
 
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
@@ -56,32 +58,32 @@ export function DashboardPage() {
             <div className="grid grid-cols-12 gap-6 auto-rows-fr max-w-[92%] max-h-[78%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
             <div className="col-span-12 md:col-span-3 row-span-2 min-h-0">
-              <CalendarWidget />
+              <CalendarWidget shouldShine={shouldShine} />
             </div>
             
             {/* Projects & Requirements - Center Top, 1 row */}
             <div className="col-span-12 md:col-span-6 min-h-0">
-              <ProjectsAndRequirementsWidget />
+              <ProjectsAndRequirementsWidget shouldShine={shouldShine} />
             </div>
             
             {/* Messages - Top Right */}
             <div className="col-span-12 md:col-span-3 min-h-0">
-              <InboxWidget />
+              <InboxWidget shouldShine={shouldShine} />
             </div>
             
             {/* Profile - Below Projects & Requirements, Left */}
             <div className="col-span-12 md:col-span-3 min-h-0">
-              <ProfileWidget />
+              <ProfileWidget shouldShine={shouldShine} />
             </div>
             
             {/* Notifications - Below Projects & Requirements, Right */}
             <div className="col-span-12 md:col-span-3 min-h-0">
-              <NotificationsWidget />
+              <NotificationsWidget shouldShine={shouldShine} />
             </div>
             
             {/* News - Bottom Right */}
             <div className="col-span-12 md:col-span-3 min-h-0">
-              <NewsWidget />
+              <NewsWidget shouldShine={shouldShine} />
             </div>
             </div>
           </div>

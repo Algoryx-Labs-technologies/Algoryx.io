@@ -4,8 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { useState } from 'react';
+import { cn } from '../../components/ui/utils';
 
-export function ProjectsAndRequirementsWidget() {
+export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
   const [quotation, setQuotation] = useState('');
@@ -26,7 +27,7 @@ export function ProjectsAndRequirementsWidget() {
   };
 
   return (
-    <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
+    <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
       <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1">
