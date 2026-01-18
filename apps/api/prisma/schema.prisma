@@ -1,41 +1,175 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+
+// ENUMS
+
+enum Role {
+  client
+  admin
+  partner
 }
 
-// Example models - customize based on your needs
+enum priority{
+  low
+  mid
+  high
+}
+
+enum project_status{
+  not_started
+  initiated
+  in_progress
+  completed
+  delivered
+}
+
+// USER (Base Model)
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  role        Role
+  email       String
+  phoneNumber String?
+  country     String?
+  state       String?
+  firstName   String?
+  lastName    String?
+  created_at  DateTime @default(now())
 
-  // Add your relations here
-  // posts     Post[]
-
-  @@map("users")
+  // Relations
+  Client   Client?
+  Admin    Admin?
+  Partner  Partner?
 }
 
-// Add more models as needed
-// model Post {
-//   id        String   @id @default(uuid())
-//   title     String
-//   content   String?
-//   authorId  String
-//   author    User     @relation(fields: [authorId], references: [id])
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//
-//   @@map("posts")
-// }
 
+// CLIENT
+
+model Client {
+  uid          String   @id @default(cuid())
+  userId       String   @unique
+  User         User     @relation(fields: [userId], references: [id])
+
+  // Relations (from notes)
+  projects     Project[]
+  notifications Notification[]
+  messages      Message[]
+  calendars     Calendar[]
+  events        Event[]
+  supportTickets SupportTicket[]
+  paymentHistory Payment[]
+  clientNotes    ClientNote[]
+  requirements   Requirement[]
+}
+
+
+// ADMIN
+
+model Admin {
+  uid     String   @id @default(cuid())
+  userId  String   @unique
+  User    User     @relation(fields: [userId], references: [id])
+
+  // Note in drawing: "eventsId" exists but not defined
+  // Keeping minimal, no assumptions
+}
+
+
+// PARTNER
+
+model Partner {
+  uid             String   @id @default(cuid())
+  userId          String   @unique
+  User            User     @relation(fields: [userId], references: [id])
+
+  companyName        String?
+  companyDescription String?
+  profile            String?   // (optional)
+  bio                String?   // (optional)
+  meetingDate        DateTime? // (optional)
+  phoneNumber        String?
+  companyEmail       String?
+  companyWebsite     String?
+
+  // Relations
+  requirements Requirement[]
+}
+
+
+// PROJECT
+
+model Project {
+  id               String      @id @default(cuid())
+  clientId         String
+  Client           Client      @relation(fields: [clientId], references: [uid])
+
+  description      String?
+  readMe           String?
+  techStack        String?
+  clientRequirement String?
+  projectTimeline  String?
+  projectStatus    String?
+  projectFeatures  String?
+  priority         String?
+  progressStatus   String?
+
+  updated_at       DateTime    @default(now())
+  created_at       DateTime    @default(now())
+
+  // Relations
+  requirements     Requirement[]
+}
+
+
+// REQUIREMENT
+
+model Requirement {
+  uid         String     @id @default(cuid())
+  projectId   String?
+  Project     Project?   @relation(fields: [projectId], references: [id])
+
+  projectTitle String?
+  question     String?
+  description  String?
+  priority     String?
+  answer       String?
+
+  updated_at   DateTime  @default(now())
+  created_at   DateTime  @default(now())
+}
+
+
+// LANDING ENQUIRY (Independent Schema)
+
+model LandingEnquiry {
+  uid         String   @id @default(cuid())
+  fullName    String
+  email       String
+  phone       String
+  address     String
+  companyOrg  String?  // (optional)
+  message     String
+  idProof     String?  // (optional)
+  haveSource  String?  // (optional)
+
+  updated_at  DateTime @default(now())
+  created_at  DateTime @default(now())
+}
+
+
+// COURSE ENQUIRY (Independent Schema)
+=======
+model CourseEnquiry {
+  uid        String   @id @default(cuid())
+  courseId   String
+  email      String
+
+  created_at DateTime @default(now())
+}
