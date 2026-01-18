@@ -14,7 +14,7 @@ export function CalendarWidget() {
           <CalendarIcon className="h-9 w-9 text-blue-400" />
           Calendar
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-base mt-0.5">
           {selectedDate ? (
             <>Selected: {format(selectedDate, "PPP")}</>
           ) : (

@@ -16,7 +16,7 @@ export function NewsWidget() {
           <Newspaper className="h-9 w-9 text-blue-400" />
           News
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-base mt-0.5">
           Latest updates and announcements
         </CardDescription>
       </CardHeader>
