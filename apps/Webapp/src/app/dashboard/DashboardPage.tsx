@@ -32,7 +32,7 @@ export function DashboardPage() {
         {/* Content - Full height, no scrolling */}
         <div className="relative z-10 h-full w-full px-8 flex flex-col overflow-hidden">
           {/* Welcome Message - Enhanced and Personalized */}
-          <div className="mb-2 flex-shrink-0 pt-6">
+          <div className="mb-4 flex-shrink-0 pt-6">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-hero tracking-tight">
               <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent dark:from-blue-300 dark:via-cyan-200 dark:to-blue-400">
                 {(() => {
@@ -53,34 +53,34 @@ export function DashboardPage() {
 
           {/* Widgets Grid - Centered vertically with equal gaps */}
           <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="grid grid-cols-12 gap-4 auto-rows-fr max-w-[90%] max-h-[75%] w-full">
+            <div className="grid grid-cols-12 gap-6 auto-rows-fr max-w-[92%] max-h-[78%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
-            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-3">
               <CalendarWidget />
             </div>
             
             {/* Projects & Requirements - Center Top, 1 row */}
-            <div className="col-span-12 md:col-span-6 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-6 min-h-0 m-3">
               <ProjectsAndRequirementsWidget />
             </div>
             
             {/* Messages - Top Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-3">
               <InboxWidget />
             </div>
             
             {/* Profile - Below Projects & Requirements, Left */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-3">
               <ProfileWidget />
             </div>
             
             {/* Notifications - Below Projects & Requirements, Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-3">
               <NotificationsWidget />
             </div>
             
             {/* News - Bottom Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-2">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-3">
               <NewsWidget />
             </div>
             </div>
