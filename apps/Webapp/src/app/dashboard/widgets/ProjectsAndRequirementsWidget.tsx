@@ -18,9 +18,7 @@ export function ProjectsAndRequirementsWidget() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
     console.log({ projectTitle, description });
-    // Reset form
     setProjectTitle('');
     setDescription('');
   };
@@ -39,74 +37,72 @@ export function ProjectsAndRequirementsWidget() {
           </CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="px-3 pb-3 flex-1 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full">
-          {/* My Projects Section */}
-          <div className="space-y-1.5 overflow-y-auto">
-            {projects.map((project, index) => (
-              <div
-                key={index}
-                className="p-1.5 rounded-lg bg-slate-800/50 border border-white/5 hover:bg-slate-800/70 transition-colors"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base">{project.icon}</span>
-                  <div className="flex-1">
-                    <p className="text-sm text-white font-footer font-medium">
-                      {project.name}
-                    </p>
-                    <p className="text-sm text-gray-400 font-footer mt-0.5">
-                      Status {project.status}
-                    </p>
-                  </div>
+
+      <CardContent className="px-3 pb-3 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {/* LEFT - Projects */}
+        <div className="space-y-1.5 overflow-y-auto pr-1">
+          {projects.map((project, index) => (
+            <div
+              key={index}
+              className="p-1.5 rounded-lg bg-slate-800/50 border border-white/5 hover:bg-slate-800/70 transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">{project.icon}</span>
+                <div className="flex-1">
+                  <p className="text-sm text-white font-footer font-medium">
+                    {project.name}
+                  </p>
+                  <p className="text-sm text-gray-400 font-footer mt-0.5">
+                    Status {project.status}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Send Requirements Section */}
-          <div className="flex flex-col h-full">
-            <form onSubmit={handleSubmit} className="flex flex-col h-full space-y-1.5">
-              <div className="space-y-1 flex-shrink-0">
-                <Label htmlFor="project-title" className="text-sm text-gray-300 font-footer">
-                  Project Title
-                </Label>
-                <Input
-                  id="project-title"
-                  type="text"
-                  placeholder="Project Title"
-                  value={projectTitle}
-                  onChange={(e) => setProjectTitle(e.target.value)}
-                  className="bg-slate-800/50 border-white/10 text-white placeholder:text-gray-500 h-9 text-sm"
-                />
-              </div>
+        {/* RIGHT - Form + Submit at bottom */}
+        <div className="flex flex-col min-h-[240px] lg:min-h-0">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 space-y-1.5">
+            <div className="space-y-1 flex-shrink-0">
+              <Label htmlFor="project-title" className="text-sm text-gray-300 font-footer">
+                Project Title
+              </Label>
+              <Input
+                id="project-title"
+                type="text"
+                placeholder="Project Title"
+                value={projectTitle}
+                onChange={(e) => setProjectTitle(e.target.value)}
+                className="bg-slate-800/50 border-white/10 text-white placeholder:text-gray-500 h-9 text-sm"
+              />
+            </div>
 
-              <div className="space-y-1 flex-shrink-0">
-                <Label htmlFor="description" className="text-sm text-gray-300 font-footer">
-                  Description
-                </Label>
-                <textarea
-                  id="description"
-                  placeholder="Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-2 py-1.5 bg-slate-800/50 border border-white/10 rounded-md text-white placeholder:text-gray-500 font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
-                />
-              </div>
+            <div className="space-y-1 flex-1 flex flex-col">
+              <Label htmlFor="description" className="text-sm text-gray-300 font-footer">
+                Description
+              </Label>
+              <textarea
+                id="description"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="flex-1 w-full px-2 py-1.5 bg-slate-800/50 border border-white/10 rounded-md text-white placeholder:text-gray-500 font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+              />
+            </div>
 
-              <div className="space-y-1 flex-shrink-0 pt-1.5">
-                <Button
-                  type="submit"
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-footer text-sm h-9"
-                >
-                  Submit
-                </Button>
-              </div>
-            </form>
-          </div>
+            {/* Submit button - placed at bottom right */}
+            <div className="flex-shrink-0 pt-2 lg:pt-1.5 lg:self-end lg:w-auto">
+              <Button
+                type="submit"
+                className="w-full lg:w-32 bg-orange-500 hover:bg-orange-600 text-white font-footer text-sm h-9"
+              >
+                Submit
+              </Button>
+            </div>
+          </form>
         </div>
       </CardContent>
     </Card>
   );
 }
-
