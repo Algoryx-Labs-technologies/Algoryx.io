@@ -31,11 +31,11 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
       <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1">
-            <FolderKanban className="h-4 w-4 text-blue-400" />
+            <FolderKanban className="h-9 w-9 text-blue-400" />
             My Projects
           </CardTitle>
           <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1">
-            <CheckCircle2 className="h-4 w-4 text-blue-400" />
+            <CheckCircle2 className="h-9 w-9 text-blue-400" />
             Send-Requirements
           </CardTitle>
         </div>
