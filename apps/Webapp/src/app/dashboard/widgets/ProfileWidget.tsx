@@ -25,12 +25,12 @@ function ClockDisplay() {
   const monthName = time.toLocaleDateString('en-US', { month: 'long' });
   const day = time.getDate();
 
-  // Circle center and radii
-  const centerX = 70;
-  const centerY = 70;
-  const innerRadius = 45; // Inner ring for hours
-  const middleRadius = 50; // Middle ring for minutes
-  const outerRadius = 55; // Outer ring for seconds
+  // Circle center and radii (adjusted for 100x100 viewBox)
+  const centerX = 50;
+  const centerY = 50;
+  const innerRadius = 32; // Inner ring for hours
+  const middleRadius = 36; // Middle ring for minutes
+  const outerRadius = 40; // Outer ring for seconds
 
   // Start angle: -90 degrees = 12 o'clock (top)
   // In SVG: 0° = 3 o'clock, 90° = 6 o'clock, 180° = 9 o'clock, 270° = 12 o'clock
@@ -81,29 +81,29 @@ function ClockDisplay() {
   const secondsArc = createArcPath(outerRadius, startAngle, secondsEndAngle);
 
   return (
-    <div className="relative w-full min-h-[180px] flex items-center justify-center">
+    <div className="relative w-full min-h-[120px] flex items-center justify-center">
       {/* Grid background pattern - teal-blue dots */}
       <div 
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage: `
-            radial-gradient(circle, rgba(20, 184, 166, 0.4) 1.5px, transparent 1.5px)
+            radial-gradient(circle, rgba(20, 184, 166, 0.4) 1px, transparent 1px)
           `,
-          backgroundSize: '16px 16px',
+          backgroundSize: '12px 12px',
           backgroundPosition: '0 0',
         }}
       />
       
-      <div className="relative z-10 w-full flex items-center justify-between px-2">
+      <div className="relative z-10 w-full flex items-center justify-between px-1.5">
         {/* Date Display - Left Side */}
         <div className="flex flex-col text-white">
-          <div className="text-base font-semibold font-hero mb-1">{dayName}</div>
-          <div className="text-lg font-semibold font-hero">{monthName} {day}</div>
+          <div className="text-xs font-semibold font-hero mb-0.5">{dayName}</div>
+          <div className="text-sm font-semibold font-hero">{monthName} {day}</div>
         </div>
 
         {/* Clock Display - Right Side */}
         <div className="relative flex items-center justify-center">
-          <svg width="140" height="140" viewBox="0 0 140 140" className="drop-shadow-lg">
+          <svg width="100" height="100" viewBox="0 0 100 100" className="drop-shadow-lg">
             {/* Outer circle track - dark gray for seconds */}
             <circle
               cx={centerX}
@@ -241,7 +241,7 @@ function ClockDisplay() {
           
           {/* Time display in center */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-3xl font-bold text-white font-hero tracking-wider">
+            <div className="text-lg font-bold text-white font-hero tracking-wider">
               {hours}:{minutesStr}
             </div>
           </div>
@@ -254,38 +254,38 @@ function ClockDisplay() {
 export function ProfileWidget() {
   return (
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
-      <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
-        <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1.5">
-          <User className="h-9 w-9 text-blue-400" />
+      <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
+        <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1">
+          <User className="h-5 w-5 text-blue-400" />
           Profile
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-base mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
           Your account information
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-3 pb-3 flex-1 flex flex-col">
-        <div className="space-y-3 flex-1">
+      <CardContent className="px-2 pb-2 flex-1 flex flex-col">
+        <div className="space-y-2 flex-1">
           <div className="flex flex-col items-center">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1.5">
-              <User className="h-7 w-7 text-white" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1">
+              <User className="h-5 w-5 text-white" />
             </div>
-            <p className="text-base text-white font-footer font-semibold">John Doe</p>
-            <p className="text-sm text-gray-400 font-footer">john.doe@company.com</p>
+            <p className="text-xs text-white font-footer font-semibold">John Doe</p>
+            <p className="text-xs text-gray-400 font-footer">john.doe@company.com</p>
           </div>
           
           {/* Clock UI */}
-          <div className="mt-4 pt-3 border-t border-white/10">
+          <div className="mt-2 pt-2 border-t border-white/10">
             <ClockDisplay />
           </div>
           
-          <div className="space-y-1 pt-1.5 border-t border-white/10">
+          <div className="space-y-0.5 pt-1 border-t border-white/10">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400 font-footer">Name</span>
-              <span className="text-sm text-white font-footer">John Doe</span>
+              <span className="text-xs text-gray-400 font-footer">Name</span>
+              <span className="text-xs text-white font-footer">John Doe</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400 font-footer">Email</span>
-              <span className="text-sm text-white font-footer truncate ml-2">john.doe@company.com</span>
+              <span className="text-xs text-gray-400 font-footer">Email</span>
+              <span className="text-xs text-white font-footer truncate ml-2">john.doe@company.com</span>
             </div>
           </div>
         </div>
