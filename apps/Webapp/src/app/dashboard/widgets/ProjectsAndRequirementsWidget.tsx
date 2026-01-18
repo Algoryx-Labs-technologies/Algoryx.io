@@ -8,6 +8,7 @@ import { useState } from 'react';
 export function ProjectsAndRequirementsWidget() {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [quotation, setQuotation] = useState('');
 
   const projects = [
     { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
@@ -18,9 +19,10 @@ export function ProjectsAndRequirementsWidget() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ projectTitle, description });
+    console.log({ projectTitle, description, quotation });
     setProjectTitle('');
     setDescription('');
+    setQuotation('');
   };
 
   return (
@@ -38,7 +40,7 @@ export function ProjectsAndRequirementsWidget() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-2 pb-2 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-2">
+      <CardContent className="px-2 pb-2 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* LEFT - Projects */}
         <div className="space-y-1 overflow-y-auto pr-1">
           {projects.map((project, index) => (
@@ -91,14 +93,29 @@ export function ProjectsAndRequirementsWidget() {
               />
             </div>
 
-            {/* Submit button - placed at bottom right */}
-            <div className="flex-shrink-0 pt-1 lg:pt-1 lg:self-end lg:w-auto">
-              <Button
-                type="submit"
-                className="w-full lg:w-24 bg-orange-500 hover:bg-orange-600 text-white font-footer text-xs h-7"
-              >
-                Submit
-              </Button>
+            {/* Quotation and Submit button - placed at bottom */}
+            <div className="flex-shrink-0 pt-1 flex items-end gap-2">
+              <div className="flex-1 space-y-0.5">
+                <Label htmlFor="quotation" className="text-xs text-gray-300 font-footer">
+                  Quotation
+                </Label>
+                <Input
+                  id="quotation"
+                  type="text"
+                  placeholder="Quotation"
+                  value={quotation}
+                  onChange={(e) => setQuotation(e.target.value)}
+                  className="bg-slate-800/50 border-white/10 text-white placeholder:text-gray-500 h-7 text-xs"
+                />
+              </div>
+              <div className="pt-5">
+                <Button
+                  type="submit"
+                  className="w-full lg:w-24 bg-orange-500 hover:bg-orange-600 text-white font-footer text-xs h-7"
+                >
+                  Submit
+                </Button>
+              </div>
             </div>
           </form>
         </div>
