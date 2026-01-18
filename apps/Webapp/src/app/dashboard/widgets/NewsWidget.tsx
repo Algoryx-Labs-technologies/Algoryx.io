@@ -12,7 +12,7 @@ export function NewsWidget() {
   return (
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
-        <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1">
+        <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1">
           <Newspaper className="h-5 w-5 text-blue-400" />
           News
         </CardTitle>
@@ -20,7 +20,7 @@ export function NewsWidget() {
           Latest updates and announcements
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-2 pb-2 flex-1 overflow-y-auto">
+      <CardContent className="px-2 pb-2 flex-1 overflow-hidden">
         <div className="space-y-1">
           {newsItems.map((news, index) => (
             <div
