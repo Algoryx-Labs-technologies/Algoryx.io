@@ -31,16 +31,14 @@ export function ProjectsAndRequirementsWidget() {
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
-              <FolderKanban className="h-5 w-5 text-blue-400" />
-              My Projects
-            </CardTitle>
-            <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
-              <CheckCircle2 className="h-5 w-5 text-blue-400" />
-              Send-Requirements
-            </CardTitle>
-          </div>
+          <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+            <FolderKanban className="h-5 w-5 text-blue-400" />
+            My Projects
+          </CardTitle>
+          <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+            <CheckCircle2 className="h-5 w-5 text-blue-400" />
+            Send-Requirements
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="px-3 pb-3 flex-1 overflow-hidden">
