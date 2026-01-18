@@ -8,7 +8,6 @@ import { useState } from 'react';
 export function ProjectsAndRequirementsWidget() {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [deadline, setDeadline] = useState('');
 
   const projects = [
     { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
@@ -20,11 +19,10 @@ export function ProjectsAndRequirementsWidget() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
-    console.log({ projectTitle, description, deadline });
+    console.log({ projectTitle, description });
     // Reset form
     setProjectTitle('');
     setDescription('');
-    setDeadline('');
   };
 
   return (
@@ -94,26 +92,6 @@ export function ProjectsAndRequirementsWidget() {
                   rows={3}
                   className="w-full px-2 py-1.5 bg-slate-800/50 border border-white/10 rounded-md text-white placeholder:text-gray-500 font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
                 />
-              </div>
-
-              <div className="space-y-1 flex-shrink-0">
-                <Label htmlFor="deadline" className="text-sm text-gray-300 font-footer">
-                  Deadline
-                </Label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <Input
-                    id="deadline-date"
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    className="bg-slate-800/50 border-white/10 text-white h-9 text-sm"
-                  />
-                  <Input
-                    id="deadline-time"
-                    type="time"
-                    className="bg-slate-800/50 border-white/10 text-white h-9 text-sm"
-                  />
-                </div>
               </div>
 
               <div className="mt-auto pt-1.5">
