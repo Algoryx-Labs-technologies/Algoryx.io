@@ -3,26 +3,12 @@ import { FolderKanban, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 export function ProjectsAndRequirementsWidget() {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [time, setTime] = useState(new Date());
-  const [prevTime, setPrevTime] = useState(new Date());
-  const timeRef = useRef(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPrevTime(timeRef.current);
-      const now = new Date();
-      timeRef.current = now;
-      setTime(now);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const projects = [
     { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
@@ -44,88 +30,17 @@ export function ProjectsAndRequirementsWidget() {
   return (
     <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="px-3 pt-3 pb-1.5 flex-shrink-0">
-        <div className="flex items-center justify-between relative">
-          <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
-            <FolderKanban className="h-5 w-5 text-blue-400" />
-            My Projects
-          </CardTitle>
-          
-          {/* Digital Clock Section - Centered */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center">
-            <div className="flex items-center gap-1.5">
-              {/* Hours */}
-              <div className="relative">
-                <div className="flip-clock">
-                  <div className="flip-card-small">
-                    <div className={`flip-card-inner ${prevTime.getHours() !== time.getHours() ? 'flip' : ''}`}>
-                      <div className="flip-card-front">
-                        <span className="text-xl font-bold text-white font-mono">
-                          {String(prevTime.getHours()).padStart(2, '0')}
-                        </span>
-                      </div>
-                      <div className="flip-card-back">
-                        <span className="text-xl font-bold text-white font-mono">
-                          {String(time.getHours()).padStart(2, '0')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <span className="text-xl font-bold text-blue-400 font-mono">:</span>
-
-              {/* Minutes */}
-              <div className="relative">
-                <div className="flip-clock">
-                  <div className="flip-card-small">
-                    <div className={`flip-card-inner ${prevTime.getMinutes() !== time.getMinutes() ? 'flip' : ''}`}>
-                      <div className="flip-card-front">
-                        <span className="text-xl font-bold text-white font-mono">
-                          {String(prevTime.getMinutes()).padStart(2, '0')}
-                        </span>
-                      </div>
-                      <div className="flip-card-back">
-                        <span className="text-xl font-bold text-white font-mono">
-                          {String(time.getMinutes()).padStart(2, '0')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <span className="text-xl font-bold text-blue-400 font-mono">:</span>
-
-              {/* Seconds */}
-              <div className="relative">
-                <div className="flip-clock">
-                  <div className="flip-card-small">
-                    <div className={`flip-card-inner ${prevTime.getSeconds() !== time.getSeconds() ? 'flip' : ''}`}>
-                      <div className="flip-card-front">
-                        <span className="text-xl font-bold text-cyan-400 font-mono">
-                          {String(prevTime.getSeconds()).padStart(2, '0')}
-                        </span>
-                      </div>
-                      <div className="flip-card-back">
-                        <span className="text-xl font-bold text-cyan-400 font-mono">
-                          {String(time.getSeconds()).padStart(2, '0')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 font-footer mt-0.5">
-              {time.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+              <FolderKanban className="h-5 w-5 text-blue-400" />
+              My Projects
+            </CardTitle>
+            <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
+              <CheckCircle2 className="h-5 w-5 text-blue-400" />
+              Send-Requirements
+            </CardTitle>
           </div>
-
-          <CardTitle className="text-lg font-semibold font-hero text-white flex items-center gap-1.5">
-            <CheckCircle2 className="h-5 w-5 text-blue-400" />
-            Send-Requirements
-          </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="px-3 pb-3 flex-1 overflow-hidden">
