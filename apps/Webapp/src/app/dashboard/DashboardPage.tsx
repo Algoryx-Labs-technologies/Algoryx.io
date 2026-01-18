@@ -55,32 +55,32 @@ export function DashboardPage() {
           <div className="flex-1 flex items-center justify-center min-h-0">
             <div className="grid grid-cols-12 gap-2 auto-rows-fr max-w-[88%] max-h-[70%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
-            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-3 row-span-2 min-h-0 m-1 rounded-full overflow-hidden">
               <CalendarWidget />
             </div>
             
             {/* Projects & Requirements - Center Top, 1 row */}
-            <div className="col-span-12 md:col-span-6 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-6 min-h-0 m-1 rounded-full overflow-hidden">
               <ProjectsAndRequirementsWidget />
             </div>
             
             {/* Messages - Top Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1 rounded-full overflow-hidden">
               <InboxWidget />
             </div>
             
             {/* Profile - Below Projects & Requirements, Left */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1 rounded-full overflow-hidden">
               <ProfileWidget />
             </div>
             
             {/* Notifications - Below Projects & Requirements, Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1 rounded-full overflow-hidden">
               <NotificationsWidget />
             </div>
             
             {/* News - Bottom Right */}
-            <div className="col-span-12 md:col-span-3 min-h-0 m-1">
+            <div className="col-span-12 md:col-span-3 min-h-0 m-1 rounded-full overflow-hidden">
               <NewsWidget />
             </div>
             </div>
