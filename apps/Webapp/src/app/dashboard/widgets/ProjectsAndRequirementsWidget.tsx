@@ -94,7 +94,7 @@ export function ProjectsAndRequirementsWidget() {
                 />
               </div>
 
-              <div className="mt-auto pt-1.5">
+              <div className="space-y-1 flex-shrink-0 pt-1.5">
                 <Button
                   type="submit"
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-footer text-sm h-9"
