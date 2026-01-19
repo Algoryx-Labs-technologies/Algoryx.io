@@ -82,29 +82,29 @@ function ClockDisplay() {
   const secondsArc = createArcPath(outerRadius, startAngle, secondsEndAngle);
 
   return (
-    <div className="relative w-full min-h-[120px] flex items-center justify-center">
+    <div className="relative w-full min-h-[140px] flex items-center justify-center">
       {/* Grid background pattern - teal-blue dots */}
       <div 
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage: `
-            radial-gradient(circle, rgba(20, 184, 166, 0.4) 1px, transparent 1px)
+            radial-gradient(circle, rgba(20, 184, 166, 0.4) 1.5px, transparent 1.5px)
           `,
-          backgroundSize: '12px 12px',
+          backgroundSize: '16px 16px',
           backgroundPosition: '0 0',
         }}
       />
       
-      <div className="relative z-10 w-full flex items-center justify-between px-1.5">
+      <div className="relative z-10 w-full flex items-center justify-between px-2">
         {/* Date Display - Left Side */}
         <div className="flex flex-col text-white">
-          <div className="text-xs font-semibold font-hero mb-0.5">{dayName}</div>
-          <div className="text-sm font-semibold font-hero">{monthName} {day}</div>
+          <div className="text-sm font-semibold font-hero mb-1">{dayName}</div>
+          <div className="text-base font-semibold font-hero">{monthName} {day}</div>
         </div>
 
         {/* Clock Display - Right Side */}
         <div className="relative flex items-center justify-center">
-          <svg width="100" height="100" viewBox="0 0 100 100" className="drop-shadow-lg">
+          <svg width="120" height="120" viewBox="0 0 100 100" className="drop-shadow-lg">
             {/* Outer circle track - dark gray for seconds */}
             <circle
               cx={centerX}
@@ -242,7 +242,7 @@ function ClockDisplay() {
           
           {/* Time display in center */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-lg font-bold text-white font-hero tracking-wider">
+            <div className="text-xl font-bold text-white font-hero tracking-wider">
               {hours}:{minutesStr}
             </div>
           </div>
@@ -255,23 +255,23 @@ function ClockDisplay() {
 export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   return (
     <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
-      <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
-        <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1">
+      <CardHeader className="px-2.5 pt-2.5 pb-1.5 flex-shrink-0">
+        <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1.5">
           <User className="h-9 w-9 text-blue-400" />
           Profile
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
           Your account information
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-2 pb-2 flex-1 flex flex-col">
-        <div className="space-y-2 flex-1">
+      <CardContent className="px-2.5 pb-2.5 flex-1 flex flex-col">
+        <div className="space-y-2.5 flex-1">
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1">
-              <User className="h-5 w-5 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1.5">
+              <User className="h-6 w-6 text-white" />
             </div>
-            <p className="text-xs text-white font-footer font-semibold">John Doe</p>
-            <p className="text-xs text-gray-400 font-footer">john.doe@company.com</p>
+            <p className="text-sm text-white font-footer font-semibold">John Doe</p>
+            <p className="text-sm text-gray-400 font-footer">john.doe@company.com</p>
           </div>
           
           {/* Clock UI */}
@@ -279,14 +279,14 @@ export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }
             <ClockDisplay />
           </div>
           
-          <div className="space-y-0.5 pt-1 border-t border-white/10">
+          <div className="space-y-1 pt-1.5 border-t border-white/10">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 font-footer">Name</span>
-              <span className="text-xs text-white font-footer">John Doe</span>
+              <span className="text-sm text-gray-400 font-footer">Name</span>
+              <span className="text-sm text-white font-footer">John Doe</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 font-footer">Email</span>
-              <span className="text-xs text-white font-footer truncate ml-2">john.doe@company.com</span>
+              <span className="text-sm text-gray-400 font-footer">Email</span>
+              <span className="text-sm text-white font-footer truncate ml-2">john.doe@company.com</span>
             </div>
           </div>
         </div>
