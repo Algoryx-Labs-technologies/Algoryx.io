@@ -5,6 +5,7 @@ import { ProjectsListPage } from './projects/ProjectsListPage';
 import { ProjectDetailPage } from './projects/ProjectDetailPage';
 import { MessagesListPage } from './messages/MessagesListPage';
 import { MessageConversationPage } from './messages/MessageConversationPage';
+import { RequirementsListPage } from './requirements/RequirementsListPage';
 
 function App() {
   // TODO: Add authentication check - for now, defaulting to dashboard
@@ -19,6 +20,7 @@ function App() {
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/messages" element={<MessagesListPage />} />
         <Route path="/messages/:id" element={<MessageConversationPage />} />
+        <Route path="/requirements" element={<RequirementsListPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route 
           path="/" 
