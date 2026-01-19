@@ -370,14 +370,14 @@ export function MessageConversationPage() {
                 <User className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold font-hero text-white">
+                <h1 className="text-3xl font-bold font-hero text-white">
                   {conversation.recipientName}
                 </h1>
-                <p className="text-gray-400 font-footer text-sm">
+                <p className="text-gray-300 font-footer text-base mt-1">
                   {conversation.recipientRole === 'admin' ? 'Technical Analyst' : 'Advisor'} • {conversation.recipientEmail}
                 </p>
                 {conversation.subject && (
-                  <p className="text-gray-500 font-footer text-xs mt-1">
+                  <p className="text-gray-400 font-footer text-sm mt-2">
                     Subject: {conversation.subject}
                   </p>
                 )}
@@ -410,24 +410,24 @@ export function MessageConversationPage() {
                         </div>
                       )}
                       <div className={cn(
-                        "max-w-[70%] rounded-2xl p-4",
+                        "max-w-[70%] rounded-2xl p-5",
                         isMine
                           ? "bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30"
                           : "bg-gradient-to-br from-slate-800/70 to-slate-800/50 border border-white/10"
                       )}>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-3 mb-3">
                           <span className={cn(
-                            "text-sm font-footer font-semibold",
+                            "text-base font-footer font-semibold",
                             isMine ? "text-blue-400" : "text-white"
                           )}>
                             {message.senderName}
                           </span>
-                          <span className="text-xs text-gray-500 font-footer">
-                            <Clock className="h-3 w-3 inline mr-1" />
+                          <span className="text-sm text-gray-400 font-footer">
+                            <Clock className="h-4 w-4 inline mr-1" />
                             {formatTime(message.created_at)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-200 font-footer whitespace-pre-wrap">
+                        <p className="text-base text-gray-100 font-footer whitespace-pre-wrap leading-relaxed">
                           {message.content}
                         </p>
                       </div>

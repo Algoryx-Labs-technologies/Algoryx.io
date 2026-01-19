@@ -275,22 +275,22 @@ Total Duration: 3 months`,
               </button>
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold font-hero text-gray-900 dark:text-white mb-2">
+                  <h1 className="text-4xl font-bold font-hero text-gray-900 dark:text-white mb-3">
                     {project.projectTitle || 'Untitled Project'}
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400 font-footer">
+                  <p className="text-lg text-gray-300 dark:text-gray-300 font-footer">
                     {project.description || 'No description available'}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span className={cn(
-                    "text-sm font-footer px-3 py-1 rounded border",
+                    "text-base font-footer px-4 py-2 rounded border",
                     getStatusColor(project.projectStatus)
                   )}>
                     {project.projectStatus?.replace('_', ' ') || 'Not Started'}
                   </span>
                   <span className={cn(
-                    "text-sm font-footer px-3 py-1 rounded",
+                    "text-base font-footer px-4 py-2 rounded",
                     getPriorityColor(project.priority)
                   )}>
                     {project.priority || 'N/A'} Priority
@@ -312,25 +312,25 @@ Total Duration: 3 months`,
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-400 font-footer">Overall Progress</span>
-                        <span className="text-lg text-white font-footer font-semibold">{progress}%</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-base text-gray-300 font-footer font-medium">Overall Progress</span>
+                        <span className="text-xl text-white font-footer font-semibold">{progress}%</span>
                       </div>
-                      <div className="w-full bg-slate-700/50 rounded-full h-4">
+                      <div className="w-full bg-slate-700/50 rounded-full h-5">
                         <div
-                          className="bg-gradient-to-r from-blue-500 to-cyan-500 h-4 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-blue-500 to-cyan-500 h-5 rounded-full transition-all duration-300"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
                       <div>
-                        <p className="text-xs text-gray-400 font-footer mb-1">Created</p>
-                        <p className="text-sm text-white font-footer">{formatDate(project.created_at)}</p>
+                        <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Created</p>
+                        <p className="text-base text-white font-footer">{formatDate(project.created_at)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400 font-footer mb-1">Last Updated</p>
-                        <p className="text-sm text-white font-footer">{formatDate(project.updated_at)}</p>
+                        <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Last Updated</p>
+                        <p className="text-base text-white font-footer">{formatDate(project.updated_at)}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -347,9 +347,9 @@ Total Duration: 3 months`,
                   <CardContent className="space-y-4">
                     {project.readMe && (
                       <div>
-                        <h3 className="text-sm font-semibold text-white font-footer mb-2">ReadMe</h3>
-                        <div className="bg-slate-800/50 rounded-lg p-4 border border-white/5">
-                          <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                        <h3 className="text-lg font-semibold text-white font-footer mb-3">ReadMe</h3>
+                        <div className="bg-slate-800/50 rounded-lg p-5 border border-white/5">
+                          <pre className="text-base text-gray-200 font-mono whitespace-pre-wrap">
                             {project.readMe}
                           </pre>
                         </div>
@@ -357,18 +357,18 @@ Total Duration: 3 months`,
                     )}
                     {project.clientRequirement && (
                       <div>
-                        <h3 className="text-sm font-semibold text-white font-footer mb-2">Client Requirements</h3>
-                        <p className="text-sm text-gray-300 font-footer">{project.clientRequirement}</p>
+                        <h3 className="text-lg font-semibold text-white font-footer mb-3">Client Requirements</h3>
+                        <p className="text-base text-gray-200 font-footer leading-relaxed">{project.clientRequirement}</p>
                       </div>
                     )}
                     {project.projectFeatures && (
                       <div>
-                        <h3 className="text-sm font-semibold text-white font-footer mb-2">Project Features</h3>
+                        <h3 className="text-lg font-semibold text-white font-footer mb-3">Project Features</h3>
                         <div className="flex flex-wrap gap-2">
                           {project.projectFeatures.split(',').map((feature, index) => (
                             <span
                               key={index}
-                              className="text-xs text-gray-300 bg-slate-800/50 px-3 py-1 rounded border border-white/5 font-footer"
+                              className="text-sm text-gray-200 bg-slate-800/50 px-4 py-2 rounded border border-white/5 font-footer"
                             >
                               {feature.trim()}
                             </span>
@@ -394,13 +394,13 @@ Total Duration: 3 months`,
                           key={req.uid}
                           className="bg-slate-800/50 rounded-lg p-4 border border-white/5"
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="text-sm font-semibold text-white font-footer">
+                          <div className="flex items-start justify-between mb-3">
+                            <h4 className="text-base font-semibold text-white font-footer">
                               {req.question || 'Requirement'}
                             </h4>
                             {req.priority && (
                               <span className={cn(
-                                "text-xs font-footer px-2 py-1 rounded",
+                                "text-sm font-footer px-3 py-1.5 rounded",
                                 getPriorityColor(req.priority)
                               )}>
                                 {req.priority}
@@ -408,12 +408,12 @@ Total Duration: 3 months`,
                             )}
                           </div>
                           {req.description && (
-                            <p className="text-sm text-gray-400 font-footer mb-2">{req.description}</p>
+                            <p className="text-base text-gray-300 font-footer mb-3 leading-relaxed">{req.description}</p>
                           )}
                           {req.answer && (
-                            <div className="mt-2 pt-2 border-t border-white/10">
-                              <p className="text-xs text-gray-500 font-footer mb-1">Answer:</p>
-                              <p className="text-sm text-gray-300 font-footer">{req.answer}</p>
+                            <div className="mt-3 pt-3 border-t border-white/10">
+                              <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Answer:</p>
+                              <p className="text-base text-gray-200 font-footer leading-relaxed">{req.answer}</p>
                             </div>
                           )}
                         </div>
@@ -436,22 +436,22 @@ Total Duration: 3 months`,
                   <CardContent className="space-y-4">
                     {project.projectTimeline && (
                       <div>
-                        <p className="text-xs text-gray-400 font-footer mb-1">Duration</p>
-                        <p className="text-sm text-white font-footer font-medium">{project.projectTimeline}</p>
+                        <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Duration</p>
+                        <p className="text-base text-white font-footer font-semibold">{project.projectTimeline}</p>
                       </div>
                     )}
                     {project.deadline && (
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="h-4 w-4 text-gray-400" />
-                          <p className="text-xs text-gray-400 font-footer">Deadline</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar className="h-5 w-5 text-gray-400" />
+                          <p className="text-sm text-gray-400 font-footer font-medium">Deadline</p>
                         </div>
-                        <p className="text-sm text-white font-footer font-medium mb-2">
+                        <p className="text-base text-white font-footer font-semibold mb-3">
                           {formatDate(project.deadline)}
                         </p>
                         {daysUntilDeadline !== null && (
                           <span className={cn(
-                            "text-xs font-footer px-2 py-1 rounded inline-block",
+                            "text-sm font-footer px-3 py-1.5 rounded inline-block",
                             daysUntilDeadline < 0
                               ? "bg-red-500/20 text-red-400"
                               : daysUntilDeadline <= 7
@@ -478,9 +478,9 @@ Total Duration: 3 months`,
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400 font-footer">Status</span>
+                      <span className="text-base text-gray-300 font-footer font-medium">Status</span>
                       <span className={cn(
-                        "text-sm font-footer px-3 py-1 rounded",
+                        "text-base font-footer px-4 py-2 rounded",
                         getPaymentStatusColor(project.paymentStatus)
                       )}>
                         {project.paymentStatus?.toUpperCase() || 'N/A'}

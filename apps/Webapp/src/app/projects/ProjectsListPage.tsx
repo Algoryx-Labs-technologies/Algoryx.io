@@ -229,23 +229,23 @@ export function ProjectsListPage() {
                       <CardHeader className="px-6 pt-6 pb-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <CardTitle className="text-lg font-semibold font-hero text-white mb-1 line-clamp-1">
+                            <CardTitle className="text-xl font-semibold font-hero text-white mb-2 line-clamp-1">
                               {project.projectTitle || 'Untitled Project'}
                             </CardTitle>
-                            <p className="text-sm text-gray-400 font-footer line-clamp-2">
+                            <p className="text-base text-gray-300 font-footer line-clamp-2">
                               {project.description || 'No description'}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className={cn(
-                            "text-xs font-footer px-2 py-1 rounded border",
+                            "text-sm font-footer px-3 py-1.5 rounded border",
                             getStatusColor(project.projectStatus)
                           )}>
                             {project.projectStatus?.replace('_', ' ') || 'Not Started'}
                           </span>
                           <span className={cn(
-                            "text-xs font-footer px-2 py-1 rounded",
+                            "text-sm font-footer px-3 py-1.5 rounded",
                             getPriorityColor(project.priority)
                           )}>
                             {project.priority || 'N/A'} Priority
@@ -256,13 +256,13 @@ export function ProjectsListPage() {
                       <CardContent className="px-6 pb-6 space-y-4">
                         {/* Progress Bar */}
                         <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-gray-400 font-footer">Progress</span>
-                            <span className="text-xs text-white font-footer font-semibold">{progress}%</span>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-base text-gray-300 font-footer font-medium">Progress</span>
+                            <span className="text-base text-white font-footer font-semibold">{progress}%</span>
                           </div>
-                          <div className="w-full bg-slate-700/50 rounded-full h-2.5">
+                          <div className="w-full bg-slate-700/50 rounded-full h-3">
                             <div
-                              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2.5 rounded-full transition-all duration-300"
+                              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300"
                               style={{ width: `${progress}%` }}
                             />
                           </div>
@@ -270,15 +270,15 @@ export function ProjectsListPage() {
 
                         {/* Deadline */}
                         {project.deadline && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-400 font-footer">Deadline:</span>
-                            <span className="text-white font-footer font-medium">
+                          <div className="flex items-center gap-3 text-base">
+                            <Calendar className="h-5 w-5 text-gray-400" />
+                            <span className="text-gray-300 font-footer font-medium">Deadline:</span>
+                            <span className="text-white font-footer font-semibold">
                               {formatDate(project.deadline)}
                             </span>
                             {daysUntilDeadline !== null && (
                               <span className={cn(
-                                "text-xs font-footer px-2 py-0.5 rounded ml-auto",
+                                "text-sm font-footer px-3 py-1 rounded ml-auto",
                                 daysUntilDeadline < 0
                                   ? "bg-red-500/20 text-red-400"
                                   : daysUntilDeadline <= 7
@@ -294,11 +294,11 @@ export function ProjectsListPage() {
                         )}
 
                         {/* Payment Status */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <DollarSign className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-400 font-footer">Payment:</span>
+                        <div className="flex items-center gap-3 text-base">
+                          <DollarSign className="h-5 w-5 text-gray-400" />
+                          <span className="text-gray-300 font-footer font-medium">Payment:</span>
                           <span className={cn(
-                            "text-xs font-footer px-2 py-1 rounded",
+                            "text-sm font-footer px-3 py-1.5 rounded",
                             getPaymentStatusColor(project.paymentStatus)
                           )}>
                             {project.paymentStatus || 'N/A'}
@@ -306,11 +306,11 @@ export function ProjectsListPage() {
                         </div>
 
                         {/* Agreement Status */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-400 font-footer">Agreement:</span>
+                        <div className="flex items-center gap-3 text-base">
+                          <FileText className="h-5 w-5 text-gray-400" />
+                          <span className="text-gray-300 font-footer font-medium">Agreement:</span>
                           <span className={cn(
-                            "text-xs font-footer px-2 py-1 rounded",
+                            "text-sm font-footer px-3 py-1.5 rounded",
                             project.agreementStatus === 'signed'
                               ? "bg-green-500/20 text-green-400"
                               : project.agreementStatus === 'pending'
@@ -322,10 +322,10 @@ export function ProjectsListPage() {
                         </div>
 
                         {/* View Details Button */}
-                        <div className="pt-2 border-t border-white/10">
-                          <div className="flex items-center justify-between text-sm text-blue-400 font-footer font-medium group-hover:text-blue-300 transition-colors">
+                        <div className="pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between text-base text-blue-400 font-footer font-semibold group-hover:text-blue-300 transition-colors">
                             <span>View Details</span>
-                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
                       </CardContent>

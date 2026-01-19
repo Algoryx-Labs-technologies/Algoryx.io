@@ -259,12 +259,12 @@ export function RequirementsListPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <FileText className="h-5 w-5 text-blue-400" />
-                            <h3 className="text-lg font-semibold font-hero text-white">
+                            <h3 className="text-xl font-semibold font-hero text-white">
                               {requirement.projectTitle || 'Untitled Project'}
                             </h3>
                             {requirement.priority && (
                               <span className={cn(
-                                "text-xs font-footer px-2 py-1 rounded",
+                                "text-sm font-footer px-3 py-1.5 rounded",
                                 getPriorityColor(requirement.priority)
                               )}>
                                 {requirement.priority.toUpperCase()} Priority
@@ -272,10 +272,10 @@ export function RequirementsListPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           {getStatusIcon(requirement.status)}
                           <span className={cn(
-                            "text-xs font-footer px-3 py-1 rounded border",
+                            "text-sm font-footer px-4 py-2 rounded border",
                             getStatusColor(requirement.status)
                           )}>
                             {requirement.status?.toUpperCase() || 'UNKNOWN'}
@@ -284,12 +284,12 @@ export function RequirementsListPage() {
                       </div>
 
                       {/* Three Fields */}
-                      <div className="space-y-3 mb-4">
+                      <div className="space-y-4 mb-5">
                         {/* Project Title */}
                         {requirement.projectTitle && (
                           <div>
-                            <p className="text-xs text-gray-500 font-footer mb-1">Project Title</p>
-                            <p className="text-sm text-white font-footer font-medium">
+                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Project Title</p>
+                            <p className="text-lg text-white font-footer font-semibold">
                               {requirement.projectTitle}
                             </p>
                           </div>
@@ -298,8 +298,8 @@ export function RequirementsListPage() {
                         {/* Quotation */}
                         {requirement.question && (
                           <div>
-                            <p className="text-xs text-gray-500 font-footer mb-1">Quotation</p>
-                            <p className="text-sm text-white font-footer">
+                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Quotation</p>
+                            <p className="text-base text-white font-footer leading-relaxed">
                               {requirement.question}
                             </p>
                           </div>
@@ -308,8 +308,8 @@ export function RequirementsListPage() {
                         {/* Description */}
                         {requirement.description && (
                           <div>
-                            <p className="text-xs text-gray-500 font-footer mb-1">Description</p>
-                            <p className="text-sm text-gray-300 font-footer">
+                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Description</p>
+                            <p className="text-base text-gray-200 font-footer leading-relaxed">
                               {requirement.description}
                             </p>
                           </div>
@@ -318,13 +318,13 @@ export function RequirementsListPage() {
 
                       {/* Answer (if exists) */}
                       {requirement.answer && requirement.answer.trim() && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
-                          <p className="text-xs text-gray-500 font-footer mb-2 flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3 text-green-400" />
+                        <div className="mt-5 pt-5 border-t border-white/10">
+                          <p className="text-sm text-gray-400 font-footer mb-3 flex items-center gap-2 font-medium">
+                            <CheckCircle2 className="h-4 w-4 text-green-400" />
                             Answer
                           </p>
-                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                            <p className="text-sm text-gray-200 font-footer">
+                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                            <p className="text-base text-gray-100 font-footer leading-relaxed">
                               {requirement.answer}
                             </p>
                           </div>
@@ -332,21 +332,21 @@ export function RequirementsListPage() {
                       )}
 
                       {/* Footer */}
-                      <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-500 font-footer">
+                      <div className="mt-5 pt-5 border-t border-white/10 flex items-center justify-between text-sm text-gray-400 font-footer">
                         <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                          <span className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
                             Created: {formatDate(requirement.created_at)}
                           </span>
                           {requirement.updated_at !== requirement.created_at && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
+                            <span className="flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
                               Updated: {formatDate(requirement.updated_at)}
                             </span>
                           )}
                         </div>
                         {requirement.projectId && (
-                          <span className="text-gray-600">
+                          <span className="text-gray-500">
                             Project ID: {requirement.projectId}
                           </span>
                         )}

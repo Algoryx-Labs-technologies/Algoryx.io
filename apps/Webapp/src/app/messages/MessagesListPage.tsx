@@ -206,44 +206,44 @@ export function MessagesListPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-semibold font-hero text-white">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-xl font-semibold font-hero text-white">
                                   {conversation.recipientName}
                                 </h3>
                                 <span className={cn(
-                                  "text-xs font-footer px-2 py-0.5 rounded border",
+                                  "text-sm font-footer px-3 py-1 rounded border",
                                   getRoleBadgeColor(conversation.recipientRole)
                                 )}>
                                   {conversation.recipientRole === 'admin' ? 'Technical Analyst' : 'Advisor'}
                                 </span>
                                 {conversation.unreadCount > 0 && (
-                                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                  <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                                 )}
                               </div>
                               {conversation.subject && (
-                                <p className="text-sm text-gray-400 font-footer mb-1">
+                                <p className="text-base text-gray-300 font-footer mb-2">
                                   {conversation.subject}
                                 </p>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500 font-footer flex-shrink-0 ml-4">
-                              <Clock className="h-3 w-3" />
+                            <div className="flex items-center gap-2 text-sm text-gray-400 font-footer flex-shrink-0 ml-4">
+                              <Clock className="h-4 w-4" />
                               <span>{formatTime(conversation.lastMessageTime)}</span>
                             </div>
                           </div>
 
                           {conversation.lastMessage && (
-                            <p className="text-sm text-gray-300 font-footer line-clamp-2 mb-2">
+                            <p className="text-base text-gray-200 font-footer line-clamp-2 mb-3 leading-relaxed">
                               {conversation.lastMessage}
                             </p>
                           )}
 
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-xs text-gray-500 font-footer">
+                            <div className="flex items-center gap-2 text-sm text-gray-400 font-footer">
                               <span>{conversation.recipientEmail}</span>
                             </div>
                             {conversation.unreadCount > 0 && (
-                              <span className="bg-blue-500 text-white text-xs font-footer px-2 py-1 rounded-full">
+                              <span className="bg-blue-500 text-white text-sm font-footer px-3 py-1.5 rounded-full">
                                 {conversation.unreadCount} unread
                               </span>
                             )}
