@@ -295,10 +295,10 @@ export function RequirementsListPage() {
                           </div>
                         )}
 
-                        {/* Question */}
+                        {/* Quotation */}
                         {requirement.question && (
                           <div>
-                            <p className="text-xs text-gray-500 font-footer mb-1">Question</p>
+                            <p className="text-xs text-gray-500 font-footer mb-1">Quotation</p>
                             <p className="text-sm text-white font-footer">
                               {requirement.question}
                             </p>
