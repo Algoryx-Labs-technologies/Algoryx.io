@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import userRoutes from './user.routes';
+import projectRoutes from './project.routes';
 import { env } from '@/config/env';
 
 const router = Router();
@@ -16,6 +17,7 @@ router.get('/health', (req, res) => {
 
 // API routes
 router.use('/users', userRoutes);
+router.use('/projects', projectRoutes);
 
 // Add more route modules here
 // router.use('/posts', postRoutes);

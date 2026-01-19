@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -13,6 +13,11 @@ export function Sidebar() {
       icon: LayoutDashboard,
       label: 'Dashboard',
       path: '/dashboard',
+    },
+    {
+      icon: FolderKanban,
+      label: 'My Projects',
+      path: '/projects',
     },
   ];
 

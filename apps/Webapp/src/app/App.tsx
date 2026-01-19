@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthPage } from './auth/AuthPage';
 import { DashboardPage } from './dashboard/DashboardPage';
+import { ProjectsListPage } from './projects/ProjectsListPage';
+import { ProjectDetailPage } from './projects/ProjectDetailPage';
 
 function App() {
   // TODO: Add authentication check - for now, defaulting to dashboard
@@ -11,6 +13,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/projects" element={<ProjectsListPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route 
           path="/" 
