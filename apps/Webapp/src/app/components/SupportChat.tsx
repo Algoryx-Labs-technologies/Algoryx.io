@@ -268,7 +268,7 @@ export function SupportChat() {
 
       {/* Chat Box */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 h-[500px] flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300">
+        <div className="fixed bottom-6 right-6 z-50 w-[450px] h-[650px] flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-cyan-500/20">
             <div className="flex items-center gap-3">
