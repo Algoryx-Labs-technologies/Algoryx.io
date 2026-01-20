@@ -7,6 +7,7 @@ import { MessageConversationPage } from './messages/MessageConversationPage';
 import { RequirementsListPage } from './requirements/RequirementsListPage';
 import { CommunityPage } from './community/CommunityPage';
 import { PaymentsPage } from './payments/PaymentsPage';
+import { FeedbackPage } from './feedback/FeedbackPage';
 
 function App() {
   // TODO: Add authentication check - for now, defaulting to dashboard
@@ -23,6 +24,7 @@ function App() {
         <Route path="/requirements" element={<RequirementsListPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route 
           path="/" 

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight, FolderKanban, MessageSquare, FileText, Users, CreditCard, LogOut } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, FolderKanban, MessageSquare, FileText, Users, CreditCard, MessageCircle, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { cn } from './ui/utils';
@@ -40,6 +40,11 @@ export function Sidebar() {
       icon: CreditCard,
       label: 'Payments',
       path: '/payments',
+    },
+    {
+      icon: MessageCircle,
+      label: 'Feedback',
+      path: '/feedback',
     },
   ];
 
