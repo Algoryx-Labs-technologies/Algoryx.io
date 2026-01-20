@@ -184,7 +184,7 @@ export function FeedbackPage() {
                   <CardHeader>
                     <CardTitle className="text-2xl font-hero text-white flex items-center gap-2">
                       <MessageSquare className="h-6 w-6 text-blue-400" />
-                      Tell Us About Your Experience
+                      Tell Us About Your Experience <span className="text-base text-gray-400 font-normal">(we showcase the best ones)</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
