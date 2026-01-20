@@ -10,6 +10,7 @@ interface Requirement {
   projectId?: string;
   projectTitle?: string;
   question?: string;
+  quotation?: string;
   description?: string;
   priority?: string;
   answer?: string;
@@ -56,6 +57,7 @@ export function RequirementsListPage() {
             projectId: 'proj1',
             projectTitle: 'E-Commerce Platform',
             question: 'What payment methods should be supported?',
+            quotation: 'Need a comprehensive payment solution for global customers.',
             description: 'I need to integrate multiple payment gateways including credit cards, PayPal, and digital wallets. What is the recommended approach?',
             priority: 'high',
             answer: 'We recommend integrating Stripe for credit cards and PayPal SDK for PayPal. For digital wallets, we can use Apple Pay and Google Pay APIs.',
@@ -68,6 +70,7 @@ export function RequirementsListPage() {
             projectId: 'proj1',
             projectTitle: 'E-Commerce Platform',
             question: 'What is the expected user capacity?',
+            quotation: 'Planning for high-traffic scenarios and peak shopping seasons.',
             description: 'Need to know for scaling infrastructure and database planning.',
             priority: 'mid',
             answer: 'Initially 10,000 concurrent users, scalable to 100,000. We\'ll use cloud infrastructure with auto-scaling capabilities.',
@@ -80,6 +83,7 @@ export function RequirementsListPage() {
             projectId: 'proj2',
             projectTitle: 'Mobile App Development',
             question: 'Which platforms should we target first?',
+            quotation: 'Cross-platform development strategy needed for maximum reach.',
             description: 'Should we develop for iOS, Android, or both simultaneously?',
             priority: 'high',
             answer: '',
@@ -92,6 +96,7 @@ export function RequirementsListPage() {
             projectId: 'proj3',
             projectTitle: 'Data Analytics Dashboard',
             question: 'What data visualization libraries are recommended?',
+            quotation: 'Real-time data visualization with interactive charts and graphs.',
             description: 'Need recommendations for charts, graphs, and interactive dashboards.',
             priority: 'mid',
             answer: 'We recommend using Chart.js for basic charts and D3.js for advanced visualizations. For React, Recharts is also a great option.',
@@ -104,6 +109,7 @@ export function RequirementsListPage() {
             projectId: 'proj2',
             projectTitle: 'Mobile App Development',
             question: 'What is the deployment timeline?',
+            quotation: 'Target launch date: Q1 2025 for both iOS and Android platforms.',
             description: 'When can we expect the app to be available on app stores?',
             priority: 'low',
             answer: '',
@@ -116,6 +122,7 @@ export function RequirementsListPage() {
             projectId: 'proj4',
             projectTitle: 'API Integration Service',
             question: 'How will we handle API rate limiting?',
+            quotation: 'Robust rate limiting and throttling mechanisms required for production.',
             description: 'Need to understand the strategy for handling third-party API rate limits and throttling.',
             priority: 'high',
             answer: 'We\'ll implement a rate limiting middleware using Redis to track API calls. We\'ll also implement exponential backoff and request queuing for better reliability.',
@@ -201,10 +208,10 @@ export function RequirementsListPage() {
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold font-hero text-gray-900 dark:text-white mb-2">
+              <h1 className="text-5xl font-bold font-hero text-gray-900 dark:text-white mb-2">
                 Requirements
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 font-footer">
+              <p className="text-xl text-gray-600 dark:text-gray-400 font-footer">
                 View all your sent requirements and their status
               </p>
             </div>
@@ -216,7 +223,7 @@ export function RequirementsListPage() {
                   key={filterOption}
                   onClick={() => setFilter(filterOption)}
                   className={cn(
-                    "px-4 py-2 rounded-lg font-footer text-sm transition-colors",
+                    "px-5 py-3 rounded-lg font-footer text-lg transition-colors",
                     filter === filterOption
                       ? "bg-blue-600 text-white"
                       : "bg-slate-800/50 text-gray-400 hover:text-white hover:bg-slate-800/70"
@@ -230,16 +237,16 @@ export function RequirementsListPage() {
             {/* Requirements List */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="text-gray-500 font-footer">Loading requirements...</div>
+                <div className="text-xl text-gray-500 font-footer">Loading requirements...</div>
               </div>
             ) : filteredRequirements.length === 0 ? (
               <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
                 <CardContent className="p-12 text-center">
                   <FileText className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold font-hero text-white mb-2">
+                  <h3 className="text-2xl font-semibold font-hero text-white mb-2">
                     No Requirements Found
                   </h3>
-                  <p className="text-gray-400 font-footer">
+                  <p className="text-lg text-gray-400 font-footer">
                     {filter === 'all' 
                       ? 'You haven\'t sent any requirements yet'
                       : `No ${filter} requirements found`}
@@ -247,14 +254,14 @@ export function RequirementsListPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                 {filteredRequirements.map((requirement) => (
                   <Card
                     key={requirement.uid}
                     className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
                   >
                     {/* Status Badge - Top Right */}
-                    <div className="absolute top-4 right-4 z-10">
+                    <div className="absolute top-3 right-3 z-10">
                       <div className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-footer font-semibold border backdrop-blur-sm",
                         getStatusColor(requirement.status)
@@ -264,20 +271,20 @@ export function RequirementsListPage() {
                       </div>
                     </div>
 
-                    <CardContent className="p-6 flex flex-col flex-1">
+                    <CardContent className="p-5 flex flex-col flex-1">
                       {/* Header with Icon and Priority */}
-                      <div className="mb-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="p-2.5 rounded-lg bg-blue-500/20 border border-blue-500/30 flex-shrink-0">
-                            <FileText className="h-5 w-5 text-blue-400" />
+                      <div className="mb-3">
+                        <div className="flex items-start gap-2 mb-2">
+                          <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 flex-shrink-0">
+                            <FileText className="h-4 w-4 text-blue-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold font-hero text-white mb-2 line-clamp-2">
+                            <h3 className="text-xl font-semibold font-hero text-white mb-1.5 line-clamp-2">
                               {requirement.projectTitle || 'Untitled Project'}
                             </h3>
                             {requirement.priority && (
                               <span className={cn(
-                                "inline-block text-xs font-footer px-2.5 py-1 rounded-full",
+                                "inline-block text-xs font-footer px-2 py-1 rounded-full",
                                 getPriorityColor(requirement.priority)
                               )}>
                                 {requirement.priority.toUpperCase()} Priority
@@ -289,23 +296,35 @@ export function RequirementsListPage() {
 
                       {/* Question/Quotation */}
                       {requirement.question && (
-                        <div className="mb-4 flex-1">
-                          <p className="text-xs text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
+                        <div className="mb-3 flex-1">
+                          <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Question
                           </p>
-                          <p className="text-sm text-white font-footer leading-relaxed line-clamp-2">
+                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
                             {requirement.question}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Quotation */}
+                      {requirement.quotation && (
+                        <div className="mb-3 flex-1">
+                          <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
+                            Quotation
+                          </p>
+                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
+                            {requirement.quotation}
                           </p>
                         </div>
                       )}
 
                       {/* Description */}
                       {requirement.description && (
-                        <div className="mb-4 flex-1">
-                          <p className="text-xs text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
+                        <div className="mb-3 flex-1">
+                          <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Description
                           </p>
-                          <p className="text-sm text-gray-300 font-footer leading-relaxed line-clamp-3">
+                          <p className="text-base text-gray-300 font-footer leading-relaxed line-clamp-2">
                             {requirement.description}
                           </p>
                         </div>
@@ -313,21 +332,21 @@ export function RequirementsListPage() {
 
                       {/* Answer Preview (if exists) */}
                       {requirement.answer && requirement.answer.trim() && (
-                        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
-                            <p className="text-xs text-green-400 font-footer font-semibold uppercase tracking-wide">
+                        <div className="mb-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+                            <p className="text-sm text-green-400 font-footer font-semibold uppercase tracking-wide">
                               Answered
                             </p>
                           </div>
-                          <p className="text-xs text-gray-200 font-footer leading-relaxed line-clamp-2">
+                          <p className="text-base text-gray-200 font-footer leading-relaxed line-clamp-2">
                             {requirement.answer}
                           </p>
                         </div>
                       )}
 
                       {/* Footer with Dates */}
-                      <div className="mt-auto pt-4 border-t border-white/10">
+                      <div className="mt-auto pt-3 border-t border-white/10">
                         <div className="flex items-center justify-between text-xs text-gray-400 font-footer">
                           <span className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5" />
