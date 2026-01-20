@@ -63,21 +63,21 @@ export function Sidebar() {
         <button
           onClick={toggleSidebar}
           className={cn(
-            "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-white/10 text-gray-400 hover:text-white",
+            "w-10 h-10 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-white/10 text-gray-400 hover:text-white",
             isCollapsed && "mx-auto"
           )}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-6 w-6" />
           ) : (
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6" />
           )}
         </button>
       </div>
 
       {/* Menu Items */}
-      <nav className="p-4 space-y-2">
+      <nav className="p-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -87,20 +87,20 @@ export function Sidebar() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-footer",
+                "w-full flex items-center gap-5 px-6 py-5 rounded-lg transition-all duration-200 font-footer text-lg",
                 active
                   ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-white shadow-[0_0_8px_rgba(59,130,246,0.15)]"
                   : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent",
-                isCollapsed && "justify-center px-2"
+                isCollapsed && "justify-center px-4"
               )}
               title={isCollapsed ? item.label : undefined}
             >
               <Icon className={cn(
-                "h-5 w-5 shrink-0",
+                "h-7 w-7 shrink-0",
                 active ? "text-blue-400" : "text-gray-500"
               )} />
               {!isCollapsed && (
-                <span className="font-medium">{item.label}</span>
+                <span className="font-semibold text-lg">{item.label}</span>
               )}
             </button>
           );
