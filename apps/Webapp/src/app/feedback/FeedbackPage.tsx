@@ -179,15 +179,15 @@ export function FeedbackPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Feedback Form */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
+              <div className="lg:col-span-2 flex">
+                <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 flex-1 flex flex-col">
                   <CardHeader>
                     <CardTitle className="text-2xl font-hero text-white flex items-center gap-2">
                       <MessageSquare className="h-6 w-6 text-blue-400" />
                       Tell Us About Your Experience
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-1 flex flex-col">
                     {isSubmitted ? (
                       <div className="py-12 text-center">
                         <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
@@ -376,23 +376,25 @@ export function FeedbackPage() {
                         </div>
 
                         {/* Submit Button */}
-                        <Button
-                          type="submit"
-                          disabled={isSubmitting || formData.overallRating === 0}
-                          className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold font-footer text-lg shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              Submitting...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="h-5 w-5" />
-                              Submit Feedback
-                            </>
-                          )}
-                        </Button>
+                        <div className="mt-auto pt-4">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting || formData.overallRating === 0}
+                            className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold font-footer text-lg shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                Submitting...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-5 w-5" />
+                                Submit Feedback
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </form>
                     )}
                   </CardContent>
@@ -400,7 +402,7 @@ export function FeedbackPage() {
               </div>
 
               {/* Right Column - Customer Testimonials */}
-              <div className="space-y-6">
+              <div className="flex">
                 <FeedbackList />
               </div>
             </div>

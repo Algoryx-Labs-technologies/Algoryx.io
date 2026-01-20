@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Star, Quote, User, Heart } from 'lucide-react';
+import { Star, Quote, User, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '../components/ui/utils';
 
 export interface CustomerTestimonial {
   id: string;
@@ -71,9 +73,22 @@ const defaultTestimonials: CustomerTestimonial[] = [
     comment: 'Professional, reliable, and results-driven. Algoryx has become an integral part of our development workflow. Couldn\'t be happier with the partnership!',
     date: '2024-10-15',
   },
+  {
+    id: '7',
+    name: 'Rachel Martinez',
+    role: 'VP of Engineering',
+    company: 'CloudTech Solutions',
+    rating: 5,
+    comment: 'The level of expertise and attention to detail is unmatched. Every project has exceeded our expectations, and the collaborative approach makes working with Algoryx a true pleasure.',
+    date: '2024-10-10',
+  },
 ];
 
 export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 3;
+  const totalPages = Math.ceil(testimonials.length / reviewsPerPage);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -83,17 +98,29 @@ export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackLis
     });
   };
 
+  const startIndex = (currentPage - 1) * reviewsPerPage;
+  const endIndex = startIndex + reviewsPerPage;
+  const currentTestimonials = testimonials.slice(startIndex, endIndex);
+
+  const handlePrevious = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  };
+
   return (
-    <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
+    <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-xl font-hero text-white flex items-center gap-2">
           <Heart className="h-5 w-5 text-red-400" />
           Happy Customers
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {testimonials.map((testimonial) => (
+      <CardContent className="flex-1 flex flex-col">
+        <div className="space-y-4 flex-1">
+          {currentTestimonials.map((testimonial) => (
             <div
               key={testimonial.id}
               className="p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all duration-200"
@@ -134,6 +161,59 @@ export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackLis
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+            <button
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 font-footer text-sm",
+                currentPage === 1
+                  ? "bg-slate-800/50 border-white/10 text-gray-600 cursor-not-allowed"
+                  : "bg-slate-700/50 border-white/20 text-gray-300 hover:bg-slate-700/70 hover:text-white hover:border-blue-500/50"
+              )}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </button>
+            
+            <div className="flex items-center gap-2">
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={cn(
+                      "w-8 h-8 rounded-lg border transition-all duration-200 font-footer text-sm",
+                      currentPage === page
+                        ? "bg-blue-600/20 border-blue-500/50 text-blue-400"
+                        : "bg-slate-700/50 border-white/20 text-gray-400 hover:bg-slate-700/70 hover:text-white hover:border-blue-500/50"
+                    )}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 font-footer text-sm",
+                currentPage === totalPages
+                  ? "bg-slate-800/50 border-white/10 text-gray-600 cursor-not-allowed"
+                  : "bg-slate-700/50 border-white/20 text-gray-300 hover:bg-slate-700/70 hover:text-white hover:border-blue-500/50"
+              )}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
