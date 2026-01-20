@@ -245,7 +245,7 @@ export function FeedbackPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
         <div className="h-full overflow-y-auto relative z-10">
-          <div className="p-8 max-w-7xl mx-auto">
+          <div className="p-8 max-w-screen-2xl mx-auto">
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-4xl font-bold font-hero text-gray-900 dark:text-white mb-2">
