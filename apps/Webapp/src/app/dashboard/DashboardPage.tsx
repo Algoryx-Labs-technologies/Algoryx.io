@@ -1,4 +1,5 @@
 import { Sidebar } from '../components/Sidebar';
+import { SupportChat } from '../components/SupportChat';
 import { CalendarWidget } from './widgets/CalendarWidget';
 import { NewsWidget } from './widgets/NewsWidget';
 import { ProjectsAndRequirementsWidget } from './widgets/ProjectsAndRequirementsWidget';
@@ -89,6 +90,7 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+      <SupportChat />
     </div>
   );
 }
