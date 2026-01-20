@@ -582,143 +582,230 @@ export function PaymentsPage() {
               </div>
             ) : (
               /* List View */
-              <div className="space-y-4">
-                {payments.length === 0 ? (
-                  <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
-                    <CardContent className="p-12 text-center">
-                      <CreditCard className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold font-hero text-white mb-2">
-                        No {activeTab === 'upcoming' ? 'Upcoming' : 'Payment History'} Found
-                      </h3>
-                      <p className="text-gray-400 font-footer">
-                        {activeTab === 'upcoming' 
-                          ? 'You have no upcoming payments'
-                          : 'No payment history available'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                payments.map((payment) => {
-                  const daysUntilDue = getDaysUntilDue(payment.dueDate);
-                  const isPayable = (payment.status === 'pending' || payment.status === 'overdue') && activeTab === 'upcoming';
-
-                  return (
-                    <Card
-                      key={payment.id}
-                      className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <CreditCard className="h-5 w-5 text-blue-400" />
-                              <h3 className="text-xl font-semibold font-hero text-white">
-                                {payment.projectTitle || 'Payment'}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                {getStatusIcon(payment.status)}
-                                <span className={cn(
-                                  "text-sm font-footer px-3 py-1 rounded border",
-                                  getStatusColor(payment.status)
-                                )}>
-                                  {payment.status.toUpperCase()}
-                                </span>
-                              </div>
-                            </div>
-                            {payment.description && (
-                              <p className="text-base text-gray-300 font-footer mb-2">
-                                {payment.description}
-                              </p>
-                            )}
-                            {payment.invoiceNumber && (
-                              <p className="text-sm text-gray-500 font-footer">
-                                Invoice: {payment.invoiceNumber}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold font-hero text-white mb-1">
-                              ${payment.amount.toLocaleString()}
-                            </p>
-                            <p className="text-sm text-gray-400 font-footer">
-                              {payment.currency}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10">
-                          {payment.dueDate && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-footer mb-1">Due Date</p>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3 text-gray-400" />
-                                <p className="text-sm text-white font-footer font-medium">
-                                  {formatDate(payment.dueDate)}
-                                </p>
-                              </div>
-                              {daysUntilDue !== null && activeTab === 'upcoming' && (
-                                <p className={cn(
-                                  "text-xs font-footer mt-1",
-                                  daysUntilDue < 0
-                                    ? "text-red-400"
-                                    : daysUntilDue <= 7
-                                    ? "text-yellow-400"
-                                    : "text-green-400"
-                                )}>
-                                  {daysUntilDue < 0
-                                    ? `${Math.abs(daysUntilDue)} days overdue`
-                                    : `${daysUntilDue} days remaining`}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                          {payment.paidDate && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-footer mb-1">Paid Date</p>
-                              <div className="flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3 text-green-400" />
-                                <p className="text-sm text-white font-footer font-medium">
-                                  {formatDate(payment.paidDate)}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                          {payment.paymentMethod && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-footer mb-1">Payment Method</p>
-                              <p className="text-sm text-white font-footer font-medium">
-                                {payment.paymentMethod}
-                              </p>
-                            </div>
-                          )}
-                          {payment.projectId && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-footer mb-1">Project ID</p>
-                              <p className="text-sm text-gray-400 font-footer">
-                                {payment.projectId}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Pay Now Button for Pending/Overdue Payments */}
-                        {isPayable && (
-                          <div className="mt-4 pt-4 border-t border-white/10">
-                            <Button
-                              onClick={() => handlePayNow(payment)}
-                              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-footer font-semibold py-3"
-                            >
-                              <CreditCard className="h-4 w-4 mr-2" />
-                              Pay Now - ${payment.amount.toLocaleString()}
-                            </Button>
-                          </div>
-                        )}
+              activeTab === 'upcoming' ? (
+                /* Upcoming Payments - 3 Cards per Row */
+                <div>
+                  {upcomingPayments.length === 0 ? (
+                    <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
+                      <CardContent className="p-12 text-center">
+                        <CreditCard className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold font-hero text-white mb-2">
+                          No Upcoming Payments Found
+                        </h3>
+                        <p className="text-gray-400 font-footer">
+                          You have no upcoming payments
+                        </p>
                       </CardContent>
                     </Card>
-                  );
-                })
-                )}
-              </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {upcomingPayments.map((payment) => {
+                        const daysUntilDue = getDaysUntilDue(payment.dueDate);
+                        const isPayable = payment.status === 'pending' || payment.status === 'overdue';
+
+                        return (
+                          <Card
+                            key={payment.id}
+                            className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden flex flex-col"
+                          >
+                            <CardContent className="p-4 flex flex-col flex-1">
+                              {/* Header with Status */}
+                              <div className="mb-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-1.5">
+                                    {getStatusIcon(payment.status)}
+                                    <span className={cn(
+                                      "text-xs font-footer px-2 py-0.5 rounded-full border font-semibold",
+                                      getStatusColor(payment.status)
+                                    )}>
+                                      {payment.status.toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <h3 className="text-lg font-bold font-hero text-white mb-1.5 leading-tight">
+                                  {payment.projectTitle || 'Payment'}
+                                </h3>
+                                {payment.invoiceNumber && (
+                                  <p className="text-xs text-gray-400 font-footer mb-1.5">
+                                    Invoice: <span className="text-gray-300 font-medium">{payment.invoiceNumber}</span>
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Amount */}
+                              <div className="mb-3">
+                                <p className="text-xs text-gray-500 font-footer mb-0.5">Amount</p>
+                                <p className="text-2xl font-bold font-hero text-white">
+                                  ${payment.amount.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-400 font-footer mt-0.5">
+                                  {payment.currency}
+                                </p>
+                              </div>
+
+                              {/* Description */}
+                              {payment.description && (
+                                <div className="mb-3">
+                                  <p className="text-xs text-gray-400 font-footer leading-relaxed line-clamp-2">
+                                    {payment.description}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Due Date Info */}
+                              {payment.dueDate && (
+                                <div className="mb-3 pt-3 border-t border-white/10">
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                                    <p className="text-xs text-gray-400 font-footer">Due Date</p>
+                                  </div>
+                                  <p className="text-sm text-white font-footer font-semibold mb-1.5">
+                                    {formatDate(payment.dueDate)}
+                                  </p>
+                                  {daysUntilDue !== null && (
+                                    <p className={cn(
+                                      "text-xs font-footer font-semibold",
+                                      daysUntilDue < 0
+                                        ? "text-red-400"
+                                        : daysUntilDue <= 7
+                                        ? "text-yellow-400"
+                                        : "text-green-400"
+                                    )}>
+                                      {daysUntilDue < 0
+                                        ? `${Math.abs(daysUntilDue)} days overdue`
+                                        : `${daysUntilDue} days remaining`}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Pay Now Button */}
+                              {isPayable && (
+                                <div className="mt-auto pt-3 border-t border-white/10">
+                                  <Button
+                                    onClick={() => handlePayNow(payment)}
+                                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-footer font-semibold py-2 text-sm"
+                                  >
+                                    <CreditCard className="h-4 w-4 mr-1.5" />
+                                    Pay Now
+                                  </Button>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Payment History - Vertical List */
+                <div className="space-y-4">
+                  {paymentHistory.length === 0 ? (
+                    <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
+                      <CardContent className="p-12 text-center">
+                        <CreditCard className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold font-hero text-white mb-2">
+                          No Payment History Found
+                        </h3>
+                        <p className="text-gray-400 font-footer">
+                          No payment history available
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    paymentHistory.map((payment) => {
+                      return (
+                        <Card
+                          key={payment.id}
+                          className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden"
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <CreditCard className="h-5 w-5 text-blue-400" />
+                                  <h3 className="text-xl font-semibold font-hero text-white">
+                                    {payment.projectTitle || 'Payment'}
+                                  </h3>
+                                  <div className="flex items-center gap-2">
+                                    {getStatusIcon(payment.status)}
+                                    <span className={cn(
+                                      "text-sm font-footer px-3 py-1 rounded border",
+                                      getStatusColor(payment.status)
+                                    )}>
+                                      {payment.status.toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+                                {payment.description && (
+                                  <p className="text-base text-gray-300 font-footer mb-2">
+                                    {payment.description}
+                                  </p>
+                                )}
+                                {payment.invoiceNumber && (
+                                  <p className="text-sm text-gray-500 font-footer">
+                                    Invoice: {payment.invoiceNumber}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-bold font-hero text-white mb-1">
+                                  ${payment.amount.toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-400 font-footer">
+                                  {payment.currency}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10">
+                              {payment.dueDate && (
+                                <div>
+                                  <p className="text-xs text-gray-500 font-footer mb-1">Due Date</p>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3 text-gray-400" />
+                                    <p className="text-sm text-white font-footer font-medium">
+                                      {formatDate(payment.dueDate)}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              {payment.paidDate && (
+                                <div>
+                                  <p className="text-xs text-gray-500 font-footer mb-1">Paid Date</p>
+                                  <div className="flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3 text-green-400" />
+                                    <p className="text-sm text-white font-footer font-medium">
+                                      {formatDate(payment.paidDate)}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              {payment.paymentMethod && (
+                                <div>
+                                  <p className="text-xs text-gray-500 font-footer mb-1">Payment Method</p>
+                                  <p className="text-sm text-white font-footer font-medium">
+                                    {payment.paymentMethod}
+                                  </p>
+                                </div>
+                              )}
+                              {payment.projectId && (
+                                <div>
+                                  <p className="text-xs text-gray-500 font-footer mb-1">Project ID</p>
+                                  <p className="text-sm text-gray-400 font-footer">
+                                    {payment.projectId}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
+                </div>
+              )
             )}
           </div>
         </div>
