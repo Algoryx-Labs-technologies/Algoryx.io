@@ -12,6 +12,7 @@ interface ChatMessage {
   timestamp: Date;
   showFeedback?: boolean;
   feedbackGiven?: boolean;
+  showTicketOptions?: boolean;
 }
 
 interface TicketForm {
@@ -21,7 +22,7 @@ interface TicketForm {
   additionalDetails?: string;
 }
 
-type ChatMode = 'chat' | 'questionnaire' | 'ticket-created';
+type ChatMode = 'chat' | 'questionnaire' | 'ticket-created' | 'confirm-ticket';
 
 export function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -195,8 +196,16 @@ export function SupportChat() {
     );
 
     if (!isHelpful) {
-      // If not helpful, show questionnaire
-      setMode('questionnaire');
+      // If not helpful, ask if they want to raise a ticket
+      setMode('confirm-ticket');
+      const confirmationMessage: ChatMessage = {
+        id: Date.now().toString(),
+        text: 'I understand the response wasn\'t helpful. **Shall I raise a support ticket on your behalf?** Our team will review it and get back to you.',
+        sender: 'support',
+        timestamp: new Date(),
+        showTicketOptions: true, // Flag to show ticket options
+      };
+      setMessages((prev) => [...prev, confirmationMessage]);
     } else {
       // If helpful, show thank you message
       const thankYouMessage: ChatMessage = {
@@ -206,6 +215,23 @@ export function SupportChat() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, thankYouMessage]);
+    }
+  };
+
+  const handleTicketConfirmation = (confirm: boolean) => {
+    if (confirm) {
+      // User wants to raise a ticket, show questionnaire
+      setMode('questionnaire');
+    } else {
+      // User doesn't want a ticket, go back to chat
+      setMode('chat');
+      const encouragementMessage: ChatMessage = {
+        id: Date.now().toString(),
+        text: 'No problem! Feel free to ask me anything else. I\'m here to help!',
+        sender: 'support',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, encouragementMessage]);
     }
   };
 
@@ -355,6 +381,24 @@ export function SupportChat() {
                           className="px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 hover:text-red-300 transition-all text-xs font-footer flex items-center gap-1"
                         >
                           <span>✗ No</span>
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Ticket Confirmation Options */}
+                    {message.showTicketOptions && mode === 'confirm-ticket' && (
+                      <div className="flex justify-start pl-11 space-x-2 mt-2">
+                        <button
+                          onClick={() => handleTicketConfirmation(true)}
+                          className="px-4 py-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 hover:text-blue-300 transition-all text-sm font-footer flex items-center gap-2"
+                        >
+                          <span>✓ Yes, raise a ticket</span>
+                        </button>
+                        <button
+                          onClick={() => handleTicketConfirmation(false)}
+                          className="px-4 py-2 rounded-lg bg-gray-600/20 border border-gray-500/30 text-gray-400 hover:bg-gray-600/30 hover:text-gray-300 transition-all text-sm font-footer flex items-center gap-2"
+                        >
+                          <span>No, thanks</span>
                         </button>
                       </div>
                     )}
