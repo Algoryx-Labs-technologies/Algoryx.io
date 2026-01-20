@@ -28,7 +28,7 @@ export function SupportChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      text: 'Hello! How can I help you today? I can assist with account issues, payments, projects, technical problems, or general questions.',
+      text: 'Welcome to **Algoryx Labs** support channel! 👋\n\nHello! How can I help you today? I can assist with account issues, payments, projects, technical problems, or general questions.',
       sender: 'support',
       timestamp: new Date(),
       showFeedback: false, // Don't show feedback on initial greeting
