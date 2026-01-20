@@ -1,7 +1,7 @@
 import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { FileText, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -28,7 +28,7 @@ export function RequirementsListPage() {
     const fetchRequirements = async () => {
       try {
         // TODO: Replace with actual API endpoint when backend is ready
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+        // const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
         
         // Uncomment when API is ready:
         // const token = localStorage.getItem('auth_token'); // Get from your auth system
@@ -175,16 +175,6 @@ export function RequirementsListPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  };
-
   const filteredRequirements = filter === 'all' 
     ? requirements 
     : requirements.filter(req => req.status === filter);
@@ -257,24 +247,37 @@ export function RequirementsListPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredRequirements.map((requirement) => (
                   <Card
                     key={requirement.uid}
-                    className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden"
+                    className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
                   >
-                    <CardContent className="p-6">
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
+                    {/* Status Badge - Top Right */}
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-footer font-semibold border backdrop-blur-sm",
+                        getStatusColor(requirement.status)
+                      )}>
+                        {getStatusIcon(requirement.status)}
+                        {requirement.status?.toUpperCase() || 'UNKNOWN'}
+                      </div>
+                    </div>
+
+                    <CardContent className="p-6 flex flex-col flex-1">
+                      {/* Header with Icon and Priority */}
+                      <div className="mb-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="p-2.5 rounded-lg bg-blue-500/20 border border-blue-500/30 flex-shrink-0">
                             <FileText className="h-5 w-5 text-blue-400" />
-                            <h3 className="text-xl font-semibold font-hero text-white">
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold font-hero text-white mb-2 line-clamp-2">
                               {requirement.projectTitle || 'Untitled Project'}
                             </h3>
                             {requirement.priority && (
                               <span className={cn(
-                                "text-sm font-footer px-3 py-1.5 rounded",
+                                "inline-block text-xs font-footer px-2.5 py-1 rounded-full",
                                 getPriorityColor(requirement.priority)
                               )}>
                                 {requirement.priority.toUpperCase()} Priority
@@ -282,84 +285,66 @@ export function RequirementsListPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(requirement.status)}
-                          <span className={cn(
-                            "text-sm font-footer px-4 py-2 rounded border",
-                            getStatusColor(requirement.status)
-                          )}>
-                            {requirement.status?.toUpperCase() || 'UNKNOWN'}
-                          </span>
-                        </div>
                       </div>
 
-                      {/* Three Fields */}
-                      <div className="space-y-4 mb-5">
-                        {/* Project Title */}
-                        {requirement.projectTitle && (
-                          <div>
-                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Project Title</p>
-                            <p className="text-lg text-white font-footer font-semibold">
-                              {requirement.projectTitle}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Quotation */}
-                        {requirement.question && (
-                          <div>
-                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Quotation</p>
-                            <p className="text-base text-white font-footer leading-relaxed">
-                              {requirement.question}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Description */}
-                        {requirement.description && (
-                          <div>
-                            <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Description</p>
-                            <p className="text-base text-gray-200 font-footer leading-relaxed">
-                              {requirement.description}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Answer (if exists) */}
-                      {requirement.answer && requirement.answer.trim() && (
-                        <div className="mt-5 pt-5 border-t border-white/10">
-                          <p className="text-sm text-gray-400 font-footer mb-3 flex items-center gap-2 font-medium">
-                            <CheckCircle2 className="h-4 w-4 text-green-400" />
-                            Answer
+                      {/* Question/Quotation */}
+                      {requirement.question && (
+                        <div className="mb-4 flex-1">
+                          <p className="text-xs text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
+                            Question
                           </p>
-                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                            <p className="text-base text-gray-100 font-footer leading-relaxed">
-                              {requirement.answer}
-                            </p>
-                          </div>
+                          <p className="text-sm text-white font-footer leading-relaxed line-clamp-2">
+                            {requirement.question}
+                          </p>
                         </div>
                       )}
 
-                      {/* Footer */}
-                      <div className="mt-5 pt-5 border-t border-white/10 flex items-center justify-between text-sm text-gray-400 font-footer">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            Created: {formatDate(requirement.created_at)}
+                      {/* Description */}
+                      {requirement.description && (
+                        <div className="mb-4 flex-1">
+                          <p className="text-xs text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
+                            Description
+                          </p>
+                          <p className="text-sm text-gray-300 font-footer leading-relaxed line-clamp-3">
+                            {requirement.description}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Answer Preview (if exists) */}
+                      {requirement.answer && requirement.answer.trim() && (
+                        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
+                            <p className="text-xs text-green-400 font-footer font-semibold uppercase tracking-wide">
+                              Answered
+                            </p>
+                          </div>
+                          <p className="text-xs text-gray-200 font-footer leading-relaxed line-clamp-2">
+                            {requirement.answer}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Footer with Dates */}
+                      <div className="mt-auto pt-4 border-t border-white/10">
+                        <div className="flex items-center justify-between text-xs text-gray-400 font-footer">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            <span className="line-clamp-1">
+                              {new Date(requirement.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
                           </span>
                           {requirement.updated_at !== requirement.created_at && (
-                            <span className="flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              Updated: {formatDate(requirement.updated_at)}
+                            <span className="text-gray-500 text-[10px]">
+                              Updated
                             </span>
                           )}
                         </div>
-                        {requirement.projectId && (
-                          <span className="text-gray-500">
-                            Project ID: {requirement.projectId}
-                          </span>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
