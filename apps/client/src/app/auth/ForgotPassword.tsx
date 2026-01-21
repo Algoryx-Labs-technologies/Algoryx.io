@@ -3,21 +3,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ForgotPasswordProps {
   onBack: () => void;
 }
 
 export function ForgotPassword({ onBack }: ForgotPasswordProps) {
+  const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with Clerk password reset
-    console.log('Password reset requested for:', email);
-    setIsSubmitted(true);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { error: resetError } = await resetPassword(email);
+
+      if (resetError) {
+        setError(resetError.message);
+        setLoading(false);
+        return;
+      }
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -122,6 +140,13 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
           </CardHeader>
           <CardContent className="px-8 pb-8 relative z-10">
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <p className="text-sm text-red-400 font-footer">{error}</p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="reset-email" className="font-footer text-gray-300">Email</Label>
                 <div className="relative">
@@ -132,15 +157,21 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                    disabled={loading}
+                    className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50 disabled:opacity-50"
                   />
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600" size="lg">
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                size="lg"
+              >
                 <Mail className="h-4 w-4 mr-2" />
-                Send Reset Link
+                {loading ? 'Sending...' : 'Send Reset Link'}
               </Button>
             </form>
 

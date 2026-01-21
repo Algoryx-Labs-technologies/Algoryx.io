@@ -16,13 +16,13 @@ enum Role {
   partner
 }
 
-enum priority{
+enum Priority {
   low
   mid
   high
 }
 
-enum project_status{
+enum ProjectStatus {
   not_started
   initiated
   in_progress
@@ -33,15 +33,16 @@ enum project_status{
 // USER (Base Model)
 
 model User {
-  id          String   @id @default(cuid())
-  role        Role
-  email       String
-  phoneNumber String?
-  country     String?
-  state       String?
-  firstName   String?
-  lastName    String?
-  created_at  DateTime @default(now())
+  id             String   @id @default(cuid())
+  supabaseUserId String   @unique // Link to Supabase Auth user
+  role           Role
+  email          String
+  phoneNumber    String?
+  country        String?
+  state          String?
+  firstName      String?
+  lastName       String?
+  created_at     DateTime @default(now())
 
   // Relations
   Client   Client?
@@ -59,14 +60,15 @@ model Client {
 
   // Relations (from notes)
   projects     Project[]
-  notifications Notification[]
-  messages      Message[]
-  calendars     Calendar[]
-  events        Event[]
-  supportTickets SupportTicket[]
-  paymentHistory Payment[]
-  clientNotes    ClientNote[]
-  requirements   Requirement[]
+  // Requirements are accessed through projects
+  // TODO: Uncomment when these models are created
+  // notifications Notification[]
+  // messages      Message[]
+  // calendars     Calendar[]
+  // events        Event[]
+  // supportTickets SupportTicket[]
+  // paymentHistory Payment[]
+  // clientNotes    ClientNote[]
 }
 
 
@@ -77,8 +79,8 @@ model Admin {
   userId  String   @unique
   User    User     @relation(fields: [userId], references: [id])
 
-  // Note in drawing: "eventsId" exists but not defined
-  // Keeping minimal, no assumptions
+  // Relations
+  projects Project[]
 }
 
 
@@ -91,34 +93,50 @@ model Partner {
 
   companyName        String?
   companyDescription String?
-  profile            String?   // (optional)
-  bio                String?   // (optional)
+  BRD                String?   // (optional)
   meetingDate        DateTime? // (optional)
+  Agreement          String?
   phoneNumber        String?
   companyEmail       String?
   companyWebsite     String?
 
   // Relations
-  requirements Requirement[]
+  projects     Project[]
+  // Requirements are accessed through projects
 }
 
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
 
 // PROJECT
 
 model Project {
   id               String      @id @default(cuid())
-  clientId         String
-  Client           Client      @relation(fields: [clientId], references: [uid])
+  clientId         String?
+  Client           Client?     @relation(fields: [clientId], references: [uid])
+  adminId          String?
+  Admin            Admin?      @relation(fields: [adminId], references: [uid])
+  partnerId        String?
+  Partner          Partner?    @relation(fields: [partnerId], references: [uid])
 
   description      String?
   readMe           String?
   techStack        String?
   clientRequirement String?
-  projectTimeline  String?
-  projectStatus    String?
+  projectInformation  String?
+  projectTimeline  Json?
+  projectStatus    ProjectStatus?
   projectFeatures  String?
-  priority         String?
+  priority         Priority?
   progressStatus   String?
+  miscellaneousData   Json?
+  Quotation       String?
+  paymentStatus    PaymentStatus?
 
   updated_at       DateTime    @default(now())
   created_at       DateTime    @default(now())
@@ -165,7 +183,7 @@ model LandingEnquiry {
 
 
 // COURSE ENQUIRY (Independent Schema)
-=======
+
 model CourseEnquiry {
   uid        String   @id @default(cuid())
   courseId   String

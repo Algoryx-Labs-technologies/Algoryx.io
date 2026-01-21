@@ -1,33 +1,92 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle } from 'lucide-react';
 import { ForgotPassword } from './ForgotPassword';
+import { useAuth } from '../contexts/AuthContext';
 
 type AuthMode = 'signin' | 'signup';
 
 export function AuthPage() {
+  const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<AuthMode>('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
+    firstName: '',
+    lastName: '',
   });
 
   if (showForgotPassword) {
     return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with Clerk authentication
-    console.log('Form submitted:', { mode, formData });
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (mode === 'signup') {
+        // Validate password match
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+
+        // Validate password length
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
+          setLoading(false);
+          return;
+        }
+
+        const { error: signUpError } = await signUp(
+          formData.email,
+          formData.password,
+          {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+          }
+        );
+
+        if (signUpError) {
+          setError(signUpError.message);
+          setLoading(false);
+          return;
+        }
+
+        // Show success message or redirect
+        alert('Account created! Please check your email to verify your account.');
+        setMode('signin');
+        setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '' });
+      } else {
+        const { error: signInError } = await signIn(formData.email, formData.password);
+
+        if (signInError) {
+          setError(signInError.message);
+          setLoading(false);
+          return;
+        }
+
+        // Redirect to dashboard on successful sign in
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -68,22 +127,44 @@ export function AuthPage() {
           </CardHeader>
           <CardContent className="px-8 pb-8 relative z-10">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {mode === 'signup' && (
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="font-footer text-gray-300">Full Name</Label>
-                  <div className="relative">
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      required={mode === 'signup'}
-                      className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                    />
-                    <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  </div>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <p className="text-sm text-red-400 font-footer">{error}</p>
                 </div>
+              )}
+
+              {mode === 'signup' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="font-footer text-gray-300">First Name</Label>
+                    <div className="relative">
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="John"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="font-footer text-gray-300">Last Name</Label>
+                    <div className="relative">
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Doe"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -170,8 +251,15 @@ export function AuthPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600" size="lg">
-                {mode === 'signin' ? (
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                size="lg"
+              >
+                {loading ? (
+                  'Loading...'
+                ) : mode === 'signin' ? (
                   <>
                     <LogIn className="h-4 w-4" />
                     Sign In
@@ -195,7 +283,8 @@ export function AuthPage() {
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-4">
+              {/* OAuth providers can be added later if needed */}
+              {/* <div className="mt-5 grid grid-cols-2 gap-4">
                 <Button variant="outline" type="button" className="w-full h-11 font-footer border-white/10 hover:border-white/20 hover:bg-white/10 bg-slate-800/80 text-gray-300 hover:text-white">
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
@@ -223,7 +312,7 @@ export function AuthPage() {
                   </svg>
                   GitHub
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             <div className="mt-8 text-center text-sm font-footer">
@@ -234,7 +323,8 @@ export function AuthPage() {
                 type="button"
                 onClick={() => {
                   setMode(mode === 'signin' ? 'signup' : 'signin');
-                  setFormData({ email: '', password: '', confirmPassword: '', name: '' });
+                  setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '' });
+                  setError(null);
                 }}
                 className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"
               >

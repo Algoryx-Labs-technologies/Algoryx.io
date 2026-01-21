@@ -1,21 +1,25 @@
 import { Response } from 'express';
 import { AppError } from '@/types';
-import { Prisma } from '@prisma/client';
 
 export const handleError = (error: unknown, res: Response) => {
-  // Prisma errors
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === 'P2002') {
-      return res.status(409).json({
-        success: false,
-        error: 'A record with this value already exists',
-      });
-    }
-    if (error.code === 'P2025') {
-      return res.status(404).json({
-        success: false,
-        error: 'Record not found',
-      });
+  // Prisma errors - detect by error code pattern (P####)
+  // This works without importing Prisma, which may not be generated yet
+  if (error && typeof error === 'object' && 'code' in error) {
+    const errorCode = (error as any).code;
+    if (typeof errorCode === 'string' && errorCode.startsWith('P')) {
+      // Prisma error codes start with 'P'
+      if (errorCode === 'P2002') {
+        return res.status(409).json({
+          success: false,
+          error: 'A record with this value already exists',
+        });
+      }
+      if (errorCode === 'P2025') {
+        return res.status(404).json({
+          success: false,
+          error: 'Record not found',
+        });
+      }
     }
   }
 
