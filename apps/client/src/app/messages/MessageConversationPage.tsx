@@ -51,7 +51,7 @@ export function MessageConversationPage() {
     const fetchConversation = async () => {
       try {
         // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+        // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
         
         // Uncomment when API is ready:
         // const token = localStorage.getItem('auth_token');
@@ -163,7 +163,7 @@ export function MessageConversationPage() {
     setSending(true);
     try {
       // TODO: Replace with actual API call
-      // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+      // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
       // const token = localStorage.getItem('auth_token');
       // const response = await fetch(`${API_BASE_URL}/messages`, {
       //   method: 'POST',

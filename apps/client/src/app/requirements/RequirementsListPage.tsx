@@ -29,7 +29,7 @@ export function RequirementsListPage() {
     const fetchRequirements = async () => {
       try {
         // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
+        // const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000/api/v1';
         
         // Uncomment when API is ready:
         // const token = localStorage.getItem('auth_token'); // Get from your auth system

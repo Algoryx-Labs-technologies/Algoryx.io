@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { supabase, supabaseAdmin } from '@/config/supabase';
+import { env } from '@/config/env';
 import { AuthenticatedRequest } from '@/types';
 import { authService } from '@/services/auth.service';
 import { AppError } from '@/types';
@@ -182,7 +183,7 @@ export class AuthController {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.CLIENT_URL || 'http://localhost:5175'}/auth/reset-password`,
+      redirectTo: `${env.CLIENT_URL}/auth/reset-password`,
     });
 
     if (error) {
