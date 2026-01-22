@@ -1,14 +1,116 @@
-datasource db {
-  provider = "postgresql" 
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-// ENUMS
+model User {
+  id             String   @id @default(cuid())
+  supabaseUserId String   @unique
+  role           Role
+  email          String
+  phoneNumber    String?
+  country        String?
+  state          String?
+  firstName      String?
+  lastName       String?
+  created_at     DateTime @default(now())
+  Admin          Admin?
+  Client         Client?
+  Partner        Partner?
+}
+
+model Client {
+  uid      String    @id @default(cuid())
+  userId   String    @unique
+  User     User      @relation(fields: [userId], references: [id])
+  projects Project[]
+}
+
+model Admin {
+  uid      String    @id @default(cuid())
+  userId   String    @unique
+  User     User      @relation(fields: [userId], references: [id])
+  projects Project[]
+}
+
+model Partner {
+  uid                String    @id @default(cuid())
+  userId             String    @unique
+  companyName        String?
+  companyDescription String?
+  BRD                String?
+  meetingDate        DateTime?
+  Agreement          String?
+  phoneNumber        String?
+  companyEmail       String?
+  companyWebsite     String?
+  User               User      @relation(fields: [userId], references: [id])
+  projects           Project[]
+}
+
+model Project {
+  id                 String         @id @default(cuid())
+  clientId           String?
+  adminId            String?
+  partnerId          String?
+  description        String?
+  readMe             String?
+  techStack          String?
+  clientRequirement  String?
+  projectInformation String?
+  projectTimeline    Json?
+  projectStatus      ProjectStatus?
+  projectFeatures    String?
+  priority           Priority?
+  progressStatus     String?
+  miscellaneousData  Json?
+  Quotation          String?
+  paymentStatus      PaymentStatus?
+  updated_at         DateTime       @default(now())
+  created_at         DateTime       @default(now())
+  Admin              Admin?         @relation(fields: [adminId], references: [uid])
+  Client             Client?        @relation(fields: [clientId], references: [uid])
+  Partner            Partner?       @relation(fields: [partnerId], references: [uid])
+  requirements       Requirement[]
+}
+
+model Requirement {
+  uid          String   @id @default(cuid())
+  projectId    String?
+  projectTitle String?
+  question     String?
+  description  String?
+  priority     String?
+  answer       String?
+  updated_at   DateTime @default(now())
+  created_at   DateTime @default(now())
+  Project      Project? @relation(fields: [projectId], references: [id])
+}
+
+model LandingEnquiry {
+  uid        String   @id @default(cuid())
+  fullName   String
+  email      String
+  phone      String
+  address    String
+  companyOrg String?
+  message    String
+  idProof    String?
+  haveSource String?
+  updated_at DateTime @default(now())
+  created_at DateTime @default(now())
+}
+
+model CourseEnquiry {
+  uid        String   @id @default(cuid())
+  courseId   String
+  email      String
+  created_at DateTime @default(now())
+}
 
 enum Role {
   client
@@ -30,155 +132,9 @@ enum ProjectStatus {
   delivered
 }
 
-// USER (Base Model)
-
-model User {
-  id             String   @id @default(cuid())
-  supabaseUserId String   @unique // Link to Supabase Auth user
-  role           Role
-  email          String
-  phoneNumber    String?
-  country        String?
-  state          String?
-  firstName      String?
-  lastName       String?
-  created_at     DateTime @default(now())
-
-  // Relations
-  Client   Client?
-  Admin    Admin?
-  Partner  Partner?
-}
-
-
-// CLIENT
-
-model Client {
-  uid          String   @id @default(cuid())
-  userId       String   @unique
-  User         User     @relation(fields: [userId], references: [id])
-
-  // Relations
-  projects     Project[]
-}
-
-
-// ADMIN
-
-model Admin {
-  uid     String   @id @default(cuid())
-  userId  String   @unique
-  User    User     @relation(fields: [userId], references: [id])
-
-  // Relations
-  projects Project[]
-}
-
-
-// PARTNER
-
-model Partner {
-  uid             String   @id @default(cuid())
-  userId          String   @unique
-  User            User     @relation(fields: [userId], references: [id])
-
-  companyName        String?
-  companyDescription String?
-  BRD                String?   // (optional)
-  meetingDate        DateTime? // (optional)
-  Agreement          String?
-  phoneNumber        String?
-  companyEmail       String?
-  companyWebsite     String?
-
-  // Relations
-  projects     Project[]
-  // Requirements are accessed through projects
-}
-
-
 enum PaymentStatus {
   pending
   paid
   failed
   refunded
-}
-
-// PROJECT
-
-model Project {
-  id               String      @id @default(cuid())
-  clientId         String?
-  Client           Client?     @relation(fields: [clientId], references: [uid])
-  adminId          String?
-  Admin            Admin?      @relation(fields: [adminId], references: [uid])
-  partnerId        String?
-  Partner          Partner?    @relation(fields: [partnerId], references: [uid])
-
-  description      String?
-  readMe           String?
-  techStack        String?
-  clientRequirement String?
-  projectInformation  String?
-  projectTimeline  Json?
-  projectStatus    ProjectStatus?
-  projectFeatures  String?
-  priority         Priority?
-  progressStatus   String?
-  miscellaneousData   Json?
-  Quotation       String?
-  paymentStatus    PaymentStatus?
-
-  updated_at       DateTime    @default(now())
-  created_at       DateTime    @default(now())
-
-  // Relations
-  requirements     Requirement[]
-}
-
-
-// REQUIREMENT
-
-model Requirement {
-  uid         String     @id @default(cuid())
-  projectId   String?
-  Project     Project?   @relation(fields: [projectId], references: [id])
-
-  projectTitle String?
-  question     String?
-  description  String?
-  priority     String?
-  answer       String?
-
-  updated_at   DateTime  @default(now())
-  created_at   DateTime  @default(now())
-}
-
-
-// LANDING ENQUIRY (Independent Schema)
-
-model LandingEnquiry {
-  uid         String   @id @default(cuid())
-  fullName    String
-  email       String
-  phone       String
-  address     String
-  companyOrg  String?  // (optional)
-  message     String
-  idProof     String?  // (optional)
-  haveSource  String?  // (optional)
-
-  updated_at  DateTime @default(now())
-  created_at  DateTime @default(now())
-}
-
-
-// COURSE ENQUIRY (Independent Schema)
-
-model CourseEnquiry {
-  uid        String   @id @default(cuid())
-  courseId   String
-  email      String
-
-  created_at DateTime @default(now())
 }

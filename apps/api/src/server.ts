@@ -65,17 +65,17 @@ const startServer = async () => {
   const dbConnected = await testDatabaseConnection();
   
   if (!dbConnected) {
-    logger.error('❌ Failed to connect to database. Server will not start.');
+    logger.error(' Failed to connect to database. Server will not start.');
     process.exit(1);
   }
   
   // Start server
   server = app.listen(PORT, () => {
     logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info(`🚀 Server running on port ${PORT}`);
-    logger.info(`📝 Environment: ${env.NODE_ENV}`);
-    logger.info(`🔗 API: http://localhost:${PORT}/api/${env.API_VERSION}`);
-    logger.info(`💾 Database: Connected`);
+    logger.info(` Server running on port ${PORT}`);
+    logger.info(` Environment: ${env.NODE_ENV}`);
+    logger.info(` API: http://localhost:${PORT}/api/${env.API_VERSION}`);
+    logger.info(` Database: Connected`);
     logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   });
   
