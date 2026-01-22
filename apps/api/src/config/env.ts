@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().default('3001'),
+  PORT: z.string().default('4000'),
   API_VERSION: z.string().default('v1'),
   
   // Supabase
@@ -19,7 +19,10 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
   
   // CORS
-  CORS_ORIGIN: z.string().default('*'),
+  CORS_ORIGIN: z.string().default('http://localhost:8080,http://localhost:5174'),
+  
+  // Client URL for password reset redirects
+  CLIENT_URL: z.string().url().default('http://localhost:8080'),
   
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.string().default('900000'),

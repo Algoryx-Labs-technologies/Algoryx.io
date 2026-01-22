@@ -34,7 +34,7 @@ Create a `.env` file in `apps/api/` with:
 ```env
 # Server Configuration
 NODE_ENV=development
-PORT=3001
+PORT=4000
 API_VERSION=v1
 
 # Supabase Configuration (for Authentication)
@@ -54,7 +54,10 @@ JWT_SECRET=your_jwt_secret_key
 JWT_EXPIRES_IN=7d
 
 # CORS
-CORS_ORIGIN=http://localhost:3000,http://localhost:5173
+CORS_ORIGIN=http://localhost:8080,http://localhost:5174
+
+# Client URL for password reset redirects
+CLIENT_URL=http://localhost:8080
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000

@@ -241,7 +241,7 @@ export function SupportChat() {
     setTicketId(newTicketId);
     
     // Simulate API call (replace with actual API later)
-    // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+    // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
     // await fetch(`${API_BASE_URL}/support/tickets`, { ... });
     
     // Add confirmation message

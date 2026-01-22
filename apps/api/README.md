@@ -96,7 +96,7 @@ apps/api/
 
 ### Base URL
 ```
-http://localhost:3001/api/v1
+http://localhost:4000/api/v1
 ```
 
 ### Endpoints
