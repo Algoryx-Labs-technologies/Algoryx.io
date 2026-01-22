@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -19,6 +19,7 @@ export function AuthPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shine, setShine] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,6 +30,24 @@ export function AuthPage() {
     country: '',
     state: '',
   });
+
+  // Trigger shine effect on mount and every 10 seconds
+  useEffect(() => {
+    // Initial shine
+    setShine(true);
+    const timer = setTimeout(() => setShine(false), 2000);
+
+    // Repeat every 10 seconds
+    const interval = setInterval(() => {
+      setShine(true);
+      setTimeout(() => setShine(false), 2000);
+    }, 10000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, []);
 
   if (showForgotPassword) {
     return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
@@ -161,7 +180,10 @@ export function AuthPage() {
             {/* Right Side - Auth Card */}
             <div className="w-full flex items-center justify-center lg:justify-end">
               <div className="w-full max-w-lg">
-            <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden relative z-10">
+            <Card className={`group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden relative z-10 ${shine ? 'shine-effect' : ''}`}>
+              {shine && (
+                <div className="absolute inset-0 shine-overlay pointer-events-none z-30 rounded-xl"></div>
+              )}
           {/* Decorative element */}
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-full blur-xl group-hover:scale-[1.5] group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:blur-2xl transition-all duration-500"></div>
           
