@@ -129,7 +129,7 @@ export function AuthPage() {
               </h1>
               
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-snug max-w-xl">
-                Partner with our research team to develop bespoke trading algorithms, risk models, and quantitative strategies tailored to your specific needs.
+                Get onboarded to our client portal and get in touch with our research team to develop bespoke trading algorithms, risk models, and quantitative strategies tailored to your specific needs.
               </p>
 
               {/* Key Features */}
