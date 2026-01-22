@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Instagram, Twitter, Linkedin, Youtube, Sparkles, Check, Send } from 'lucide-react';
+import { motion } from 'motion/react';
 import { ScrollReveal } from './ScrollReveal';
 import {
   Dialog,
@@ -17,6 +18,37 @@ export function Footer() {
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
+  const [isFooterInView, setIsFooterInView] = useState(false);
+  const footerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFooterInView) {
+          setIsFooterInView(true);
+          // Disconnect after first trigger to ensure animation only happens once
+          if (footerRef.current) {
+            observer.unobserve(footerRef.current);
+          }
+        }
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+      }
+    );
+
+    if (footerRef.current) {
+      observer.observe(footerRef.current);
+    }
+
+    return () => {
+      if (footerRef.current) {
+        observer.unobserve(footerRef.current);
+      }
+      observer.disconnect();
+    };
+  }, [isFooterInView]);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +64,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer overflow-hidden">
+    <footer ref={footerRef} className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer overflow-hidden">
       <div className="container mx-auto px-6 py-12 relative z-10">
         <ScrollReveal>
           <div className="grid md:grid-cols-6 gap-8 mb-12">
@@ -247,14 +279,24 @@ export function Footer() {
 
       {/* Large background "Algoryx" text */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <h1 className="text-9xl md:text-[200px] font-bold text-gray-800 dark:text-gray-800 opacity-40 tracking-wider" style={{
-          textShadow: `
-            0 0 20px rgba(59, 130, 246, 0.15),
-            0 0 40px rgba(59, 130, 246, 0.1)
-          `
-        }}>
+        <motion.h1 
+          className="text-9xl md:text-[200px] font-bold text-gray-800 dark:text-gray-800 tracking-wider" 
+          style={{
+            textShadow: `
+              0 0 20px rgba(59, 130, 246, 0.15),
+              0 0 40px rgba(59, 130, 246, 0.1)
+            `
+          }}
+          initial={{ opacity: 0 }}
+          animate={isFooterInView ? { opacity: 0.4 } : { opacity: 0 }}
+          transition={{ 
+            duration: 2, 
+            delay: 0.4,
+            ease: [0.25, 0.1, 0.25, 1]
+          }}
+        >
           Algoryx.io
-        </h1>
+        </motion.h1>
       </div>
 
       {/* Privacy Policy Dialog */}
