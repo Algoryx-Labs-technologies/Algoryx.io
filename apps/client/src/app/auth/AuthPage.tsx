@@ -194,7 +194,7 @@ export function AuthPage() {
               </div>
             </div>
             <CardTitle className="text-2xl font-semibold font-hero text-white">
-              {mode === 'signin' ? 'Welcome back' : 'Create an account'}
+              {mode === 'signin' ? 'Welcome back to Algoryx Labs' : 'Create an account'}
             </CardTitle>
             <CardDescription className="text-sm font-footer text-gray-400">
               {mode === 'signin'
