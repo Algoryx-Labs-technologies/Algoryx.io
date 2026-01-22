@@ -4,13 +4,14 @@ import { env } from '@/config/env';
 import { AuthenticatedRequest } from '@/types';
 import { authService } from '@/services/auth.service';
 import { AppError } from '@/types';
+import { prisma } from '@/config/database';
 
 export class AuthController {
   /**
    * Sign up a new user
    */
   async signup(req: AuthenticatedRequest, res: Response) {
-    const { email, password, firstName, lastName, phoneNumber, role } = req.body;
+    const { email, password, firstName, lastName, phoneNumber, country, state, role } = req.body;
 
     if (!email || !password) {
       throw new AppError(400, 'Email and password are required');
@@ -30,6 +31,8 @@ export class AuthController {
           firstName,
           lastName,
           phoneNumber,
+          country,
+          state,
           role: role || 'client', // Default to client if not specified
         },
       },
@@ -51,14 +54,26 @@ export class AuthController {
         firstName,
         lastName,
         phoneNumber,
+        country,
+        state,
         role: role as any || undefined, // Will default to client in service
       }
     );
 
+    // Fetch user with Client relation to return in response
+    const userWithClient = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        Client: true,
+        Admin: true,
+        Partner: true,
+      },
+    });
+
     res.json({
       success: true,
       data: {
-        user,
+        user: userWithClient,
         session: authData.session,
       },
       message: 'User created successfully. Please check your email to verify your account.',
@@ -97,6 +112,8 @@ export class AuthController {
         firstName: authData.user.user_metadata?.firstName,
         lastName: authData.user.user_metadata?.lastName,
         phoneNumber: authData.user.user_metadata?.phoneNumber,
+        country: authData.user.user_metadata?.country,
+        state: authData.user.user_metadata?.state,
       }
     );
 

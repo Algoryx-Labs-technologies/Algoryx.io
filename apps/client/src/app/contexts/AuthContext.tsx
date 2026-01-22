@@ -1,12 +1,13 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, getRedirectUrl } from '@/lib/supabase';
+import { apiClient } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; phoneNumber?: string }) => Promise<{ user: User | null; session: Session | null; error: AuthError | null }>;
+  signUp: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; phoneNumber?: string; country?: string; state?: string }) => Promise<{ user: User | null; session: Session | null; error: AuthError | null }>;
   signIn: (email: string, password: string) => Promise<{ user: User | null; session: Session | null; error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
@@ -42,20 +43,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    metadata?: { firstName?: string; lastName?: string; phoneNumber?: string }
+    metadata?: { firstName?: string; lastName?: string; phoneNumber?: string; country?: string; state?: string }
   ) => {
-    const { data, error } = await supabase.auth.signUp({
+    // Call API endpoint to create user and Client record in database
+    const response = await apiClient.post<{ user: any; session: Session }>('/auth/signup', {
       email,
       password,
-      options: {
-        data: metadata,
-      },
+      firstName: metadata?.firstName,
+      lastName: metadata?.lastName,
+      phoneNumber: metadata?.phoneNumber,
+      country: metadata?.country,
+      state: metadata?.state,
+      role: 'client', // Default to client for signups
     });
 
+    if (!response.success || !response.data) {
+      return {
+        user: null,
+        session: null,
+        error: { message: response.error || 'Failed to create account' } as AuthError,
+      };
+    }
+
+    // Store session in Supabase client for auth state management
+    if (response.data.session) {
+      await supabase.auth.setSession({
+        access_token: response.data.session.access_token,
+        refresh_token: response.data.session.refresh_token,
+      });
+    }
+
     return {
-      user: data.user,
-      session: data.session,
-      error,
+      user: response.data.user ? { id: response.data.user.supabaseUserId, ...response.data.user } as User : null,
+      session: response.data.session,
+      error: null,
     };
   };
 
@@ -78,8 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
+    const redirectUrl = getRedirectUrl();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${redirectUrl}/auth/reset-password`,
     });
 
     return { error };

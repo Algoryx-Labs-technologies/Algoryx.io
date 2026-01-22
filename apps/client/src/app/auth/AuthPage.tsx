@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin } from 'lucide-react';
 import { ForgotPassword } from './ForgotPassword';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,6 +25,9 @@ export function AuthPage() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    phoneNumber: '',
+    country: '',
+    state: '',
   });
 
   if (showForgotPassword) {
@@ -58,6 +61,9 @@ export function AuthPage() {
           {
             firstName: formData.firstName,
             lastName: formData.lastName,
+            phoneNumber: formData.phoneNumber || undefined,
+            country: formData.country || undefined,
+            state: formData.state || undefined,
           }
         );
 
@@ -70,7 +76,7 @@ export function AuthPage() {
         // Show success message or redirect
         alert('Account created! Please check your email to verify your account.');
         setMode('signin');
-        setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '' });
+        setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '', phoneNumber: '', country: '', state: '' });
       } else {
         const { error: signInError } = await signIn(formData.email, formData.password);
 
@@ -162,6 +168,48 @@ export function AuthPage() {
                         className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                       />
                       <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber" className="font-footer text-gray-300">Phone Number</Label>
+                    <div className="relative">
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        placeholder="+1 (555) 123-4567"
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="font-footer text-gray-300">Country</Label>
+                    <div className="relative">
+                      <Input
+                        id="country"
+                        type="text"
+                        placeholder="United States"
+                        value={formData.country}
+                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="font-footer text-gray-300">State/Province</Label>
+                    <div className="relative">
+                      <Input
+                        id="state"
+                        type="text"
+                        placeholder="California"
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     </div>
                   </div>
                 </>
@@ -323,7 +371,7 @@ export function AuthPage() {
                 type="button"
                 onClick={() => {
                   setMode(mode === 'signin' ? 'signup' : 'signin');
-                  setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '' });
+                  setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '', phoneNumber: '', country: '', state: '' });
                   setError(null);
                 }}
                 className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"

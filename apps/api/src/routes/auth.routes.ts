@@ -4,28 +4,30 @@ import { authenticate } from '@/middleware/auth';
 import { validate } from '@/middleware/validate';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
-const signupSchema = z.object({
+const signupSchema = {
   body: z.object({
     email: z.string().email(),
     password: z.string().min(6),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     phoneNumber: z.string().optional(),
+    country: z.string().optional(),
+    state: z.string().optional(),
     role: z.enum(['client', 'admin', 'partner']).optional(), // Optional role, defaults to 'client'
   }),
-});
+};
 
-const signinSchema = z.object({
+const signinSchema = {
   body: z.object({
     email: z.string().email(),
     password: z.string().min(1),
   }),
-});
+};
 
-const updateProfileSchema = z.object({
+const updateProfileSchema = {
   body: z.object({
     firstName: z.string().optional(),
     lastName: z.string().optional(),
@@ -33,26 +35,26 @@ const updateProfileSchema = z.object({
     country: z.string().optional(),
     state: z.string().optional(),
   }),
-});
+};
 
-const forgotPasswordSchema = z.object({
+const forgotPasswordSchema = {
   body: z.object({
     email: z.string().email(),
   }),
-});
+};
 
-const resetPasswordSchema = z.object({
+const resetPasswordSchema = {
   body: z.object({
     password: z.string().min(6),
     token: z.string().min(1),
   }),
-});
+};
 
-const refreshSessionSchema = z.object({
+const refreshSessionSchema = {
   body: z.object({
     refresh_token: z.string().min(1),
   }),
-});
+};
 
 // Public routes
 router.post(

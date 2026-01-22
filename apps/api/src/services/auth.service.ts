@@ -14,6 +14,8 @@ export class AuthService {
       firstName?: string;
       lastName?: string;
       phoneNumber?: string;
+      country?: string;
+      state?: string;
       role?: Role;
     }
   ): Promise<User> {
@@ -27,7 +29,7 @@ export class AuthService {
     }
 
     // Check if user exists by email
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { email },
     });
 
@@ -54,6 +56,8 @@ export class AuthService {
         email,
         role: metadata?.role || Role.client,
         phoneNumber: metadata?.phoneNumber,
+        country: metadata?.country,
+        state: metadata?.state,
         ...nameParts,
       },
     });
@@ -110,7 +114,7 @@ export class AuthService {
    * Find user by email
    */
   async findByEmail(email: string): Promise<User | null> {
-    return prisma.user.findUnique({
+    return prisma.user.findFirst({
       where: { email },
     });
   }
