@@ -114,13 +114,7 @@ function App() {
         />
         <Route 
           path="/" 
-          element={
-            user ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/auth" replace />
-            )
-          } 
+          element={<Navigate to="/auth" replace />}
         />
       </Routes>
     </BrowserRouter>
