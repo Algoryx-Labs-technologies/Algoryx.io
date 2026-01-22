@@ -38,13 +38,6 @@ const shutdown = async (signal: string) => {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-// Start server
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-  logger.info(`Environment: ${env.NODE_ENV}`);
-  logger.info(`API: http://localhost:${PORT}/api/${env.API_VERSION}`);
-});
-
 // Handle unhandled promise rejections
 let server: ReturnType<typeof app.listen> | null = null;
 
