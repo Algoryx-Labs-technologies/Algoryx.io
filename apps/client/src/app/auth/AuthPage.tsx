@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin, FlaskConical, Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { ForgotPassword } from './ForgotPassword';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -100,39 +100,88 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-2xl">
-        {/* Background gradient effects - matching landing theme */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/5 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-500/10 dark:bg-blue-700/15 rounded-full blur-3xl"></div>
-        </div>
+    <div className="h-screen overflow-hidden bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
+      {/* Background gradient effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/5 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-500/10 dark:bg-blue-700/15 rounded-full blur-3xl"></div>
+      </div>
 
-        {/* Animated grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
+      <div className="relative z-10 h-full flex items-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full h-full flex items-center">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center max-w-7xl mx-auto w-full">
+            {/* Left Side - Labs Content */}
+            <div className="flex flex-col justify-center space-y-3 md:space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-300 text-xs w-fit">
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>Algoryx Labs</span>
+              </div>
+              
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-white to-gray-300 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                  Custom AI/ML & Quant
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                  Research Solutions
+                </span>
+              </h1>
+              
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-snug max-w-xl">
+                Partner with our research team to develop bespoke trading algorithms, risk models, and quantitative strategies tailored to your specific needs.
+              </p>
 
-        <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden relative z-10">
+              {/* Key Features */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/80 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-white/10">
+                  <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-gray-900 dark:text-white">Custom Strategy Development</div>
+                    <div className="text-[10px] text-gray-600 dark:text-gray-400">Tailored algorithms & optimization</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/80 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-white/10">
+                  <TrendingUp className="w-4 h-4 text-cyan-500 dark:text-cyan-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-gray-900 dark:text-white">ML Model Deployment</div>
+                    <div className="text-[10px] text-gray-600 dark:text-gray-400">Advanced machine learning solutions</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/80 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-white/10">
+                  <Shield className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-gray-900 dark:text-white">Risk Management</div>
+                    <div className="text-[10px] text-gray-600 dark:text-gray-400">Comprehensive risk analysis</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Auth Card */}
+            <div className="w-full flex items-center justify-center lg:justify-end">
+              <div className="w-full max-w-lg">
+            <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden relative z-10">
           {/* Decorative element */}
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-full blur-xl group-hover:scale-[1.5] group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:blur-2xl transition-all duration-500"></div>
           
-          <CardHeader className="space-y-3 text-center px-8 pt-8 relative z-10">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300">
-                <User className="w-8 h-8 text-blue-400 group-hover:text-blue-300 transition-colors" />
+          <CardHeader className="space-y-2 text-center px-6 pt-6 pb-4 relative z-10">
+            <div className="flex justify-center mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300">
+                <User className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
             </div>
-            <CardTitle className="text-3xl md:text-4xl font-semibold font-hero text-white">
+            <CardTitle className="text-2xl font-semibold font-hero text-white">
               {mode === 'signin' ? 'Welcome back' : 'Create an account'}
             </CardTitle>
-            <CardDescription className="text-base font-footer text-gray-400">
+            <CardDescription className="text-sm font-footer text-gray-400">
               {mode === 'signin'
                 ? 'Enter your credentials to access your account'
                 : 'Enter your information to get started'}
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-8 pb-8 relative z-10">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <CardContent className="px-6 pb-6 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {error && (
                 <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-red-400" />
@@ -142,64 +191,68 @@ export function AuthPage() {
 
               {mode === 'signup' && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="font-footer text-gray-300">First Name</Label>
-                    <div className="relative">
-                      <Input
-                        id="firstName"
-                        type="text"
-                        placeholder="John"
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                      />
-                      <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="firstName" className="font-footer text-gray-300 text-xs">First Name</Label>
+                      <div className="relative">
+                        <Input
+                          id="firstName"
+                          type="text"
+                          placeholder="John"
+                          value={formData.firstName}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                        />
+                        <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lastName" className="font-footer text-gray-300 text-xs">Last Name</Label>
+                      <div className="relative">
+                        <Input
+                          id="lastName"
+                          type="text"
+                          placeholder="Doe"
+                          value={formData.lastName}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                        />
+                        <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" className="font-footer text-gray-300">Last Name</Label>
-                    <div className="relative">
-                      <Input
-                        id="lastName"
-                        type="text"
-                        placeholder="Doe"
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                      />
-                      <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phoneNumber" className="font-footer text-gray-300 text-xs">Phone Number</Label>
+                      <div className="relative">
+                        <Input
+                          id="phoneNumber"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                          value={formData.phoneNumber}
+                          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                        />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="country" className="font-footer text-gray-300 text-xs">Country</Label>
+                      <div className="relative">
+                        <Input
+                          id="country"
+                          type="text"
+                          placeholder="United States"
+                          value={formData.country}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                        />
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="font-footer text-gray-300">Phone Number</Label>
-                    <div className="relative">
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        placeholder="+1 (555) 123-4567"
-                        value={formData.phoneNumber}
-                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                      />
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country" className="font-footer text-gray-300">Country</Label>
-                    <div className="relative">
-                      <Input
-                        id="country"
-                        type="text"
-                        placeholder="United States"
-                        value={formData.country}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                      />
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state" className="font-footer text-gray-300">State/Province</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="state" className="font-footer text-gray-300 text-xs">State/Province</Label>
                     <div className="relative">
                       <Input
                         id="state"
@@ -207,16 +260,16 @@ export function AuthPage() {
                         placeholder="California"
                         value={formData.state}
                         onChange={(e) => handleInputChange('state', e.target.value)}
-                        className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                        className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                       />
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
                   </div>
                 </>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="font-footer text-gray-300">Email</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="font-footer text-gray-300 text-xs">Email</Label>
                 <div className="relative">
                   <Input
                     id="email"
@@ -225,14 +278,14 @@ export function AuthPage() {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     required
-                    className="pl-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                    className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                   />
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="font-footer text-gray-300">Password</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="font-footer text-gray-300 text-xs">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -243,24 +296,24 @@ export function AuthPage() {
                     required
                     className="pl-10 pr-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                   />
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className="h-4 w-4" />
                     )}
                   </button>
                 </div>
               </div>
 
               {mode === 'signup' && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="font-footer text-gray-300">Confirm Password</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword" className="font-footer text-gray-300 text-xs">Confirm Password</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -269,18 +322,18 @@ export function AuthPage() {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       required={mode === 'signup'}
-                      className="pl-10 pr-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      className="pl-10 pr-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                     />
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
                       )}
                     </button>
                   </div>
@@ -302,19 +355,19 @@ export function AuthPage() {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                className="w-full h-9 text-sm font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
                 size="lg"
               >
                 {loading ? (
                   'Loading...'
                 ) : mode === 'signin' ? (
                   <>
-                    <LogIn className="h-4 w-4" />
+                    <LogIn className="h-3.5 w-3.5" />
                     Sign In
                   </>
                 ) : (
                   <>
-                    <UserPlus className="h-4 w-4" />
+                    <UserPlus className="h-3.5 w-3.5" />
                     Sign Up
                   </>
                 )}
@@ -363,7 +416,7 @@ export function AuthPage() {
               </div> */}
             </div>
 
-            <div className="mt-8 text-center text-sm font-footer">
+            <div className="mt-4 text-center text-xs font-footer">
               <span className="text-gray-400">
                 {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
               </span>
@@ -380,7 +433,11 @@ export function AuthPage() {
               </button>
             </div>
           </CardContent>
-        </Card>
+            </Card>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
