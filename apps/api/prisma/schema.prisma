@@ -58,17 +58,8 @@ model Client {
   userId       String   @unique
   User         User     @relation(fields: [userId], references: [id])
 
-  // Relations (from notes)
+  // Relations
   projects     Project[]
-  // Requirements are accessed through projects
-  // TODO: Uncomment when these models are created
-  // notifications Notification[]
-  // messages      Message[]
-  // calendars     Calendar[]
-  // events        Event[]
-  // supportTickets SupportTicket[]
-  // paymentHistory Payment[]
-  // clientNotes    ClientNote[]
 }
 
 

@@ -6,16 +6,34 @@ import messageRoutes from './message.routes';
 import requirementRoutes from './requirement.routes';
 import webhookRoutes from './webhook.routes';
 import { env } from '@/config/env';
+import { prisma } from '@/config/database';
 
 const router = Router();
 
-// Health check
-router.get('/health', (req, res) => {
+// Health check with database status
+router.get('/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  let dbLatency = null;
+  
+  try {
+    const startTime = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const endTime = Date.now();
+    dbLatency = `${endTime - startTime}ms`;
+    dbStatus = 'connected';
+  } catch (error) {
+    dbStatus = 'error';
+  }
+  
   res.json({
     success: true,
     message: 'API is running',
     timestamp: new Date().toISOString(),
     version: env.API_VERSION,
+    database: {
+      status: dbStatus,
+      latency: dbLatency,
+    },
   });
 });
 
