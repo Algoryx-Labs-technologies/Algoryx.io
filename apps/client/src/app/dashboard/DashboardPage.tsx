@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { SupportChat } from '../components/SupportChat';
 import { CalendarWidget } from './widgets/CalendarWidget';
@@ -9,10 +10,37 @@ import { NotificationsWidget } from './widgets/NotificationsWidget';
 import { useSidebar } from '../contexts/SidebarContext';
 import { useShineEffect } from '../contexts/ShineEffectContext';
 import { cn } from '../components/ui/utils';
+import { apiClient } from '@/lib/api';
+
+interface User {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+}
 
 export function DashboardPage() {
   const { isCollapsed } = useSidebar();
   const { shouldShine } = useShineEffect();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<User>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
@@ -46,7 +74,15 @@ export function DashboardPage() {
                 })()}
               </span>
               <span className="text-white dark:text-white ml-3">
-                John
+                {loading ? (
+                  '...'
+                ) : user ? (
+                  user.firstName 
+                    ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`
+                    : user.email.split('@')[0]
+                ) : (
+                  'User'
+                )}
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 dark:text-gray-300 mt-3 font-serif italic tracking-wide">

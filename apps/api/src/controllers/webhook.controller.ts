@@ -30,6 +30,8 @@ export class WebhookController {
               firstName: event.record.user_metadata?.firstName,
               lastName: event.record.user_metadata?.lastName,
               phoneNumber: event.record.user_metadata?.phoneNumber,
+              country: event.record.user_metadata?.country,
+              state: event.record.user_metadata?.state,
               role: event.record.user_metadata?.role || undefined,
             }
           );
@@ -44,6 +46,8 @@ export class WebhookController {
               firstName: event.record.user_metadata?.firstName,
               lastName: event.record.user_metadata?.lastName,
               phoneNumber: event.record.user_metadata?.phoneNumber,
+              country: event.record.user_metadata?.country,
+              state: event.record.user_metadata?.state,
             });
           }
           break;
