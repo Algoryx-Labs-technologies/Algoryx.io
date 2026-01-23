@@ -1,15 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { FolderKanban, CheckCircle2, ChevronDown } from 'lucide-react';
+import { FolderKanban, CheckCircle2, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { useState } from 'react';
 import { cn } from '../../components/ui/utils';
+import { apiClient } from '@/lib/api';
 
 export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
   const [budget, setBudget] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const projects = [
     { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
@@ -18,12 +22,34 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
     { name: 'AI Model Training', status: 'Deadline: 10 Oct', icon: '⬇️' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ projectTitle, description, budget });
-    setProjectTitle('');
-    setDescription('');
-    setBudget('');
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      const response = await apiClient.post('/requirements', {
+        projectTitle: projectTitle || undefined,
+        description: description || undefined,
+        Budget: budget || undefined,
+      });
+
+      if (response.success) {
+        setSubmitSuccess(true);
+        setProjectTitle('');
+        setDescription('');
+        setBudget('');
+        // Clear success message after 3 seconds
+        setTimeout(() => setSubmitSuccess(false), 3000);
+      } else {
+        setSubmitError(response.error || 'Failed to submit requirement');
+      }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -105,7 +131,8 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
                     id="budget"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
-                    className="w-full h-8 px-2 pr-8 bg-slate-800/50 border border-white/10 rounded-md text-white font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full h-8 px-2 pr-8 bg-slate-800/50 border border-white/10 rounded-md text-white font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="" className="bg-slate-800 text-white">
                       Select Budget Range
@@ -144,12 +171,28 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
               <div className="pt-5">
                 <Button
                   type="submit"
-                  className="w-full lg:w-24 bg-orange-500 hover:bg-orange-600 text-white font-footer text-sm h-8"
+                  disabled={isSubmitting}
+                  className="w-full lg:w-24 bg-orange-500 hover:bg-orange-600 text-white font-footer text-sm h-8 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                  ) : (
+                    'Submit'
+                  )}
                 </Button>
               </div>
             </div>
+            {/* Error and Success Messages */}
+            {submitError && (
+              <div className="text-xs text-red-400 font-footer mt-1">
+                {submitError}
+              </div>
+            )}
+            {submitSuccess && (
+              <div className="text-xs text-green-400 font-footer mt-1">
+                Requirement submitted successfully!
+              </div>
+            )}
           </form>
         </div>
       </CardContent>

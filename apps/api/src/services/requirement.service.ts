@@ -15,7 +15,8 @@ export class RequirementService {
         Project: {
           select: {
             id: true,
-            projectTitle: true,
+            description: true,
+            projectStatus: true,
           },
         },
       },
@@ -40,7 +41,8 @@ export class RequirementService {
         Project: {
           select: {
             id: true,
-            projectTitle: true,
+            description: true,
+            projectStatus: true,
           },
         },
       },
@@ -48,12 +50,18 @@ export class RequirementService {
   }
 
   async create(data: {
+    userId?: string;
     projectId?: string;
+    clientId?: string;
+    partnerId?: string;
     projectTitle?: string;
     question?: string;
     description?: string;
     priority?: string;
     answer?: string;
+    Budget?: string;
+    userName?: string;
+    email?: string;
   }): Promise<Requirement> {
     return prisma.requirement.create({
       data,
@@ -61,7 +69,27 @@ export class RequirementService {
         Project: {
           select: {
             id: true,
-            projectTitle: true,
+            description: true,
+            projectStatus: true,
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
@@ -77,6 +105,7 @@ export class RequirementService {
       description: string;
       priority: string;
       answer: string;
+      Budget: string;
     }>
   ): Promise<Requirement> {
     const requirement = await this.findById(uid, clientId);
@@ -95,7 +124,8 @@ export class RequirementService {
         Project: {
           select: {
             id: true,
-            projectTitle: true,
+            description: true,
+            projectStatus: true,
           },
         },
       },
@@ -118,18 +148,10 @@ export class RequirementService {
   async findWithStatus(clientId: string) {
     const requirements = await this.findByClientId(clientId);
     
-    return requirements.map((req) => {
-      let status: 'pending' | 'answered' | 'reviewed' = 'pending';
-      
-      if (req.answer && req.answer.trim()) {
-        status = 'answered';
-      }
-      
-      return {
-        ...req,
-        status,
-      };
-    });
+    return requirements.map((req) => ({
+      ...req,
+      status: 'pending' as const,
+    }));
   }
 }
 

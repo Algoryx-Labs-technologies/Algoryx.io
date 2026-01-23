@@ -7,26 +7,22 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schemas
-const createRequirementSchema = z.object({
+const createRequirementSchema = {
   body: z.object({
     projectId: z.string().optional(),
     projectTitle: z.string().optional(),
-    question: z.string().optional(),
     description: z.string().optional(),
-    priority: z.string().optional(),
-    answer: z.string().optional(),
+    Budget: z.string().optional(),
   }),
-});
+};
 
-const updateRequirementSchema = z.object({
+const updateRequirementSchema = {
   body: z.object({
     projectTitle: z.string().optional(),
-    question: z.string().optional(),
     description: z.string().optional(),
-    priority: z.string().optional(),
-    answer: z.string().optional(),
+    Budget: z.string().optional(),
   }),
-});
+};
 
 // Routes
 router.get(

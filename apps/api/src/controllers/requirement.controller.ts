@@ -13,13 +13,21 @@ export class RequirementController {
     return client?.uid || null;
   }
 
+  async getPartnerId(userId: string): Promise<string | null> {
+    const partner = await prisma.partner.findUnique({
+      where: { userId },
+      select: { uid: true },
+    });
+    return partner?.uid || null;
+  }
+
   async getAllRequirements(req: AuthenticatedRequest, res: Response) {
     if (!req.supabaseUser) {
       throw new AppError(401, 'Unauthorized');
     }
 
     // Find user in database
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
 
@@ -48,9 +56,10 @@ export class RequirementController {
     }
 
     const { id } = req.params;
+    const requirementId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
 
@@ -65,24 +74,15 @@ export class RequirementController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    const requirement = await requirementService.findById(id, clientId);
+    const requirement = await requirementService.findById(requirementId, clientId);
 
     if (!requirement) {
       throw new AppError(404, 'Requirement not found');
     }
 
-    // Add status
-    let status: 'pending' | 'answered' | 'reviewed' = 'pending';
-    if (requirement.answer && requirement.answer.trim()) {
-      status = 'answered';
-    }
-
     res.json({
       success: true,
-      data: {
-        ...requirement,
-        status,
-      },
+      data: requirement,
     });
   }
 
@@ -92,7 +92,7 @@ export class RequirementController {
     }
 
     // Find user in database
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
 
@@ -100,19 +100,19 @@ export class RequirementController {
       throw new AppError(404, 'User not found');
     }
 
-    // Get client ID
+    // Get client ID and partner ID
     const clientId = await this.getClientId(user.id);
-    
-    if (!clientId) {
-      throw new AppError(404, 'Client profile not found');
-    }
+    const partnerId = await this.getPartnerId(user.id);
 
-    // If projectId is provided, verify it belongs to the client
+    // If projectId is provided, verify it belongs to the client or partner
     if (req.body.projectId) {
       const project = await prisma.project.findFirst({
         where: {
           id: req.body.projectId,
-          clientId: clientId,
+          OR: [
+            ...(clientId ? [{ clientId }] : []),
+            ...(partnerId ? [{ partnerId }] : []),
+          ],
         },
       });
 
@@ -121,7 +121,22 @@ export class RequirementController {
       }
     }
 
-    const requirement = await requirementService.create(req.body);
+    // Prepare userName from firstName/lastName or email
+    const userName = user.firstName 
+      ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`
+      : user.email.split('@')[0];
+
+    // Prepare requirement data with user, client, and partner IDs
+    const requirementData = {
+      ...req.body,
+      userId: user.id,
+      userName: userName,
+      email: user.email,
+      ...(clientId && { clientId }),
+      ...(partnerId && { partnerId }),
+    };
+
+    const requirement = await requirementService.create(requirementData);
 
     res.status(201).json({
       success: true,
@@ -136,9 +151,10 @@ export class RequirementController {
     }
 
     const { id } = req.params;
+    const requirementId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
 
@@ -153,7 +169,7 @@ export class RequirementController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    const requirement = await requirementService.update(id, clientId, req.body);
+    const requirement = await requirementService.update(requirementId, clientId, req.body);
 
     res.json({
       success: true,
@@ -168,9 +184,10 @@ export class RequirementController {
     }
 
     const { id } = req.params;
+    const requirementId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
 
@@ -185,7 +202,7 @@ export class RequirementController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    await requirementService.delete(id, clientId);
+    await requirementService.delete(requirementId, clientId);
 
     res.json({
       success: true,

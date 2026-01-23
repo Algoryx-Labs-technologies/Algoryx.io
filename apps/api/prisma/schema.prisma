@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  supabaseUserId String   @unique
+  id             String        @id @default(cuid())
+  supabaseUserId String        @unique
   role           Role
   email          String
   phoneNumber    String?
@@ -17,17 +17,19 @@ model User {
   state          String?
   firstName      String?
   lastName       String?
-  created_at     DateTime @default(now())
+  created_at     DateTime      @default(now())
   Admin          Admin?
   Client         Client?
   Partner        Partner?
+  requirements   Requirement[]
 }
 
 model Client {
-  uid      String    @id @default(cuid())
-  userId   String    @unique
-  User     User      @relation(fields: [userId], references: [id])
-  projects Project[]
+  uid         String        @id @default(cuid())
+  userId      String        @unique
+  User        User          @relation(fields: [userId], references: [id])
+  projects    Project[]
+  requirements Requirement[]
 }
 
 model Admin {
@@ -38,8 +40,8 @@ model Admin {
 }
 
 model Partner {
-  uid                String    @id @default(cuid())
-  userId             String    @unique
+  uid                String        @id @default(cuid())
+  userId             String        @unique
   companyName        String?
   companyDescription String?
   BRD                String?
@@ -48,8 +50,9 @@ model Partner {
   phoneNumber        String?
   companyEmail       String?
   companyWebsite     String?
-  User               User      @relation(fields: [userId], references: [id])
+  User               User          @relation(fields: [userId], references: [id])
   projects           Project[]
+  requirements       Requirement[]
 }
 
 model Project {
@@ -80,15 +83,21 @@ model Project {
 
 model Requirement {
   uid          String   @id @default(cuid())
+  userId       String?
   projectId    String?
+  clientId     String?
+  partnerId    String?
   projectTitle String?
-  question     String?
   description  String?
-  priority     String?
-  answer       String?
+  Budget       String?
+  userName     String?
+  email        String?
   updated_at   DateTime @default(now())
   created_at   DateTime @default(now())
+  User         User?    @relation(fields: [userId], references: [id])
   Project      Project? @relation(fields: [projectId], references: [id])
+  Client       Client?  @relation(fields: [clientId], references: [uid])
+  Partner      Partner? @relation(fields: [partnerId], references: [uid])
 }
 
 model LandingEnquiry {
