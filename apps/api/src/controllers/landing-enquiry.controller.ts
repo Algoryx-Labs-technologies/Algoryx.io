@@ -4,16 +4,14 @@ import { AppError } from '@/types';
 
 export class LandingEnquiryController {
   async createEnquiry(req: Request, res: Response) {
-    const { fullName, email, phone, address, companyOrg, message, idProof, haveSource } = req.body;
+    const { fullName, email, phone, companyOrg, message, haveSource } = req.body;
 
     const enquiry = await landingEnquiryService.create({
       fullName,
       email,
       phone,
-      address,
       companyOrg,
       message,
-      idProof,
       haveSource,
     });
 

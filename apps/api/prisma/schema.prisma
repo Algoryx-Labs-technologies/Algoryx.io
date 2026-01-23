@@ -96,10 +96,8 @@ model LandingEnquiry {
   fullName   String
   email      String
   phone      String
-  address    String
   companyOrg String?
   message    String
-  idProof    String?
   haveSource String?
   updated_at DateTime @default(now())
   created_at DateTime @default(now())

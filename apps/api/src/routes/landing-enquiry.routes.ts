@@ -11,10 +11,8 @@ const createLandingEnquirySchema = z.object({
     fullName: z.string().min(1, 'Full name is required'),
     email: z.string().email('Invalid email address'),
     phone: z.string().min(1, 'Phone number is required'),
-    address: z.string().optional(),
     companyOrg: z.string().optional(),
     message: z.string().min(1, 'Message is required'),
-    idProof: z.string().optional(),
     haveSource: z.string().optional(),
   }),
 });

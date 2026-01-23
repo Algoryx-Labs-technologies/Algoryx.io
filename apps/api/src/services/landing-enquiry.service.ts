@@ -7,10 +7,8 @@ export class LandingEnquiryService {
     fullName: string;
     email: string;
     phone: string;
-    address?: string;
     companyOrg?: string;
     message: string;
-    idProof?: string;
     haveSource?: string;
   }): Promise<LandingEnquiry> {
     return prisma.landingEnquiry.create({
@@ -18,10 +16,8 @@ export class LandingEnquiryService {
         fullName: data.fullName,
         email: data.email,
         phone: data.phone,
-        address: data.address || '',
         companyOrg: data.companyOrg,
         message: data.message,
-        idProof: data.idProof,
         haveSource: data.haveSource,
       },
     });

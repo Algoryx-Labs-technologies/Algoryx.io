@@ -56,7 +56,6 @@ export function WorkWithAlgoryxLabs() {
         companyOrg: formData.company || undefined,
         message: formData.requirement,
         haveSource: formData.hearAboutUs,
-        address: undefined,
       });
       
       if (response.success) {

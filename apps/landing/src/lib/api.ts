@@ -22,11 +22,9 @@ export interface ApiResponse<T> {
 export async function submitLandingEnquiry(data: {
   fullName: string;
   email: string;
-  phone?: string;
-  address?: string;
+  phone: string;
   companyOrg?: string;
   message: string;
-  idProof?: string;
   haveSource?: string;
 }): Promise<ApiResponse<any>> {
   const url = `${API_BASE_URL}/landing-enquiries`;
