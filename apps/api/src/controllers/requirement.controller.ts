@@ -50,15 +50,15 @@ export class RequirementController {
     });
   }
 
-  async getRequirementById(req: AuthenticatedRequest, res: Response) {
+  async getRequirementsByUserId(req: AuthenticatedRequest, res: Response) {
     if (!req.supabaseUser) {
       throw new AppError(401, 'Unauthorized');
     }
 
-    const { id } = req.params;
-    const requirementId = Array.isArray(id) ? id[0] : id;
+    const { userId } = req.params;
+    const userIdParam = Array.isArray(userId) ? userId[0] : userId;
 
-    // Find user in database
+    // Verify the userId belongs to the authenticated user or user has permission
     const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
@@ -67,22 +67,16 @@ export class RequirementController {
       throw new AppError(404, 'User not found');
     }
 
-    // Get client ID
-    const clientId = await this.getClientId(user.id);
-    
-    if (!clientId) {
-      throw new AppError(404, 'Client profile not found');
+    // Check if the requested userId matches the authenticated user's ID
+    if (userIdParam !== user.id) {
+      throw new AppError(403, 'You can only view your own requirements');
     }
 
-    const requirement = await requirementService.findById(requirementId, clientId);
-
-    if (!requirement) {
-      throw new AppError(404, 'Requirement not found');
-    }
+    const requirements = await requirementService.findWithStatusByUserId(userIdParam);
 
     res.json({
       success: true,
-      data: requirement,
+      data: requirements,
     });
   }
 
@@ -162,14 +156,7 @@ export class RequirementController {
       throw new AppError(404, 'User not found');
     }
 
-    // Get client ID
-    const clientId = await this.getClientId(user.id);
-    
-    if (!clientId) {
-      throw new AppError(404, 'Client profile not found');
-    }
-
-    const requirement = await requirementService.update(requirementId, clientId, req.body);
+    const requirement = await requirementService.update(requirementId, user.id, req.body);
 
     res.json({
       success: true,
@@ -195,14 +182,7 @@ export class RequirementController {
       throw new AppError(404, 'User not found');
     }
 
-    // Get client ID
-    const clientId = await this.getClientId(user.id);
-    
-    if (!clientId) {
-      throw new AppError(404, 'Client profile not found');
-    }
-
-    await requirementService.delete(requirementId, clientId);
+    await requirementService.delete(requirementId, user.id);
 
     res.json({
       success: true,

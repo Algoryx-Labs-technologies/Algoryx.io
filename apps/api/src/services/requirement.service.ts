@@ -19,6 +19,64 @@ export class RequirementService {
             projectStatus: true,
           },
         },
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
+  async findByUserId(userId: string): Promise<Requirement[]> {
+    return prisma.requirement.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        Project: {
+          select: {
+            id: true,
+            description: true,
+            projectStatus: true,
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
       },
       orderBy: {
         created_at: 'desc',
@@ -98,7 +156,7 @@ export class RequirementService {
 
   async update(
     uid: string,
-    clientId: string,
+    userId: string,
     data: Partial<{
       projectTitle: string;
       question: string;
@@ -108,7 +166,13 @@ export class RequirementService {
       Budget: string;
     }>
   ): Promise<Requirement> {
-    const requirement = await this.findById(uid, clientId);
+    // Verify the requirement belongs to the user
+    const requirement = await prisma.requirement.findFirst({
+      where: {
+        uid,
+        userId: userId,
+      },
+    });
     
     if (!requirement) {
       throw new AppError(404, 'Requirement not found');
@@ -128,12 +192,37 @@ export class RequirementService {
             projectStatus: true,
           },
         },
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
       },
     });
   }
 
-  async delete(uid: string, clientId: string): Promise<void> {
-    const requirement = await this.findById(uid, clientId);
+  async delete(uid: string, userId: string): Promise<void> {
+    // Verify the requirement belongs to the user
+    const requirement = await prisma.requirement.findFirst({
+      where: {
+        uid,
+        userId: userId,
+      },
+    });
     
     if (!requirement) {
       throw new AppError(404, 'Requirement not found');
@@ -147,6 +236,16 @@ export class RequirementService {
   // Get requirements with status
   async findWithStatus(clientId: string) {
     const requirements = await this.findByClientId(clientId);
+    
+    return requirements.map((req) => ({
+      ...req,
+      status: 'pending' as const,
+    }));
+  }
+
+  // Get requirements by userId with status
+  async findWithStatusByUserId(userId: string) {
+    const requirements = await this.findByUserId(userId);
     
     return requirements.map((req) => ({
       ...req,

@@ -2,15 +2,17 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Card, CardContent } from '../components/ui/card';
-import { FileText, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 interface Requirement {
   uid: string;
   projectId?: string;
   projectTitle?: string;
-  question?: string;
-  budget?: string;
+  Budget?: string;
   description?: string;
   priority?: string;
   answer?: string;
@@ -19,129 +21,112 @@ interface Requirement {
   status?: 'pending' | 'answered' | 'reviewed';
 }
 
+interface UserData {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
 export function RequirementsListPage() {
   const { isCollapsed } = useSidebar();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'answered' | 'reviewed'>('all');
+  const [user, setUser] = useState<UserData | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Requirement>>({});
+  const [saving, setSaving] = useState(false);
 
+  // Fetch user data
   useEffect(() => {
-    const fetchRequirements = async () => {
+    const fetchUser = async () => {
       try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000/api/v1';
-        
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token'); // Get from your auth system
-        // const response = await fetch(`${API_BASE_URL}/requirements`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   const requirementsWithStatus = (data.data || []).map((req: Requirement) => ({
-        //     ...req,
-        //     status: req.answer ? (req.answer.trim() ? 'answered' : 'pending') : 'pending',
-        //   }));
-        //   setRequirements(requirementsWithStatus);
-        // } else {
-        //   console.error('Error fetching requirements:', data.message);
-        // }
-        
-        // Mock data for now
-        const mockRequirements: Requirement[] = [
-          {
-            uid: '1',
-            projectId: 'proj1',
-            projectTitle: 'E-Commerce Platform',
-            question: 'What payment methods should be supported?',
-            budget: 'Need a comprehensive payment solution for global customers.',
-            description: 'I need to integrate multiple payment gateways including credit cards, PayPal, and digital wallets. What is the recommended approach?',
-            priority: 'high',
-            answer: 'We recommend integrating Stripe for credit cards and PayPal SDK for PayPal. For digital wallets, we can use Apple Pay and Google Pay APIs.',
-            created_at: '2024-11-15T09:00:00Z',
-            updated_at: '2024-11-18T14:30:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '2',
-            projectId: 'proj1',
-            projectTitle: 'E-Commerce Platform',
-            question: 'What is the expected user capacity?',
-            budget: 'Planning for high-traffic scenarios and peak shopping seasons.',
-            description: 'Need to know for scaling infrastructure and database planning.',
-            priority: 'mid',
-            answer: 'Initially 10,000 concurrent users, scalable to 100,000. We\'ll use cloud infrastructure with auto-scaling capabilities.',
-            created_at: '2024-11-16T10:00:00Z',
-            updated_at: '2024-11-19T11:20:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '3',
-            projectId: 'proj2',
-            projectTitle: 'Mobile App Development',
-            question: 'Which platforms should we target first?',
-            budget: 'Cross-platform development strategy needed for maximum reach.',
-            description: 'Should we develop for iOS, Android, or both simultaneously?',
-            priority: 'high',
-            answer: '',
-            created_at: '2024-11-17T08:00:00Z',
-            updated_at: '2024-11-17T08:00:00Z',
-            status: 'pending',
-          },
-          {
-            uid: '4',
-            projectId: 'proj3',
-            projectTitle: 'Data Analytics Dashboard',
-            question: 'What data visualization libraries are recommended?',
-            budget: 'Real-time data visualization with interactive charts and graphs.',
-            description: 'Need recommendations for charts, graphs, and interactive dashboards.',
-            priority: 'mid',
-            answer: 'We recommend using Chart.js for basic charts and D3.js for advanced visualizations. For React, Recharts is also a great option.',
-            created_at: '2024-11-10T12:00:00Z',
-            updated_at: '2024-11-15T16:45:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '5',
-            projectId: 'proj2',
-            projectTitle: 'Mobile App Development',
-            question: 'What is the deployment timeline?',
-            budget: 'Target launch date: Q1 2025 for both iOS and Android platforms.',
-            description: 'When can we expect the app to be available on app stores?',
-            priority: 'low',
-            answer: '',
-            created_at: '2024-11-18T09:30:00Z',
-            updated_at: '2024-11-18T09:30:00Z',
-            status: 'pending',
-          },
-          {
-            uid: '6',
-            projectId: 'proj4',
-            projectTitle: 'API Integration Service',
-            question: 'How will we handle API rate limiting?',
-            budget: 'Robust rate limiting and throttling mechanisms required for production.',
-            description: 'Need to understand the strategy for handling third-party API rate limits and throttling.',
-            priority: 'high',
-            answer: 'We\'ll implement a rate limiting middleware using Redis to track API calls. We\'ll also implement exponential backoff and request queuing for better reliability.',
-            created_at: '2024-11-12T14:00:00Z',
-            updated_at: '2024-11-20T10:15:00Z',
-            status: 'answered',
-          },
-        ];
-        
-        setRequirements(mockRequirements);
+        const response = await apiClient.get<UserData>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
       } catch (error) {
-        console.error('Error fetching requirements:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to fetch user:', error);
       }
     };
-
-    fetchRequirements();
+    fetchUser();
   }, []);
+
+  // Fetch requirements when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchRequirements();
+    }
+  }, [user?.id]);
+
+  const fetchRequirements = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await apiClient.get<Requirement[]>(`/requirements/user/${user.id}`);
+      if (response.success && response.data) {
+        const requirementsWithStatus = (response.data || []).map((req: Requirement) => ({
+          ...req,
+          status: 'pending' as const,
+        }));
+        setRequirements(requirementsWithStatus);
+      } else {
+        console.error('Error fetching requirements:', response.error);
+      }
+    } catch (error) {
+      console.error('Error fetching requirements:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (requirement: Requirement) => {
+    setEditingId(requirement.uid);
+    setEditForm({
+      projectTitle: requirement.projectTitle || '',
+      description: requirement.description || '',
+      Budget: requirement.Budget || '',
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
+
+  const handleSaveEdit = async (uid: string) => {
+    setSaving(true);
+    try {
+      const response = await apiClient.patch(`/requirements/${uid}`, {
+        projectTitle: editForm.projectTitle,
+        description: editForm.description,
+        Budget: editForm.Budget,
+      });
+
+      if (response.success && response.data) {
+        // Update the requirement in the list
+        setRequirements((prev) =>
+          prev.map((req) =>
+            req.uid === uid
+              ? { ...req, ...response.data, updated_at: new Date().toISOString() }
+              : req
+          )
+        );
+        setEditingId(null);
+        setEditForm({});
+      } else {
+        console.error('Error updating requirement:', response.error);
+        alert(response.error || 'Failed to update requirement');
+      }
+    } catch (error) {
+      console.error('Error updating requirement:', error);
+      alert('Failed to update requirement. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -279,9 +264,18 @@ export function RequirementsListPage() {
                             <FileText className="h-4 w-4 text-blue-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-semibold font-hero text-white mb-1.5 line-clamp-2">
-                              {requirement.projectTitle || 'Untitled Project'}
-                            </h3>
+                            {editingId === requirement.uid ? (
+                              <Input
+                                value={editForm.projectTitle || ''}
+                                onChange={(e) => setEditForm({ ...editForm, projectTitle: e.target.value })}
+                                className="bg-slate-800/50 border-white/10 text-white text-sm mb-1.5"
+                                placeholder="Project Title"
+                              />
+                            ) : (
+                              <h3 className="text-xl font-semibold font-hero text-white mb-1.5 line-clamp-2">
+                                {requirement.projectTitle || 'Untitled Project'}
+                              </h3>
+                            )}
                             {requirement.priority && (
                               <span className={cn(
                                 "inline-block text-xs font-footer px-2 py-1 rounded-full",
@@ -294,27 +288,24 @@ export function RequirementsListPage() {
                         </div>
                       </div>
 
-                      {/* Question/Budget */}
-                      {requirement.question && (
-                        <div className="mb-3 flex-1">
-                          <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
-                            Question
-                          </p>
-                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                            {requirement.question}
-                          </p>
-                        </div>
-                      )}
-
                       {/* Budget */}
-                      {requirement.budget && (
+                      {requirement.Budget && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Budget
                           </p>
-                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                            {requirement.budget}
-                          </p>
+                          {editingId === requirement.uid ? (
+                            <Input
+                              value={editForm.Budget || ''}
+                              onChange={(e) => setEditForm({ ...editForm, Budget: e.target.value })}
+                              className="bg-slate-800/50 border-white/10 text-white text-sm"
+                              placeholder="Budget Range"
+                            />
+                          ) : (
+                            <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
+                              {requirement.Budget}
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -324,9 +315,18 @@ export function RequirementsListPage() {
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Description
                           </p>
-                          <p className="text-base text-gray-300 font-footer leading-relaxed line-clamp-2">
-                            {requirement.description}
-                          </p>
+                          {editingId === requirement.uid ? (
+                            <textarea
+                              value={editForm.description || ''}
+                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                              className="w-full bg-slate-800/50 border border-white/10 rounded-lg p-2 text-white text-sm font-footer min-h-[80px] resize-none focus:outline-none focus:border-blue-500/50"
+                              placeholder="Description"
+                            />
+                          ) : (
+                            <p className="text-base text-gray-300 font-footer leading-relaxed line-clamp-2">
+                              {requirement.description}
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -345,10 +345,10 @@ export function RequirementsListPage() {
                         </div>
                       )}
 
-                      {/* Footer with Dates */}
+                      {/* Footer with Dates and Edit Button */}
                       <div className="mt-auto pt-3 border-t border-white/10">
-                        <div className="flex items-center justify-between text-xs text-gray-400 font-footer">
-                          <span className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-400 font-footer">
                             <Clock className="h-3.5 w-3.5" />
                             <span className="line-clamp-1">
                               {new Date(requirement.created_at).toLocaleDateString('en-US', {
@@ -357,11 +357,49 @@ export function RequirementsListPage() {
                                 year: 'numeric'
                               })}
                             </span>
-                          </span>
-                          {requirement.updated_at !== requirement.created_at && (
-                            <span className="text-gray-500 text-[10px]">
-                              Updated
-                            </span>
+                            {requirement.updated_at !== requirement.created_at && (
+                              <span className="text-gray-500 text-[10px] ml-2">
+                                Updated
+                              </span>
+                            )}
+                          </div>
+                          {editingId === requirement.uid ? (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                onClick={() => handleSaveEdit(requirement.uid)}
+                                disabled={saving}
+                                size="sm"
+                                className="h-7 px-3 bg-green-600 hover:bg-green-700 text-white text-xs"
+                              >
+                                {saving ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Save className="h-3 w-3 mr-1" />
+                                    Save
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                onClick={handleCancelEdit}
+                                disabled={saving}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-3 border-white/10 text-gray-400 hover:text-white text-xs"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => handleEdit(requirement)}
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-3 border-white/10 text-gray-400 hover:text-white hover:border-white/20 text-xs"
+                            >
+                              <Edit2 className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
                           )}
                         </div>
                       </div>

@@ -25,18 +25,21 @@ const updateRequirementSchema = {
 };
 
 // Routes
+// GET - Get all requirements (for authenticated user)
 router.get(
   '/',
   authenticate,
   requirementController.getAllRequirements.bind(requirementController)
 );
 
+// GET - Get requirements by user ID
 router.get(
-  '/:id',
+  '/user/:userId',
   authenticate,
-  requirementController.getRequirementById.bind(requirementController)
+  requirementController.getRequirementsByUserId.bind(requirementController)
 );
 
+// POST - Create requirement
 router.post(
   '/',
   authenticate,
@@ -44,6 +47,7 @@ router.post(
   requirementController.createRequirement.bind(requirementController)
 );
 
+// PATCH - Update requirement
 router.patch(
   '/:id',
   authenticate,
@@ -51,6 +55,7 @@ router.patch(
   requirementController.updateRequirement.bind(requirementController)
 );
 
+// DELETE - Delete requirement
 router.delete(
   '/:id',
   authenticate,
