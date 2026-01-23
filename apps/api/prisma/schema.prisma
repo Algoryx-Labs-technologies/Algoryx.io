@@ -81,13 +81,11 @@ model Project {
   Admin              Admin?         @relation(fields: [adminId], references: [uid])
   Client             Client?        @relation(fields: [clientId], references: [uid])
   Partner            Partner?       @relation(fields: [partnerId], references: [uid])
-  requirements       Requirement[]
 }
 
 model Requirement {
-  uid          String   @id @default(cuid())
+  uid          String            @id @default(cuid())
   userId       String?
-  projectId    String?
   clientId     String?
   partnerId    String?
   projectTitle String?
@@ -95,12 +93,12 @@ model Requirement {
   Budget       String?
   userName     String?
   email        String?
-  updated_at   DateTime @default(now())
-  created_at   DateTime @default(now())
-  User         User?    @relation(fields: [userId], references: [id])
-  Project      Project? @relation(fields: [projectId], references: [id])
-  Client       Client?  @relation(fields: [clientId], references: [uid])
-  Partner      Partner? @relation(fields: [partnerId], references: [uid])
+  status       RequirementStatus @default(Pending)
+  updated_at   DateTime          @default(now())
+  created_at   DateTime          @default(now())
+  User         User?             @relation(fields: [userId], references: [id])
+  Client       Client?            @relation(fields: [clientId], references: [uid])
+  Partner      Partner?           @relation(fields: [partnerId], references: [uid])
 }
 
 model LandingEnquiry {
@@ -154,6 +152,12 @@ enum TicketStatus {
   in_progress
   resolved
   closed
+}
+
+enum RequirementStatus {
+  Contacted
+  Pending
+  Rejected
 }
 
 model SupportTicket {

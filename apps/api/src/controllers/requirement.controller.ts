@@ -98,23 +98,6 @@ export class RequirementController {
     const clientId = await this.getClientId(user.id);
     const partnerId = await this.getPartnerId(user.id);
 
-    // If projectId is provided, verify it belongs to the client or partner
-    if (req.body.projectId) {
-      const project = await prisma.project.findFirst({
-        where: {
-          id: req.body.projectId,
-          OR: [
-            ...(clientId ? [{ clientId }] : []),
-            ...(partnerId ? [{ partnerId }] : []),
-          ],
-        },
-      });
-
-      if (!project) {
-        throw new AppError(404, 'Project not found or access denied');
-      }
-    }
-
     // Prepare userName from firstName/lastName or email
     const userName = user.firstName 
       ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`

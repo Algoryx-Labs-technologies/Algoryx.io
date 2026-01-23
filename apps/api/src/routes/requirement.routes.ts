@@ -9,7 +9,6 @@ const router = Router();
 // Validation schemas
 const createRequirementSchema = {
   body: z.object({
-    projectId: z.string().optional(),
     projectTitle: z.string().optional(),
     description: z.string().optional(),
     Budget: z.string().optional(),
@@ -21,6 +20,7 @@ const updateRequirementSchema = {
     projectTitle: z.string().optional(),
     description: z.string().optional(),
     Budget: z.string().optional(),
+    status: z.enum(['Contacted', 'Pending', 'Rejected']).optional(),
   }),
 };
 

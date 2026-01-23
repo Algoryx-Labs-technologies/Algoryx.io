@@ -2,7 +2,7 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Card, CardContent } from '../components/ui/card';
-import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2, Save, X, Loader2 } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2, Save, X, Loader2, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { Button } from '../components/ui/button';
@@ -289,18 +289,52 @@ export function RequirementsListPage() {
                       </div>
 
                       {/* Budget */}
-                      {requirement.Budget && (
+                      {(requirement.Budget || editingId === requirement.uid) && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Budget
                           </p>
                           {editingId === requirement.uid ? (
-                            <Input
-                              value={editForm.Budget || ''}
-                              onChange={(e) => setEditForm({ ...editForm, Budget: e.target.value })}
-                              className="bg-slate-800/50 border-white/10 text-white text-sm"
-                              placeholder="Budget Range"
-                            />
+                            <div className="relative">
+                              <select
+                                value={editForm.Budget || ''}
+                                onChange={(e) => setEditForm({ ...editForm, Budget: e.target.value })}
+                                disabled={saving}
+                                className="w-full h-8 px-2 pr-8 bg-slate-800/50 border border-white/10 rounded-md text-white font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <option value="" className="bg-slate-800 text-white">
+                                  Select Budget Range
+                                </option>
+                                <option value="$0 - $1,000" className="bg-slate-800 text-white">
+                                  $0 - $1,000
+                                </option>
+                                <option value="$1,000 - $5,000" className="bg-slate-800 text-white">
+                                  $1,000 - $5,000
+                                </option>
+                                <option value="$5,000 - $10,000" className="bg-slate-800 text-white">
+                                  $5,000 - $10,000
+                                </option>
+                                <option value="$10,000 - $25,000" className="bg-slate-800 text-white">
+                                  $10,000 - $25,000
+                                </option>
+                                <option value="$25,000 - $50,000" className="bg-slate-800 text-white">
+                                  $25,000 - $50,000
+                                </option>
+                                <option value="$50,000 - $100,000" className="bg-slate-800 text-white">
+                                  $50,000 - $100,000
+                                </option>
+                                <option value="$100,000 - $250,000" className="bg-slate-800 text-white">
+                                  $100,000 - $250,000
+                                </option>
+                                <option value="$250,000 - $500,000" className="bg-slate-800 text-white">
+                                  $250,000 - $500,000
+                                </option>
+                                <option value="$500,000+" className="bg-slate-800 text-white">
+                                  $500,000+
+                                </option>
+                              </select>
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                            </div>
                           ) : (
                             <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
                               {requirement.Budget}

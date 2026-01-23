@@ -4,21 +4,12 @@ import { AppError } from '@/types';
 
 export class RequirementService {
   async findByClientId(clientId: string): Promise<Requirement[]> {
-    // Get all requirements for projects belonging to this client
+    // Get all requirements for this client
     return prisma.requirement.findMany({
       where: {
-        Project: {
-          clientId: clientId,
-        },
+        clientId: clientId,
       },
       include: {
-        Project: {
-          select: {
-            id: true,
-            description: true,
-            projectStatus: true,
-          },
-        },
         User: {
           select: {
             id: true,
@@ -51,13 +42,6 @@ export class RequirementService {
         userId: userId,
       },
       include: {
-        Project: {
-          select: {
-            id: true,
-            description: true,
-            projectStatus: true,
-          },
-        },
         User: {
           select: {
             id: true,
@@ -88,19 +72,29 @@ export class RequirementService {
     const where: any = { uid };
     
     if (clientId) {
-      where.Project = {
-        clientId: clientId,
-      };
+      where.clientId = clientId;
     }
 
     return prisma.requirement.findFirst({
       where,
       include: {
-        Project: {
+        User: {
           select: {
             id: true,
-            description: true,
-            projectStatus: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
@@ -109,7 +103,6 @@ export class RequirementService {
 
   async create(data: {
     userId?: string;
-    projectId?: string;
     clientId?: string;
     partnerId?: string;
     projectTitle?: string;
@@ -124,13 +117,6 @@ export class RequirementService {
     return prisma.requirement.create({
       data,
       include: {
-        Project: {
-          select: {
-            id: true,
-            description: true,
-            projectStatus: true,
-          },
-        },
         User: {
           select: {
             id: true,
@@ -164,6 +150,7 @@ export class RequirementService {
       priority: string;
       answer: string;
       Budget: string;
+      status: string;
     }>
   ): Promise<Requirement> {
     // Verify the requirement belongs to the user
@@ -185,13 +172,6 @@ export class RequirementService {
         updated_at: new Date(),
       },
       include: {
-        Project: {
-          select: {
-            id: true,
-            description: true,
-            projectStatus: true,
-          },
-        },
         User: {
           select: {
             id: true,
@@ -237,20 +217,16 @@ export class RequirementService {
   async findWithStatus(clientId: string) {
     const requirements = await this.findByClientId(clientId);
     
-    return requirements.map((req) => ({
-      ...req,
-      status: 'pending' as const,
-    }));
+    // Status is now stored in the database, so we just return the requirements as-is
+    return requirements;
   }
 
   // Get requirements by userId with status
   async findWithStatusByUserId(userId: string) {
     const requirements = await this.findByUserId(userId);
     
-    return requirements.map((req) => ({
-      ...req,
-      status: 'pending' as const,
-    }));
+    // Status is now stored in the database, so we just return the requirements as-is
+    return requirements;
   }
 }
 
