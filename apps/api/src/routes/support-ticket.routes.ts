@@ -18,35 +18,8 @@ const createTicketSchema = {
   }),
 };
 
-const updateTicketSchema = {
-  body: z.object({
-    issueType: z.string().optional(),
-    description: z.string().optional(),
-    priority: z.enum(['low', 'mid', 'high']).optional(),
-    additionalDetails: z.string().optional(),
-    status: z.enum(['pending', 'in_progress', 'resolved', 'closed']).optional(),
-  }),
-};
-
 // Routes
-router.get(
-  '/',
-  authenticate,
-  supportTicketController.getAllTickets.bind(supportTicketController)
-);
-
-router.get(
-  '/:id',
-  authenticate,
-  supportTicketController.getTicketById.bind(supportTicketController)
-);
-
-router.get(
-  '/ticket/:ticketId',
-  authenticate,
-  supportTicketController.getTicketByTicketId.bind(supportTicketController)
-);
-
+// 1. POST - Create ticket
 router.post(
   '/',
   authenticate,
@@ -54,13 +27,21 @@ router.post(
   supportTicketController.createTicket.bind(supportTicketController)
 );
 
-router.patch(
-  '/:id',
+// 2. GET - Get all tickets (for authenticated user)
+router.get(
+  '/',
   authenticate,
-  validate(updateTicketSchema),
-  supportTicketController.updateTicket.bind(supportTicketController)
+  supportTicketController.getAllTickets.bind(supportTicketController)
 );
 
+// 3. GET - Get tickets by user ID
+router.get(
+  '/user/:userId',
+  authenticate,
+  supportTicketController.getTicketsByUserId.bind(supportTicketController)
+);
+
+// 4. DELETE - Delete ticket
 router.delete(
   '/:id',
   authenticate,

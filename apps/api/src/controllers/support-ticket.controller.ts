@@ -55,15 +55,15 @@ export class SupportTicketController {
     });
   }
 
-  async getTicketById(req: AuthenticatedRequest, res: Response) {
+  async getTicketsByUserId(req: AuthenticatedRequest, res: Response) {
     if (!req.supabaseUser) {
       throw new AppError(401, 'Unauthorized');
     }
 
-    const { id } = req.params;
-    const ticketId = Array.isArray(id) ? id[0] : id;
+    const { userId } = req.params;
+    const userIdParam = Array.isArray(userId) ? userId[0] : userId;
 
-    // Find user in database
+    // Verify the userId belongs to the authenticated user or user has permission
     const user = await prisma.user.findFirst({
       where: { email: req.supabaseUser.email! },
     });
@@ -72,52 +72,16 @@ export class SupportTicketController {
       throw new AppError(404, 'User not found');
     }
 
-    // Get client ID and partner ID
-    const clientId = await this.getClientId(user.id);
-    const partnerId = await this.getPartnerId(user.id);
-
-    const ticket = await supportTicketService.findById(ticketId, clientId || undefined, partnerId || undefined);
-
-    if (!ticket) {
-      throw new AppError(404, 'Support ticket not found');
+    // Check if the requested userId matches the authenticated user's ID
+    if (userIdParam !== user.id) {
+      throw new AppError(403, 'You can only view your own tickets');
     }
+
+    const tickets = await supportTicketService.findByUserId(userIdParam);
 
     res.json({
       success: true,
-      data: ticket,
-    });
-  }
-
-  async getTicketByTicketId(req: AuthenticatedRequest, res: Response) {
-    if (!req.supabaseUser) {
-      throw new AppError(401, 'Unauthorized');
-    }
-
-    const { ticketId } = req.params;
-    const ticketIdParam = Array.isArray(ticketId) ? ticketId[0] : ticketId;
-
-    // Find user in database
-    const user = await prisma.user.findFirst({
-      where: { email: req.supabaseUser.email! },
-    });
-
-    if (!user) {
-      throw new AppError(404, 'User not found');
-    }
-
-    // Get client ID and partner ID
-    const clientId = await this.getClientId(user.id);
-    const partnerId = await this.getPartnerId(user.id);
-
-    const ticket = await supportTicketService.findByTicketId(ticketIdParam, clientId || undefined, partnerId || undefined);
-
-    if (!ticket) {
-      throw new AppError(404, 'Support ticket not found');
-    }
-
-    res.json({
-      success: true,
-      data: ticket,
+      data: tickets,
     });
   }
 
@@ -180,40 +144,6 @@ export class SupportTicketController {
     });
   }
 
-  async updateTicket(req: AuthenticatedRequest, res: Response) {
-    if (!req.supabaseUser) {
-      throw new AppError(401, 'Unauthorized');
-    }
-
-    const { id } = req.params;
-    const ticketId = Array.isArray(id) ? id[0] : id;
-
-    // Find user in database
-    const user = await prisma.user.findFirst({
-      where: { email: req.supabaseUser.email! },
-    });
-
-    if (!user) {
-      throw new AppError(404, 'User not found');
-    }
-
-    // Get client ID and partner ID
-    const clientId = await this.getClientId(user.id);
-    const partnerId = await this.getPartnerId(user.id);
-
-    const ticket = await supportTicketService.update(
-      ticketId,
-      req.body,
-      clientId || undefined,
-      partnerId || undefined
-    );
-
-    res.json({
-      success: true,
-      data: ticket,
-      message: 'Support ticket updated successfully',
-    });
-  }
 
   async deleteTicket(req: AuthenticatedRequest, res: Response) {
     if (!req.supabaseUser) {

@@ -67,6 +67,38 @@ export class SupportTicketService {
     });
   }
 
+  async findByUserId(userId: string): Promise<SupportTicket[]> {
+    return prisma.supportTicket.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
   async findById(uid: string, clientId?: string, partnerId?: string): Promise<SupportTicket | null> {
     const where: any = { uid };
     
@@ -104,42 +136,6 @@ export class SupportTicketService {
     });
   }
 
-  async findByTicketId(ticketId: string, clientId?: string, partnerId?: string): Promise<SupportTicket | null> {
-    const where: any = { ticketId };
-    
-    if (clientId) {
-      where.clientId = clientId;
-    }
-    
-    if (partnerId) {
-      where.partnerId = partnerId;
-    }
-
-    return prisma.supportTicket.findFirst({
-      where,
-      include: {
-        User: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        Client: {
-          select: {
-            uid: true,
-          },
-        },
-        Partner: {
-          select: {
-            uid: true,
-            companyName: true,
-          },
-        },
-      },
-    });
-  }
 
   async create(data: {
     ticketId: string;
@@ -179,53 +175,6 @@ export class SupportTicketService {
     });
   }
 
-  async update(
-    uid: string,
-    data: Partial<{
-      issueType: string;
-      description: string;
-      priority: Priority;
-      additionalDetails: string;
-      status: TicketStatus;
-    }>,
-    clientId?: string,
-    partnerId?: string
-  ): Promise<SupportTicket> {
-    const ticket = await this.findById(uid, clientId, partnerId);
-    
-    if (!ticket) {
-      throw new AppError(404, 'Support ticket not found');
-    }
-
-    return prisma.supportTicket.update({
-      where: { uid },
-      data: {
-        ...data,
-        updated_at: new Date(),
-      },
-      include: {
-        User: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        Client: {
-          select: {
-            uid: true,
-          },
-        },
-        Partner: {
-          select: {
-            uid: true,
-            companyName: true,
-          },
-        },
-      },
-    });
-  }
 
   async delete(uid: string, clientId?: string, partnerId?: string): Promise<void> {
     const ticket = await this.findById(uid, clientId, partnerId);

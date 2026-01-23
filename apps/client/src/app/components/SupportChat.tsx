@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Ticket, Loader2 } from 'lucide-react';
 import { cn } from './ui/utils';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -23,7 +23,25 @@ interface TicketForm {
   additionalDetails?: string;
 }
 
-type ChatMode = 'chat' | 'questionnaire' | 'ticket-created' | 'confirm-ticket';
+interface SupportTicket {
+  uid: string;
+  ticketId: string;
+  issueType: string;
+  description: string;
+  priority: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+type ChatMode = 'chat' | 'questionnaire' | 'ticket-created' | 'confirm-ticket' | 'ticket-history';
 
 export function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +62,9 @@ export function SupportChat() {
   const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [user, setUser] = useState<UserData | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -77,6 +98,98 @@ export function SupportChat() {
       setFeedbackGiven(new Set());
     }
   }, [mode, ticketId]);
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<UserData>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Fetch tickets when chat opens
+  useEffect(() => {
+    if (isOpen && user?.id) {
+      fetchTickets();
+    }
+  }, [isOpen, user?.id]);
+
+  // Fetch tickets after creating a new ticket
+  useEffect(() => {
+    if (ticketId && user?.id) {
+      fetchTickets();
+    }
+  }, [ticketId, user?.id]);
+
+  const fetchTickets = async () => {
+    if (!user?.id) return;
+    
+    setLoadingTickets(true);
+    try {
+      const response = await apiClient.get<SupportTicket[]>(`/support/tickets/user/${user.id}`);
+      if (response.success && response.data) {
+        setTickets(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  const handleViewTicketHistory = () => {
+    setMode('ticket-history');
+  };
+
+  const handleBackToChat = () => {
+    setMode('chat');
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'text-yellow-400 bg-yellow-400/20 border-yellow-400/30';
+      case 'in_progress':
+        return 'text-blue-400 bg-blue-400/20 border-blue-400/30';
+      case 'resolved':
+        return 'text-green-400 bg-green-400/20 border-green-400/30';
+      case 'closed':
+        return 'text-gray-400 bg-gray-400/20 border-gray-400/30';
+      default:
+        return 'text-gray-400 bg-gray-400/20 border-gray-400/30';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'text-red-400';
+      case 'mid':
+        return 'text-yellow-400';
+      case 'low':
+        return 'text-green-400';
+      default:
+        return 'text-gray-400';
+    }
+  };
 
   // Keyword-based auto-response system
   const getAutoResponse = (userMessage: string): { response: string; isHelpful: boolean } => {
@@ -342,18 +455,97 @@ export function SupportChat() {
                 <p className="text-xs text-gray-400 font-footer">We're here to help</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-              aria-label="Close chat"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {mode === 'chat' && (
+                <button
+                  onClick={handleViewTicketHistory}
+                  className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                  aria-label="View ticket history"
+                  title="View ticket history"
+                >
+                  <Ticket className="h-4 w-4" />
+                </button>
+              )}
+              {mode === 'ticket-history' && (
+                <button
+                  onClick={handleBackToChat}
+                  className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                  aria-label="Back to chat"
+                  title="Back to chat"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                aria-label="Close chat"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-900/50 to-slate-800/30 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {mode === 'questionnaire' ? (
+            {mode === 'ticket-history' ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white font-hero">Ticket History</h3>
+                  {loadingTickets && (
+                    <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                  )}
+                </div>
+                {tickets.length === 0 && !loadingTickets ? (
+                  <div className="text-center py-8">
+                    <Ticket className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+                    <p className="text-sm text-gray-400 font-footer">No tickets found</p>
+                    <p className="text-xs text-gray-500 font-footer mt-1">Create a ticket to get started</p>
+                  </div>
+                ) : (
+                  tickets.map((ticket) => (
+                    <div
+                      key={ticket.uid}
+                      className="bg-gradient-to-br from-slate-800/70 to-slate-800/50 border border-white/10 rounded-lg p-4 hover:border-blue-500/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-semibold text-white font-hero">
+                              {ticket.ticketId}
+                            </span>
+                            <span className={cn(
+                              "text-xs px-2 py-0.5 rounded-full border font-footer",
+                              getStatusColor(ticket.status)
+                            )}>
+                              {ticket.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 font-footer mb-1">
+                            {ticket.issueType}
+                          </p>
+                        </div>
+                        <span className={cn(
+                          "text-xs font-semibold font-footer",
+                          getPriorityColor(ticket.priority)
+                        )}>
+                          {ticket.priority.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 font-footer mb-3 line-clamp-2">
+                        {ticket.description}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500 font-footer">
+                        <span>Created: {formatDate(ticket.created_at)}</span>
+                        {ticket.updated_at !== ticket.created_at && (
+                          <span>Updated: {formatDate(ticket.updated_at)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : mode === 'questionnaire' ? (
               <TicketQuestionnaire
                 onSubmit={handleQuestionnaireSubmit}
                 onCancel={handleQuestionnaireCancel}
@@ -464,7 +656,7 @@ export function SupportChat() {
           </div>
 
           {/* Input - Only show in chat mode */}
-          {mode === 'chat' && (
+          {(mode === 'chat' || mode === 'confirm-ticket') && (
             <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
               <div className="flex gap-2">
                 <Input
