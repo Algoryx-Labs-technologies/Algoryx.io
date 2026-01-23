@@ -27,21 +27,21 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
   };
 
   return (
-    <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
-      <CardHeader className="px-2.5 pt-2.5 pb-1.5 flex-shrink-0">
+    <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
+      <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1.5">
-            <FolderKanban className="h-9 w-9 text-blue-400" />
+          <CardTitle className="text-xl font-semibold font-hero text-white flex items-center gap-1.5">
+            <FolderKanban className="h-5 w-5 text-blue-400" />
             My Projects
           </CardTitle>
-          <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1.5">
-            <CheckCircle2 className="h-9 w-9 text-blue-400" />
+          <CardTitle className="text-xl font-semibold font-hero text-white flex items-center gap-1.5">
+            <CheckCircle2 className="h-5 w-5 text-blue-400" />
             Send-Requirements
           </CardTitle>
         </div>
       </CardHeader>
 
-      <CardContent className="px-2.5 pb-2.5 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <CardContent className="px-2 pb-2 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* LEFT - Projects */}
         <div className="space-y-1.5 overflow-y-auto pr-1">
           {projects.map((project, index) => (
@@ -65,7 +65,7 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
         </div>
 
         {/* RIGHT - Form + Submit at bottom */}
-        <div className="flex flex-col min-h-[180px] lg:min-h-0">
+        <div className="flex flex-col min-h-[160px] lg:min-h-0">
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 space-y-1.5">
             <div className="space-y-1 flex-shrink-0">
               <Label htmlFor="project-title" className="text-sm text-gray-300 font-footer">
