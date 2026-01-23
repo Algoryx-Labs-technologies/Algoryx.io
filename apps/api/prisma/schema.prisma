@@ -23,6 +23,7 @@ model User {
   Partner        Partner?
   requirements   Requirement[]
   supportTickets SupportTicket[]
+  feedbacks      Feedback[]
 }
 
 model Client {
@@ -32,6 +33,7 @@ model Client {
   projects       Project[]
   requirements   Requirement[]
   supportTickets SupportTicket[]
+  feedbacks      Feedback[]
 }
 
 model Admin {
@@ -56,6 +58,7 @@ model Partner {
   projects           Project[]
   requirements       Requirement[]
   supportTickets     SupportTicket[]
+  feedbacks          Feedback[]
 }
 
 model Project {
@@ -178,4 +181,27 @@ model SupportTicket {
   User            User?        @relation(fields: [userId], references: [id])
   Client          Client?      @relation(fields: [clientId], references: [uid])
   Partner         Partner?     @relation(fields: [partnerId], references: [uid])
+}
+
+model Feedback {
+  uid             String    @id @default(cuid())
+  userId          String?
+  clientId        String?
+  partnerId       String?
+  overallRating   Int
+  serviceQuality  Int?
+  communication   Int?
+  timeliness      Int?
+  valueForMoney   Int?
+  feedback        String?
+  wouldRecommend  Boolean?
+  improvements    String?
+  favoriteFeature String?
+  userName        String?
+  email           String?
+  updated_at      DateTime  @default(now())
+  created_at      DateTime  @default(now())
+  User            User?     @relation(fields: [userId], references: [id])
+  Client          Client?   @relation(fields: [clientId], references: [uid])
+  Partner         Partner?  @relation(fields: [partnerId], references: [uid])
 }

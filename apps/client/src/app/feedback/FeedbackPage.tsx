@@ -14,6 +14,7 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import { useState } from 'react';
+import { apiClient } from '@/lib/api';
 
 interface FeedbackForm {
   overallRating: number;
@@ -21,8 +22,6 @@ interface FeedbackForm {
   communication: number;
   timeliness: number;
   valueForMoney: number;
-  name: string;
-  email: string;
   feedback: string;
   wouldRecommend: boolean | null;
   improvements: string;
@@ -37,8 +36,6 @@ export function FeedbackPage() {
     communication: 0,
     timeliness: 0,
     valueForMoney: 0,
-    name: '',
-    email: '',
     feedback: '',
     wouldRecommend: null,
     improvements: '',
@@ -114,37 +111,49 @@ export function FeedbackPage() {
       alert('Please provide an overall rating');
       return;
     }
-    
-    if (!formData.name || !formData.email) {
-      alert('Please fill in your name and email');
-      return;
-    }
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setFormData({
-        overallRating: 0,
-        serviceQuality: 0,
-        communication: 0,
-        timeliness: 0,
-        valueForMoney: 0,
-        name: '',
-        email: '',
-        feedback: '',
-        wouldRecommend: null,
-        improvements: '',
-        favoriteFeature: '',
+    try {
+      const response = await apiClient.post('/feedback', {
+        overallRating: formData.overallRating,
+        serviceQuality: formData.serviceQuality || undefined,
+        communication: formData.communication || undefined,
+        timeliness: formData.timeliness || undefined,
+        valueForMoney: formData.valueForMoney || undefined,
+        feedback: formData.feedback || undefined,
+        wouldRecommend: formData.wouldRecommend !== null ? formData.wouldRecommend : undefined,
+        improvements: formData.improvements || undefined,
+        favoriteFeature: formData.favoriteFeature || undefined,
       });
-      setIsSubmitted(false);
-    }, 3000);
+
+      if (response.success) {
+        setIsSubmitted(true);
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setFormData({
+            overallRating: 0,
+            serviceQuality: 0,
+            communication: 0,
+            timeliness: 0,
+            valueForMoney: 0,
+            feedback: '',
+            wouldRecommend: null,
+            improvements: '',
+            favoriteFeature: '',
+          });
+          setIsSubmitted(false);
+        }, 3000);
+      } else {
+        alert(response.error || 'Failed to submit feedback. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert(error instanceof Error ? error.message : 'An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -255,40 +264,6 @@ export function FeedbackPage() {
                           />
                         </div>
 
-                        {/* Personal Information */}
-                        <div className="p-6 bg-slate-800/50 rounded-xl border border-white/10 space-y-4">
-                          <h3 className="text-lg font-semibold font-hero text-white mb-4">Your Information</h3>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="name" className="text-gray-300 font-footer font-medium">
-                              Name *
-                            </Label>
-                            <Input
-                              id="name"
-                              type="text"
-                              placeholder="Your name"
-                              value={formData.name}
-                              onChange={(e) => handleInputChange('name', e.target.value)}
-                              required
-                              className="bg-slate-800/80 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 h-11"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="email" className="text-gray-300 font-footer font-medium">
-                              Email *
-                            </Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              placeholder="your.email@example.com"
-                              value={formData.email}
-                              onChange={(e) => handleInputChange('email', e.target.value)}
-                              required
-                              className="bg-slate-800/80 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 h-11"
-                            />
-                          </div>
-                        </div>
 
                         {/* Questionnaire */}
                         <div className="p-6 bg-slate-800/50 rounded-xl border border-white/10 space-y-4">
