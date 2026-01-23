@@ -11,24 +11,33 @@ export interface NewsArticle {
   description?: string | null;
   content?: string | null;
   pubDate: string;
+  pubDateTZ?: string;
   image_url?: string | null;
   source_id: string;
+  source_name?: string;
   source_priority?: number;
   source_url?: string;
   source_icon?: string | null;
   language: string;
   country?: string[];
   category?: string[];
+  datatype?: string;
+  fetched_at?: string;
   ai_related?: boolean;
   sentiment?: string;
   sentiment_stats?: string;
   ai_generated?: number;
   ai_model?: string | null;
+  ai_tag?: string;
+  ai_region?: string;
+  ai_org?: string;
+  ai_summary?: string;
   crawl_date?: string;
   do_not_index?: boolean;
   is_opinion?: boolean;
   is_sponsored?: boolean;
   is_whitelisted?: boolean;
+  duplicate?: boolean;
 }
 
 export interface NewsDataResponse {
@@ -93,6 +102,56 @@ export async function fetchLatestNews(
     console.error('Error fetching news from Newsdata.io:', error);
     throw error;
   }
+}
+
+/**
+ * Removes duplicate news articles based on API's duplicate flag, article_id, link, and normalized title
+ * @param articles - Array of news articles
+ * @returns Array of unique news articles
+ */
+export function removeDuplicateNews(articles: NewsArticle[]): NewsArticle[] {
+  // First, filter out articles marked as duplicates by the API
+  const nonDuplicateArticles = articles.filter((article) => !article.duplicate);
+
+  // Then apply additional deduplication checks as a fallback
+  const seen = new Set<string>();
+  const seenLinks = new Set<string>();
+  const seenTitles = new Set<string>();
+
+  return nonDuplicateArticles.filter((article) => {
+    // Check by article_id (most reliable)
+    if (article.article_id && seen.has(article.article_id)) {
+      return false;
+    }
+    if (article.article_id) {
+      seen.add(article.article_id);
+    }
+
+    // Check by link/URL (secondary check)
+    if (article.link) {
+      const normalizedLink = article.link.toLowerCase().trim();
+      if (seenLinks.has(normalizedLink)) {
+        return false;
+      }
+      seenLinks.add(normalizedLink);
+    }
+
+    // Check by normalized title (tertiary check for similar articles)
+    if (article.title) {
+      const normalizedTitle = article.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s]/g, '') // Remove special characters
+        .replace(/\s+/g, ' '); // Normalize whitespace
+      
+      if (seenTitles.has(normalizedTitle)) {
+        return false;
+      }
+      seenTitles.add(normalizedTitle);
+    }
+
+    return true;
+  });
 }
 
 /**

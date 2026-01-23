@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Newspaper, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '../../components/ui/utils';
-import { fetchLatestNews, formatRelativeTime, type NewsArticle } from '@/lib/newsdata';
+import { fetchLatestNews, formatRelativeTime, removeDuplicateNews, type NewsArticle } from '@/lib/newsdata';
 
 export function NewsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   const [newsItems, setNewsItems] = useState<NewsArticle[]>([]);
@@ -17,8 +17,9 @@ export function NewsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
         const response = await fetchLatestNews(undefined, undefined, 'en');
         
         if (response.results && response.results.length > 0) {
-          // Limit to 10 most recent articles
-          setNewsItems(response.results.slice(0, 10));
+          // Remove duplicates and limit to 10 most recent articles
+          const uniqueNews = removeDuplicateNews(response.results);
+          setNewsItems(uniqueNews.slice(0, 10));
         } else {
           setError('No news articles found');
         }
@@ -76,8 +77,10 @@ export function NewsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
                   {news.title}
                 </p>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 font-footer flex-wrap">
-                  {news.source_id && <span className="capitalize">{news.source_id}</span>}
-                  {news.source_id && news.pubDate && <span>•</span>}
+                  {(news.source_name || news.source_id) && (
+                    <span className="capitalize">{news.source_name || news.source_id}</span>
+                  )}
+                  {(news.source_name || news.source_id) && news.pubDate && <span>•</span>}
                   {news.pubDate && <span>{formatRelativeTime(news.pubDate)}</span>}
                   {news.category && news.category.length > 0 && (
                     <>
