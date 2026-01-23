@@ -10,7 +10,7 @@ interface Requirement {
   projectId?: string;
   projectTitle?: string;
   question?: string;
-  quotation?: string;
+  budget?: string;
   description?: string;
   priority?: string;
   answer?: string;
@@ -57,7 +57,7 @@ export function RequirementsListPage() {
             projectId: 'proj1',
             projectTitle: 'E-Commerce Platform',
             question: 'What payment methods should be supported?',
-            quotation: 'Need a comprehensive payment solution for global customers.',
+            budget: 'Need a comprehensive payment solution for global customers.',
             description: 'I need to integrate multiple payment gateways including credit cards, PayPal, and digital wallets. What is the recommended approach?',
             priority: 'high',
             answer: 'We recommend integrating Stripe for credit cards and PayPal SDK for PayPal. For digital wallets, we can use Apple Pay and Google Pay APIs.',
@@ -70,7 +70,7 @@ export function RequirementsListPage() {
             projectId: 'proj1',
             projectTitle: 'E-Commerce Platform',
             question: 'What is the expected user capacity?',
-            quotation: 'Planning for high-traffic scenarios and peak shopping seasons.',
+            budget: 'Planning for high-traffic scenarios and peak shopping seasons.',
             description: 'Need to know for scaling infrastructure and database planning.',
             priority: 'mid',
             answer: 'Initially 10,000 concurrent users, scalable to 100,000. We\'ll use cloud infrastructure with auto-scaling capabilities.',
@@ -83,7 +83,7 @@ export function RequirementsListPage() {
             projectId: 'proj2',
             projectTitle: 'Mobile App Development',
             question: 'Which platforms should we target first?',
-            quotation: 'Cross-platform development strategy needed for maximum reach.',
+            budget: 'Cross-platform development strategy needed for maximum reach.',
             description: 'Should we develop for iOS, Android, or both simultaneously?',
             priority: 'high',
             answer: '',
@@ -96,7 +96,7 @@ export function RequirementsListPage() {
             projectId: 'proj3',
             projectTitle: 'Data Analytics Dashboard',
             question: 'What data visualization libraries are recommended?',
-            quotation: 'Real-time data visualization with interactive charts and graphs.',
+            budget: 'Real-time data visualization with interactive charts and graphs.',
             description: 'Need recommendations for charts, graphs, and interactive dashboards.',
             priority: 'mid',
             answer: 'We recommend using Chart.js for basic charts and D3.js for advanced visualizations. For React, Recharts is also a great option.',
@@ -109,7 +109,7 @@ export function RequirementsListPage() {
             projectId: 'proj2',
             projectTitle: 'Mobile App Development',
             question: 'What is the deployment timeline?',
-            quotation: 'Target launch date: Q1 2025 for both iOS and Android platforms.',
+            budget: 'Target launch date: Q1 2025 for both iOS and Android platforms.',
             description: 'When can we expect the app to be available on app stores?',
             priority: 'low',
             answer: '',
@@ -122,7 +122,7 @@ export function RequirementsListPage() {
             projectId: 'proj4',
             projectTitle: 'API Integration Service',
             question: 'How will we handle API rate limiting?',
-            quotation: 'Robust rate limiting and throttling mechanisms required for production.',
+            budget: 'Robust rate limiting and throttling mechanisms required for production.',
             description: 'Need to understand the strategy for handling third-party API rate limits and throttling.',
             priority: 'high',
             answer: 'We\'ll implement a rate limiting middleware using Redis to track API calls. We\'ll also implement exponential backoff and request queuing for better reliability.',
@@ -294,7 +294,7 @@ export function RequirementsListPage() {
                         </div>
                       </div>
 
-                      {/* Question/Quotation */}
+                      {/* Question/Budget */}
                       {requirement.question && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
@@ -306,14 +306,14 @@ export function RequirementsListPage() {
                         </div>
                       )}
 
-                      {/* Quotation */}
-                      {requirement.quotation && (
+                      {/* Budget */}
+                      {requirement.budget && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
-                            Quotation
+                            Budget
                           </p>
                           <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                            {requirement.quotation}
+                            {requirement.budget}
                           </p>
                         </div>
                       )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -19,47 +19,74 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { ScrollReveal } from './ScrollReveal';
+import { submitLandingEnquiry } from '../../lib/api';
 
 export function WorkWithAlgoryxLabs() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phoneNumber: '',
     company: '',
     requirement: '',
     hearAboutUs: '',
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     
     // Validate required fields
-    if (!formData.fullName || !formData.email || !formData.requirement || !formData.hearAboutUs) {
-      alert('Please fill in all required fields');
+    if (!formData.fullName || !formData.email || !formData.phoneNumber || !formData.requirement || !formData.hearAboutUs) {
+      setErrorMessage('Please fill in all required fields');
       return;
     }
     
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
     
-    // Show checkmark and open success dialog
-    setFormSubmitted(true);
-    setSuccessDialogOpen(true);
-    
-    // Reset form
-    setFormData({
-      fullName: '',
-      email: '',
-      company: '',
-      requirement: '',
-      hearAboutUs: '',
-    });
-    
-    // Reset to submit button after 2 seconds
-    setTimeout(() => {
-      setFormSubmitted(false);
-    }, 2000);
+    try {
+      // Submit to API
+      const response = await submitLandingEnquiry({
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phoneNumber,
+        companyOrg: formData.company || undefined,
+        message: formData.requirement,
+        haveSource: formData.hearAboutUs,
+        address: undefined,
+      });
+      
+      if (response.success) {
+        // Show checkmark and open success dialog
+        setFormSubmitted(true);
+        setSuccessDialogOpen(true);
+        
+        // Reset form
+        setFormData({
+          fullName: '',
+          email: '',
+          phoneNumber: '',
+          company: '',
+          requirement: '',
+          hearAboutUs: '',
+        });
+        
+        // Reset to submit button after 2 seconds
+        setTimeout(() => {
+          setFormSubmitted(false);
+        }, 2000);
+      } else {
+        setErrorMessage(response.error || 'Failed to submit enquiry. Please try again.');
+      }
+    } catch (error) {
+      setErrorMessage('An unexpected error occurred. Please try again.');
+      console.error('Error submitting enquiry:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -121,6 +148,22 @@ export function WorkWithAlgoryxLabs() {
                   />
                 </div>
 
+                {/* Phone Number */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="phoneNumber" className="text-white text-sm">
+                    Phone Number <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={formData.phoneNumber}
+                    onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                    required
+                    className="bg-slate-900/50 border-white/20 text-white placeholder:text-gray-500 h-10"
+                  />
+                </div>
+
                 {/* Company / Organization */}
                 <div className="space-y-1.5">
                   <Label htmlFor="company" className="text-white text-sm">
@@ -176,14 +219,29 @@ export function WorkWithAlgoryxLabs() {
                   </Select>
                 </div>
 
+                {/* Error Message */}
+                {errorMessage && (
+                  <div className="pt-2">
+                    <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                      {errorMessage}
+                    </p>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <div className="pt-2">
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 h-10 text-base font-semibold flex items-center justify-center"
+                    disabled={isSubmitting || formSubmitted}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 h-10 text-base font-semibold flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {formSubmitted ? (
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : formSubmitted ? (
                       <Check className="w-5 h-5" />
                     ) : (
                       'Submit Requirement'

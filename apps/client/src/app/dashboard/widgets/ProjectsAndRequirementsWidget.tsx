@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { FolderKanban, CheckCircle2 } from 'lucide-react';
+import { FolderKanban, CheckCircle2, ChevronDown } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -9,7 +9,7 @@ import { cn } from '../../components/ui/utils';
 export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [quotation, setQuotation] = useState('');
+  const [budget, setBudget] = useState('');
 
   const projects = [
     { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
@@ -20,10 +20,10 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ projectTitle, description, quotation });
+    console.log({ projectTitle, description, budget });
     setProjectTitle('');
     setDescription('');
-    setQuotation('');
+    setBudget('');
   };
 
   return (
@@ -94,20 +94,52 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
               />
             </div>
 
-            {/* Quotation and Submit button - placed at bottom */}
+            {/* Budget and Submit button - placed at bottom */}
             <div className="flex-shrink-0 pt-1 flex items-end gap-2">
               <div className="flex-1 space-y-1">
-                <Label htmlFor="quotation" className="text-sm text-gray-300 font-footer">
-                  Quotation
+                <Label htmlFor="budget" className="text-sm text-gray-300 font-footer">
+                  Budget Range
                 </Label>
-                <Input
-                  id="quotation"
-                  type="text"
-                  placeholder="Quotation"
-                  value={quotation}
-                  onChange={(e) => setQuotation(e.target.value)}
-                  className="bg-slate-800/50 border-white/10 text-white placeholder:text-gray-500 h-8 text-sm"
-                />
+                <div className="relative">
+                  <select
+                    id="budget"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    className="w-full h-8 px-2 pr-8 bg-slate-800/50 border border-white/10 rounded-md text-white font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-800 text-white">
+                      Select Budget Range
+                    </option>
+                    <option value="$0 - $1,000" className="bg-slate-800 text-white">
+                      $0 - $1,000
+                    </option>
+                    <option value="$1,000 - $5,000" className="bg-slate-800 text-white">
+                      $1,000 - $5,000
+                    </option>
+                    <option value="$5,000 - $10,000" className="bg-slate-800 text-white">
+                      $5,000 - $10,000
+                    </option>
+                    <option value="$10,000 - $25,000" className="bg-slate-800 text-white">
+                      $10,000 - $25,000
+                    </option>
+                    <option value="$25,000 - $50,000" className="bg-slate-800 text-white">
+                      $25,000 - $50,000
+                    </option>
+                    <option value="$50,000 - $100,000" className="bg-slate-800 text-white">
+                      $50,000 - $100,000
+                    </option>
+                    <option value="$100,000 - $250,000" className="bg-slate-800 text-white">
+                      $100,000 - $250,000
+                    </option>
+                    <option value="$250,000 - $500,000" className="bg-slate-800 text-white">
+                      $250,000 - $500,000
+                    </option>
+                    <option value="$500,000+" className="bg-slate-800 text-white">
+                      $500,000+
+                    </option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               <div className="pt-5">
                 <Button

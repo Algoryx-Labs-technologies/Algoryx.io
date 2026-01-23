@@ -68,7 +68,7 @@ model Project {
   priority           Priority?
   progressStatus     String?
   miscellaneousData  Json?
-  Quotation          String?
+  Budget             String?
   paymentStatus      PaymentStatus?
   updated_at         DateTime       @default(now())
   created_at         DateTime       @default(now())

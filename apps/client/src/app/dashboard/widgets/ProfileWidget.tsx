@@ -4,6 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../../components/ui/utils';
+import { apiClient } from '@/lib/api';
+
+interface UserData {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phoneNumber?: string | null;
+  country?: string | null;
+}
 
 function ClockDisplay() {
   const [time, setTime] = useState(new Date());
@@ -253,6 +263,57 @@ function ClockDisplay() {
 }
 
 export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }) {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<UserData>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Helper function to get display name (same logic as DashboardPage)
+  const getDisplayName = () => {
+    if (loading) return '...';
+    if (!user) return 'User';
+    if (user.firstName) {
+      return `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`;
+    }
+    return user.email.split('@')[0];
+  };
+
+  // Helper function to get display email
+  const getDisplayEmail = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.email;
+  };
+
+  // Helper function to get display country
+  const getDisplayCountry = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.country || 'N/A';
+  };
+
+  // Helper function to get display phone number
+  const getDisplayPhone = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.phoneNumber || 'N/A';
+  };
+
   return (
     <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
       <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
@@ -270,8 +331,8 @@ export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1">
               <User className="h-5 w-5 text-white" />
             </div>
-            <p className="text-xs text-white font-footer font-semibold">John Doe</p>
-            <p className="text-xs text-gray-400 font-footer">john.doe@company.com</p>
+            <p className="text-xs text-white font-footer font-semibold">{getDisplayName()}</p>
+            <p className="text-xs text-gray-400 font-footer">{getDisplayEmail()}</p>
           </div>
           
           {/* Clock UI */}
@@ -281,12 +342,12 @@ export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }
           
           <div className="space-y-1 pt-1.5 border-t border-white/10">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 font-footer">Name</span>
-              <span className="text-xs text-white font-footer">John Doe</span>
+              <span className="text-xs text-gray-400 font-footer">Country</span>
+              <span className="text-xs text-white font-footer">{getDisplayCountry()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 font-footer">Email</span>
-              <span className="text-xs text-white font-footer truncate ml-2">john.doe@company.com</span>
+              <span className="text-xs text-gray-400 font-footer">Phone</span>
+              <span className="text-xs text-white font-footer truncate ml-2">{getDisplayPhone()}</span>
             </div>
           </div>
         </div>
