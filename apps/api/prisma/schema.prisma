@@ -22,14 +22,16 @@ model User {
   Client         Client?
   Partner        Partner?
   requirements   Requirement[]
+  supportTickets SupportTicket[]
 }
 
 model Client {
-  uid         String        @id @default(cuid())
-  userId      String        @unique
-  User        User          @relation(fields: [userId], references: [id])
-  projects    Project[]
-  requirements Requirement[]
+  uid            String         @id @default(cuid())
+  userId         String         @unique
+  User           User           @relation(fields: [userId], references: [id])
+  projects       Project[]
+  requirements   Requirement[]
+  supportTickets SupportTicket[]
 }
 
 model Admin {
@@ -40,8 +42,8 @@ model Admin {
 }
 
 model Partner {
-  uid                String        @id @default(cuid())
-  userId             String        @unique
+  uid                String         @id @default(cuid())
+  userId             String         @unique
   companyName        String?
   companyDescription String?
   BRD                String?
@@ -50,9 +52,10 @@ model Partner {
   phoneNumber        String?
   companyEmail       String?
   companyWebsite     String?
-  User               User          @relation(fields: [userId], references: [id])
+  User               User           @relation(fields: [userId], references: [id])
   projects           Project[]
   requirements       Requirement[]
+  supportTickets     SupportTicket[]
 }
 
 model Project {
@@ -144,4 +147,31 @@ enum PaymentStatus {
   paid
   failed
   refunded
+}
+
+enum TicketStatus {
+  pending
+  in_progress
+  resolved
+  closed
+}
+
+model SupportTicket {
+  uid             String       @id @default(cuid())
+  ticketId        String       @unique
+  userId          String?
+  clientId        String?
+  partnerId       String?
+  issueType       String
+  description     String
+  priority        Priority
+  additionalDetails String?
+  status          TicketStatus @default(pending)
+  userName        String?
+  email           String?
+  updated_at      DateTime     @default(now())
+  created_at      DateTime     @default(now())
+  User            User?        @relation(fields: [userId], references: [id])
+  Client          Client?      @relation(fields: [clientId], references: [uid])
+  Partner         Partner?     @relation(fields: [partnerId], references: [uid])
 }

@@ -4,6 +4,7 @@ import { cn } from './ui/utils';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { TicketQuestionnaire } from './chat/TicketQuestionnaire';
+import { apiClient } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
@@ -42,6 +43,7 @@ export function SupportChat() {
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
   const [userMessageCount, setUserMessageCount] = useState(0);
+  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -235,25 +237,59 @@ export function SupportChat() {
     }
   };
 
-  const handleQuestionnaireSubmit = (formData: TicketForm) => {
-    // Generate ticket ID
-    const newTicketId = `TKT-${Date.now().toString().slice(-8)}`;
-    setTicketId(newTicketId);
+  const handleQuestionnaireSubmit = async (formData: TicketForm) => {
+    setIsSubmittingTicket(true);
     
-    // Simulate API call (replace with actual API later)
-    // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
-    // await fetch(`${API_BASE_URL}/support/tickets`, { ... });
-    
-    // Add confirmation message
-    const confirmationMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: `✅ **Support ticket created successfully!**\n\n**Ticket Number:** ${newTicketId}\n**Issue Type:** ${formData.issueType}\n**Priority:** ${formData.priority}\n\nOur team will review your ticket and get back to you soon. You'll receive notifications here when we respond.`,
-      sender: 'support',
-      timestamp: new Date(),
-    };
-    
-    setMessages((prev) => [...prev, confirmationMessage]);
-    setMode('ticket-created');
+    try {
+      // Make API call to create support ticket
+      const response = await apiClient.post('/support/tickets', {
+        issueType: formData.issueType,
+        description: formData.description,
+        priority: formData.priority.toLowerCase(),
+        additionalDetails: formData.additionalDetails,
+      });
+
+      if (response.success && response.data) {
+        const ticket = response.data as { ticketId?: string };
+        const newTicketId = ticket?.ticketId || `TKT-${Date.now().toString().slice(-8)}`;
+        setTicketId(newTicketId);
+        
+        // Add confirmation message
+        const confirmationMessage: ChatMessage = {
+          id: Date.now().toString(),
+          text: `✅ **Support ticket created successfully!**\n\n**Ticket Number:** ${newTicketId}\n**Issue Type:** ${formData.issueType}\n**Priority:** ${formData.priority}\n\nOur team will review your ticket and get back to you soon. You'll receive notifications here when we respond.`,
+          sender: 'support',
+          timestamp: new Date(),
+        };
+        
+        setMessages((prev) => [...prev, confirmationMessage]);
+        setMode('ticket-created');
+      } else {
+        // Handle error
+        const errorMessage: ChatMessage = {
+          id: Date.now().toString(),
+          text: `❌ **Failed to create support ticket.**\n\n${response.error || 'An error occurred. Please try again later.'}`,
+          sender: 'support',
+          timestamp: new Date(),
+        };
+        
+        setMessages((prev) => [...prev, errorMessage]);
+        setMode('chat');
+      }
+    } catch (error) {
+      // Handle network or other errors
+      const errorMessage: ChatMessage = {
+        id: Date.now().toString(),
+        text: `❌ **Failed to create support ticket.**\n\n${error instanceof Error ? error.message : 'An error occurred. Please try again later.'}`,
+        sender: 'support',
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
+      setMode('chat');
+    } finally {
+      setIsSubmittingTicket(false);
+    }
   };
 
   const handleQuestionnaireCancel = () => {
@@ -322,6 +358,7 @@ export function SupportChat() {
                 onSubmit={handleQuestionnaireSubmit}
                 onCancel={handleQuestionnaireCancel}
                 originalMessage={lastUserMessage}
+                isSubmitting={isSubmittingTicket}
               />
             ) : (
               <>

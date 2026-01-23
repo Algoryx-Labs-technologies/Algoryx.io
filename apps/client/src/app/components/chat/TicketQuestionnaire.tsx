@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { cn } from '../ui/utils';
 
 interface QuestionnaireStep {
@@ -60,9 +60,10 @@ interface TicketQuestionnaireProps {
   onSubmit: (formData: TicketForm) => void;
   onCancel: () => void;
   originalMessage: string;
+  isSubmitting?: boolean;
 }
 
-export function TicketQuestionnaire({ onSubmit, onCancel, originalMessage }: TicketQuestionnaireProps) {
+export function TicketQuestionnaire({ onSubmit, onCancel, originalMessage, isSubmitting = false }: TicketQuestionnaireProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Partial<TicketForm>>({});
 
@@ -190,13 +191,22 @@ export function TicketQuestionnaire({ onSubmit, onCancel, originalMessage }: Tic
         </Button>
         <Button
           onClick={handleNext}
-          disabled={!canProceed}
-          className="bg-gradient-to-br from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0"
+          disabled={!canProceed || isSubmitting}
+          className="bg-gradient-to-br from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLastStep ? (
             <>
-              <Check className="h-4 w-4 mr-2" />
-              Submit Ticket
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Submit Ticket
+                </>
+              )}
             </>
           ) : (
             <>

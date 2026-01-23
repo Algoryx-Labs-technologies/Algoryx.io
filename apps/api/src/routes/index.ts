@@ -4,6 +4,7 @@ import userRoutes from './user.routes';
 import projectRoutes from './project.routes';
 import messageRoutes from './message.routes';
 import requirementRoutes from './requirement.routes';
+import supportTicketRoutes from './support-ticket.routes';
 import webhookRoutes from './webhook.routes';
 import landingEnquiryRoutes from './landing-enquiry.routes';
 import { env } from '@/config/env';
@@ -44,6 +45,7 @@ router.use('/users', userRoutes);
 router.use('/projects', projectRoutes);
 router.use('/messages', messageRoutes);
 router.use('/requirements', requirementRoutes);
+router.use('/support/tickets', supportTicketRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/landing-enquiries', landingEnquiryRoutes);
 
