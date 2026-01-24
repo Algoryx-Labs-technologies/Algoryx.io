@@ -8,6 +8,8 @@ import supportTicketRoutes from './support-ticket.routes';
 import feedbackRoutes from './feedback.routes';
 import webhookRoutes from './webhook.routes';
 import landingEnquiryRoutes from './landing-enquiry.routes';
+import adminRoutes from './admin.routes';
+import clientRoutes from './client.routes';
 import { env } from '@/config/env';
 import { prisma } from '@/config/database';
 
@@ -43,6 +45,7 @@ router.get('/health', async (req, res) => {
 // API routes
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/clients', clientRoutes);
 router.use('/projects', projectRoutes);
 router.use('/messages', messageRoutes);
 router.use('/requirements', requirementRoutes);
@@ -50,6 +53,7 @@ router.use('/support/tickets', supportTicketRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/landing-enquiries', landingEnquiryRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;
 

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users, FolderKanban, Bell, CreditCard, MessageSquare, Users as UsersIcon, Star, FileText, HelpCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -23,6 +23,46 @@ export function Sidebar() {
       icon: Users,
       label: 'Client',
       path: '/client',
+    },
+    {
+      icon: FolderKanban,
+      label: 'Projects',
+      path: '/projects',
+    },
+    {
+      icon: Bell,
+      label: 'Notifications',
+      path: '/notifications',
+    },
+    {
+      icon: CreditCard,
+      label: 'Payments',
+      path: '/payments',
+    },
+    {
+      icon: MessageSquare,
+      label: 'Support Tickets',
+      path: '/support-tickets',
+    },
+    {
+      icon: UsersIcon,
+      label: 'Community',
+      path: '/community',
+    },
+    {
+      icon: Star,
+      label: 'Feedback',
+      path: '/feedback',
+    },
+    {
+      icon: FileText,
+      label: 'Requirements',
+      path: '/requirements',
+    },
+    {
+      icon: HelpCircle,
+      label: 'QnA',
+      path: '/qna',
     },
   ];
 
