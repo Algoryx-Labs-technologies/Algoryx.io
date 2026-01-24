@@ -124,9 +124,9 @@ export function CalendarWidget({ shouldShine = false }: { shouldShine?: boolean 
               hasMeeting: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-blue-400",
             }}
             classNames={{
-              months: "text-sm",
-              caption_label: "text-sm font-medium",
-              day: "text-sm h-9 w-9",
+              months: "text-base",
+              caption_label: "text-base font-medium",
+              day: "text-base h-11 w-11",
               day_selected: "bg-blue-600 text-white hover:bg-blue-700",
               day_today: "bg-blue-500/20 text-blue-300 font-bold",
             }}
