@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight, FolderKanban, MessageSquare, FileText, Users, CreditCard, MessageCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, FolderKanban, MessageSquare, FileText, Users, CreditCard, MessageCircle, Calendar, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { cn } from './ui/utils';
@@ -25,6 +25,11 @@ export function Sidebar() {
       icon: MessageSquare,
       label: 'Messages',
       path: '/messages',
+    },
+    {
+      icon: Calendar,
+      label: 'Meetings',
+      path: '/meetings',
     },
     {
       icon: FileText,

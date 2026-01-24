@@ -8,6 +8,7 @@ import { RequirementsListPage } from './requirements/RequirementsListPage';
 import { CommunityPage } from './community/CommunityPage';
 import { PaymentsPage } from './payments/PaymentsPage';
 import { FeedbackPage } from './feedback/FeedbackPage';
+import { MeetingsPage } from './meetings/MeetingsPage';
 import { useAuth } from './contexts/AuthContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -103,6 +104,14 @@ function App() {
           element={
             <ProtectedRoute>
               <FeedbackPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/meetings" 
+          element={
+            <ProtectedRoute>
+              <MeetingsPage />
             </ProtectedRoute>
           } 
         />
