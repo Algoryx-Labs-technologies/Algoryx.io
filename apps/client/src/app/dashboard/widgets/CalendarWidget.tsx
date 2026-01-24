@@ -121,22 +121,27 @@ export function CalendarWidget({ shouldShine = false }: { shouldShine?: boolean 
               hasMeeting: datesWithMeetings,
             }}
             modifiersClassNames={{
-              hasMeeting: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-blue-400",
+              hasMeeting: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-blue-400",
             }}
             classNames={{
-              months: "text-[0.7rem]",
-              caption_label: "text-xs",
-              day: "text-[0.7rem] h-7 w-7",
+              months: "text-sm",
+              caption_label: "text-sm font-medium",
+              day: "text-sm h-9 w-9",
               day_selected: "bg-blue-600 text-white hover:bg-blue-700",
               day_today: "bg-blue-500/20 text-blue-300 font-bold",
             }}
           />
         </div>
-        <div className="flex-1 overflow-y-auto min-h-0 border-t border-white/10 pt-2">
+        <div className="flex-shrink-0 border-t border-white/10 pt-2">
           {loading ? (
             <div className="text-gray-400 text-xs text-center py-2">Loading meetings...</div>
           ) : selectedDateMeetings.length > 0 ? (
-            <div className="space-y-1.5 pr-1">
+            <div 
+              className="space-y-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              style={{
+                maxHeight: 'calc(3 * (48px + 6px))', // 3 meetings * (height + gap)
+              }}
+            >
               {selectedDateMeetings.map((meeting) => (
                 <div
                   key={meeting.id}
