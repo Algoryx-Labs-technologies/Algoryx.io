@@ -19,20 +19,34 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { apiClient } from '../../lib/api';
+
+interface MeetingParticipant {
+  id: string;
+  email: string;
+  name?: string;
+  role?: string;
+}
 
 interface Meeting {
   id: string;
   title: string;
   description?: string;
-  date: string;
+  date: string | Date;
   startTime: string;
   endTime: string;
-  type: 'video' | 'in-person' | 'phone';
+  type: 'video' | 'in_person' | 'phone';
   location?: string;
   meetingLink?: string;
-  participants: string[];
+  participants: MeetingParticipant[];
   status: 'upcoming' | 'completed' | 'cancelled';
   created_at: string;
+  User?: {
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
 }
 
 export function MeetingsPage() {
@@ -55,76 +69,14 @@ export function MeetingsPage() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
-        // const token = localStorage.getItem('auth_token');
-        // const response = await fetch(`${API_BASE_URL}/meetings`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   setMeetings(data.data || []);
-        // }
-
-        // Mock data for now
-        const mockMeetings: Meeting[] = [
-          {
-            id: '1',
-            title: 'Project Kickoff Meeting',
-            description: 'Initial discussion about project requirements and timeline',
-            date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            startTime: '10:00',
-            endTime: '11:30',
-            type: 'video',
-            meetingLink: 'https://meet.example.com/kickoff-123',
-            participants: ['John Smith', 'Sarah Johnson'],
-            status: 'upcoming',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            title: 'Technical Review Session',
-            description: 'Review of technical architecture and implementation approach',
-            date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            startTime: '14:00',
-            endTime: '15:00',
-            type: 'video',
-            meetingLink: 'https://meet.example.com/tech-review-456',
-            participants: ['Michael Chen', 'David Wilson'],
-            status: 'upcoming',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '3',
-            title: 'Progress Update Meeting',
-            description: 'Weekly progress update and next steps discussion',
-            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            startTime: '09:00',
-            endTime: '10:00',
-            type: 'phone',
-            participants: ['John Smith'],
-            status: 'upcoming',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '4',
-            title: 'On-site Consultation',
-            description: 'In-person meeting at client office',
-            date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            startTime: '13:00',
-            endTime: '15:00',
-            type: 'in-person',
-            location: '123 Business St, Suite 500, New York, NY 10001',
-            participants: ['Sarah Johnson', 'Michael Chen'],
-            status: 'upcoming',
-            created_at: new Date().toISOString(),
-          },
-        ];
-
-        setMeetings(mockMeetings);
+        // Get all meetings for the authenticated user
+        const response = await apiClient.get<Meeting[]>('/meetings');
+        if (response.success && response.data) {
+          // Store all meetings - filtering will happen in upcomingMeetings
+          setMeetings(response.data);
+        } else {
+          console.error('Error fetching meetings:', response.error);
+        }
       } catch (error) {
         console.error('Error fetching meetings:', error);
       } finally {
@@ -135,53 +87,101 @@ export function MeetingsPage() {
     fetchMeetings();
   }, []);
 
-  const handleScheduleMeeting = () => {
+  const handleScheduleMeeting = async () => {
     if (!selectedDate || !formData.title || !formData.startTime || !formData.endTime) {
       alert('Please fill in all required fields');
       return;
     }
 
-    const newMeeting: Meeting = {
-      id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      type: formData.type,
-      location: formData.location,
-      meetingLink: formData.meetingLink,
-      participants: formData.participants
-        ? formData.participants.split(',').map(p => p.trim()).filter(p => p)
-        : [],
-      status: 'upcoming',
-      created_at: new Date().toISOString(),
-    };
+    try {
+      // Parse participants
+      const participants = formData.participants
+        ? formData.participants.split(',').map(p => {
+            const trimmed = p.trim();
+            // Try to parse as "Name <email>" or just email
+            const emailMatch = trimmed.match(/<(.+)>/);
+            const email = emailMatch ? emailMatch[1] : trimmed;
+            const nameMatch = trimmed.match(/^(.+?)\s*</);
+            const name = nameMatch ? nameMatch[1].trim() : undefined;
+            return { email, name };
+          }).filter(p => p.email)
+        : [];
 
-    setMeetings([...meetings, newMeeting].sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.startTime}`);
-      const dateB = new Date(`${b.date}T${b.startTime}`);
-      return dateA.getTime() - dateB.getTime();
-    }));
+      const meetingData = {
+        title: formData.title,
+        description: formData.description || undefined,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        type: formData.type === 'in-person' ? 'in_person' : formData.type,
+        location: formData.type === 'in-person' ? formData.location || undefined : undefined,
+        meetingLink: formData.type === 'video' ? formData.meetingLink || undefined : undefined,
+        participants: participants.length > 0 ? participants : undefined,
+      };
 
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      startTime: '',
-      endTime: '',
-      type: 'video',
-      location: '',
-      meetingLink: '',
-      participants: '',
-    });
-    setSelectedDate(new Date());
-    setShowScheduleModal(false);
+      const response = await apiClient.post<Meeting>('/meetings', meetingData);
+      
+      if (response.success && response.data) {
+        // Refresh meetings list
+        const refreshResponse = await apiClient.get<Meeting[]>('/meetings');
+        if (refreshResponse.success && refreshResponse.data) {
+          // Filter to show only upcoming meetings
+          const upcoming = refreshResponse.data.filter(m => {
+            const date = typeof m.date === 'string' ? new Date(m.date) : m.date;
+            const meetingDateTime = new Date(`${date.toISOString().split('T')[0]}T${m.startTime}`);
+            return meetingDateTime >= new Date() && m.status === 'upcoming';
+          });
+          setMeetings(upcoming);
+        }
+
+        // Reset form
+        setFormData({
+          title: '',
+          description: '',
+          startTime: '',
+          endTime: '',
+          type: 'video',
+          location: '',
+          meetingLink: '',
+          participants: '',
+        });
+        setSelectedDate(new Date());
+        setShowScheduleModal(false);
+      } else {
+        alert(response.error || 'Failed to create meeting');
+      }
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+      alert('Failed to create meeting. Please try again.');
+    }
   };
 
-  const handleDeleteMeeting = (id: string) => {
-    if (confirm('Are you sure you want to delete this meeting?')) {
-      setMeetings(meetings.filter(m => m.id !== id));
+  const handleDeleteMeeting = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this meeting?')) {
+      return;
+    }
+
+    try {
+      const response = await apiClient.delete(`/meetings/${id}`);
+      
+      if (response.success) {
+        // Refresh meetings list
+        const refreshResponse = await apiClient.get<Meeting[]>('/meetings');
+        if (refreshResponse.success && refreshResponse.data) {
+          // Filter to show only upcoming meetings
+          const upcoming = refreshResponse.data.filter(m => {
+            const date = typeof m.date === 'string' ? new Date(m.date) : m.date;
+            const meetingDateTime = new Date(`${date.toISOString().split('T')[0]}T${m.startTime}`);
+            return meetingDateTime >= new Date() && m.status === 'upcoming';
+          });
+          setMeetings(upcoming);
+        }
+      } else {
+        alert(response.error || 'Failed to delete meeting');
+      }
+    } catch (error) {
+      console.error('Error deleting meeting:', error);
+      alert('Failed to delete meeting. Please try again.');
     }
   };
 
@@ -189,6 +189,7 @@ export function MeetingsPage() {
     switch (type) {
       case 'video':
         return <Video className="h-5 w-5" />;
+      case 'in_person':
       case 'in-person':
         return <MapPin className="h-5 w-5" />;
       case 'phone':
@@ -202,6 +203,7 @@ export function MeetingsPage() {
     switch (type) {
       case 'video':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'in_person':
       case 'in-person':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'phone':
@@ -211,23 +213,42 @@ export function MeetingsPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'video':
+        return 'Video Call';
+      case 'in_person':
+      case 'in-person':
+        return 'In-Person';
+      case 'phone':
+        return 'Phone Call';
+      default:
+        return type;
+    }
+  };
+
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (date.toDateString() === today.toDateString()) {
+    // Reset time for comparison
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
       return 'Today';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+    } else if (dateOnly.getTime() === tomorrowOnly.getTime()) {
       return 'Tomorrow';
     } else {
       return format(date, 'EEEE, MMM d, yyyy');
     }
   };
 
-  const getDaysUntilMeeting = (dateString: string) => {
-    const meetingDate = new Date(dateString);
+  const getDaysUntilMeeting = (dateString: string | Date) => {
+    const meetingDate = typeof dateString === 'string' ? new Date(dateString) : dateString;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     meetingDate.setHours(0, 0, 0, 0);
@@ -237,8 +258,32 @@ export function MeetingsPage() {
   };
 
   const upcomingMeetings = meetings.filter(m => {
-    const meetingDate = new Date(`${m.date}T${m.startTime}`);
-    return meetingDate >= new Date() && m.status === 'upcoming';
+    if (m.status !== 'upcoming') return false;
+    
+    try {
+      const date = typeof m.date === 'string' ? new Date(m.date) : m.date;
+      const [hours, minutes] = m.startTime.split(':');
+      
+      // Get date components in local timezone
+      const localYear = date.getFullYear();
+      const localMonth = date.getMonth();
+      const localDay = date.getDate();
+      
+      // Create meeting date-time in local timezone
+      const meetingDateTime = new Date(localYear, localMonth, localDay, parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      
+      // Compare with current time
+      const now = new Date();
+      
+      // Show meetings that are in the future or within the last 24 hours (to catch timezone issues)
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      
+      return meetingDateTime >= yesterday;
+    } catch (error) {
+      console.error('Error filtering meeting:', error, m);
+      // If there's an error parsing, show the meeting anyway if status is upcoming
+      return true;
+    }
   });
 
   return (
@@ -302,8 +347,9 @@ export function MeetingsPage() {
             ) : (
               <div className="space-y-4">
                 {upcomingMeetings.map((meeting) => {
-                  const daysUntil = getDaysUntilMeeting(meeting.date);
-                  const meetingDateTime = new Date(`${meeting.date}T${meeting.startTime}`);
+                  const date = typeof meeting.date === 'string' ? new Date(meeting.date) : meeting.date;
+                  const daysUntil = getDaysUntilMeeting(date);
+                  const meetingDateTime = new Date(`${date.toISOString().split('T')[0]}T${meeting.startTime}`);
 
                   return (
                     <Card
@@ -327,7 +373,7 @@ export function MeetingsPage() {
                                 getTypeColor(meeting.type)
                               )}>
                                 {getTypeIcon(meeting.type)}
-                                {meeting.type === 'video' ? 'Video Call' : meeting.type === 'in-person' ? 'In-Person' : 'Phone Call'}
+                                {getTypeLabel(meeting.type)}
                               </span>
                               {daysUntil === 0 && (
                                 <span className="text-sm font-footer px-3 py-1.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
@@ -360,7 +406,7 @@ export function MeetingsPage() {
                           <CalendarIcon className="h-5 w-5 text-gray-400" />
                           <span className="text-gray-300 font-footer font-medium">Date:</span>
                           <span className="text-white font-footer font-semibold">
-                            {formatDate(meeting.date)}
+                            {formatDate(date)}
                           </span>
                         </div>
 
@@ -373,7 +419,7 @@ export function MeetingsPage() {
                         </div>
 
                         {/* Location or Meeting Link */}
-                        {meeting.type === 'in-person' && meeting.location && (
+                        {(meeting.type === 'in_person' || meeting.type === 'in-person') && meeting.location && (
                           <div className="flex items-start gap-3 text-base">
                             <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
                             <div className="flex-1">
@@ -399,13 +445,13 @@ export function MeetingsPage() {
                         )}
 
                         {/* Participants */}
-                        {meeting.participants.length > 0 && (
+                        {meeting.participants && meeting.participants.length > 0 && (
                           <div className="flex items-start gap-3 text-base">
                             <Users className="h-5 w-5 text-gray-400 mt-0.5" />
                             <div className="flex-1">
                               <span className="text-gray-300 font-footer font-medium">Participants: </span>
                               <span className="text-white font-footer">
-                                {meeting.participants.join(', ')}
+                                {meeting.participants.map(p => p.name || p.email).join(', ')}
                               </span>
                             </div>
                           </div>
@@ -530,15 +576,18 @@ export function MeetingsPage() {
                 {formData.type === 'video' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                      Meeting Link
+                      Meeting Link (Optional)
                     </label>
                     <Input
                       type="url"
                       value={formData.meetingLink}
                       onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-                      placeholder="https://meet.example.com/..."
+                      placeholder="Leave empty to auto-generate Google Meet link"
                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                     />
+                    <p className="text-xs text-gray-400 mt-1 font-footer">
+                      If left empty, a Google Meet link will be automatically generated and synced to your calendar
+                    </p>
                   </div>
                 )}
 

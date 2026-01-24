@@ -28,6 +28,7 @@ model User {
   payments       Payment[]
   qnaQuestions   QnA[]
   qnaAnswers     QnAAnswer[]
+  meetings       Meeting[]
 }
 
 model Client {
@@ -38,6 +39,7 @@ model Client {
   projects       Project[]
   requirements   Requirement[]
   supportTickets SupportTicket[]
+  meetings       Meeting[]
 }
 
 model Admin {
@@ -45,6 +47,7 @@ model Admin {
   userId   String    @unique
   User     User      @relation(fields: [userId], references: [id])
   projects Project[]
+  meetings Meeting[]
 }
 
 model Partner {
@@ -63,6 +66,7 @@ model Partner {
   projects           Project[]
   requirements       Requirement[]
   supportTickets     SupportTicket[]
+  meetings           Meeting[]
 }
 
 model Project {
@@ -86,6 +90,7 @@ model Project {
   created_at         DateTime       @default(now())
   Budget             String?
   payments           Payment[]
+  meetings           Meeting[]
   Admin              Admin?         @relation(fields: [adminId], references: [uid])
   Client             Client?        @relation(fields: [clientId], references: [uid])
   Partner            Partner?       @relation(fields: [partnerId], references: [uid])
@@ -302,4 +307,64 @@ enum NotificationType {
   error
   reminder
   update
+}
+
+model Meeting {
+  id                String              @id @default(cuid())
+  title             String
+  description       String?
+  date              DateTime
+  startTime         String
+  endTime           String
+  type              MeetingType
+  location          String?
+  meetingLink       String?
+  status            MeetingStatus        @default(upcoming)
+  
+  // Relationships
+  userId            String
+  clientId          String?
+  partnerId         String?
+  adminId           String?
+  projectId         String?
+  
+  // Google Calendar sync
+  googleEventId     String?              @unique
+  syncedWithGoogle  Boolean              @default(false)
+  
+  // Participants
+  participants      MeetingParticipant[]
+  
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @default(now())
+  
+  User              User                 @relation(fields: [userId], references: [id])
+  Client            Client?              @relation(fields: [clientId], references: [uid])
+  Partner           Partner?             @relation(fields: [partnerId], references: [uid])
+  Admin             Admin?               @relation(fields: [adminId], references: [uid])
+  Project           Project?             @relation(fields: [projectId], references: [id])
+}
+
+model MeetingParticipant {
+  id          String   @id @default(cuid())
+  meetingId   String
+  email       String
+  name        String?
+  role        String?  // organizer, attendee, optional, etc.
+  
+  Meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  
+  created_at  DateTime @default(now())
+}
+
+enum MeetingType {
+  video
+  in_person
+  phone
+}
+
+enum MeetingStatus {
+  upcoming
+  completed
+  cancelled
 }
