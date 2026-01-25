@@ -2,155 +2,104 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Card, CardContent } from '../components/ui/card';
-import { FileText, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api';
+import { Button } from '../components/ui/button';
+import { EditRequirementDialog } from './EditRequirementDialog';
 
 interface Requirement {
   uid: string;
   projectId?: string;
   projectTitle?: string;
-  question?: string;
-  quotation?: string;
+  Budget?: string;
   description?: string;
   priority?: string;
   answer?: string;
   created_at: string;
   updated_at: string;
-  status?: 'pending' | 'answered' | 'reviewed';
+  status?: 'Contacted' | 'Pending' | 'Rejected';
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
 }
 
 export function RequirementsListPage() {
   const { isCollapsed } = useSidebar();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'answered' | 'reviewed'>('all');
+  const [filter, setFilter] = useState<'all' | 'Contacted' | 'Pending' | 'Rejected'>('all');
+  const [user, setUser] = useState<UserData | null>(null);
+  const [editingRequirement, setEditingRequirement] = useState<Requirement | null>(null);
 
+  // Fetch user data
   useEffect(() => {
-    const fetchRequirements = async () => {
+    const fetchUser = async () => {
       try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api/v1';
-        
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token'); // Get from your auth system
-        // const response = await fetch(`${API_BASE_URL}/requirements`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   const requirementsWithStatus = (data.data || []).map((req: Requirement) => ({
-        //     ...req,
-        //     status: req.answer ? (req.answer.trim() ? 'answered' : 'pending') : 'pending',
-        //   }));
-        //   setRequirements(requirementsWithStatus);
-        // } else {
-        //   console.error('Error fetching requirements:', data.message);
-        // }
-        
-        // Mock data for now
-        const mockRequirements: Requirement[] = [
-          {
-            uid: '1',
-            projectId: 'proj1',
-            projectTitle: 'E-Commerce Platform',
-            question: 'What payment methods should be supported?',
-            quotation: 'Need a comprehensive payment solution for global customers.',
-            description: 'I need to integrate multiple payment gateways including credit cards, PayPal, and digital wallets. What is the recommended approach?',
-            priority: 'high',
-            answer: 'We recommend integrating Stripe for credit cards and PayPal SDK for PayPal. For digital wallets, we can use Apple Pay and Google Pay APIs.',
-            created_at: '2024-11-15T09:00:00Z',
-            updated_at: '2024-11-18T14:30:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '2',
-            projectId: 'proj1',
-            projectTitle: 'E-Commerce Platform',
-            question: 'What is the expected user capacity?',
-            quotation: 'Planning for high-traffic scenarios and peak shopping seasons.',
-            description: 'Need to know for scaling infrastructure and database planning.',
-            priority: 'mid',
-            answer: 'Initially 10,000 concurrent users, scalable to 100,000. We\'ll use cloud infrastructure with auto-scaling capabilities.',
-            created_at: '2024-11-16T10:00:00Z',
-            updated_at: '2024-11-19T11:20:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '3',
-            projectId: 'proj2',
-            projectTitle: 'Mobile App Development',
-            question: 'Which platforms should we target first?',
-            quotation: 'Cross-platform development strategy needed for maximum reach.',
-            description: 'Should we develop for iOS, Android, or both simultaneously?',
-            priority: 'high',
-            answer: '',
-            created_at: '2024-11-17T08:00:00Z',
-            updated_at: '2024-11-17T08:00:00Z',
-            status: 'pending',
-          },
-          {
-            uid: '4',
-            projectId: 'proj3',
-            projectTitle: 'Data Analytics Dashboard',
-            question: 'What data visualization libraries are recommended?',
-            quotation: 'Real-time data visualization with interactive charts and graphs.',
-            description: 'Need recommendations for charts, graphs, and interactive dashboards.',
-            priority: 'mid',
-            answer: 'We recommend using Chart.js for basic charts and D3.js for advanced visualizations. For React, Recharts is also a great option.',
-            created_at: '2024-11-10T12:00:00Z',
-            updated_at: '2024-11-15T16:45:00Z',
-            status: 'answered',
-          },
-          {
-            uid: '5',
-            projectId: 'proj2',
-            projectTitle: 'Mobile App Development',
-            question: 'What is the deployment timeline?',
-            quotation: 'Target launch date: Q1 2025 for both iOS and Android platforms.',
-            description: 'When can we expect the app to be available on app stores?',
-            priority: 'low',
-            answer: '',
-            created_at: '2024-11-18T09:30:00Z',
-            updated_at: '2024-11-18T09:30:00Z',
-            status: 'pending',
-          },
-          {
-            uid: '6',
-            projectId: 'proj4',
-            projectTitle: 'API Integration Service',
-            question: 'How will we handle API rate limiting?',
-            quotation: 'Robust rate limiting and throttling mechanisms required for production.',
-            description: 'Need to understand the strategy for handling third-party API rate limits and throttling.',
-            priority: 'high',
-            answer: 'We\'ll implement a rate limiting middleware using Redis to track API calls. We\'ll also implement exponential backoff and request queuing for better reliability.',
-            created_at: '2024-11-12T14:00:00Z',
-            updated_at: '2024-11-20T10:15:00Z',
-            status: 'answered',
-          },
-        ];
-        
-        setRequirements(mockRequirements);
+        const response = await apiClient.get<UserData>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
       } catch (error) {
-        console.error('Error fetching requirements:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to fetch user:', error);
       }
     };
-
-    fetchRequirements();
+    fetchUser();
   }, []);
+
+  // Fetch requirements when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchRequirements();
+    }
+  }, [user?.id]);
+
+  const fetchRequirements = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await apiClient.get<Requirement[]>(`/requirements/user/${user.id}`);
+      if (response.success && response.data) {
+        // Use the status from the API response (it should already have the correct status)
+        setRequirements(response.data || []);
+      } else {
+        console.error('Error fetching requirements:', response.error);
+      }
+    } catch (error) {
+      console.error('Error fetching requirements:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (requirement: Requirement) => {
+    setEditingRequirement(requirement);
+  };
+
+  const handleEditSuccess = (updatedRequirement: Requirement) => {
+    // Update the requirement in the list immediately with the updated data
+    setRequirements((prev) =>
+      prev.map((req) =>
+        req.uid === updatedRequirement.uid
+          ? { ...req, ...updatedRequirement }
+          : req
+      )
+    );
+  };
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'answered':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'reviewed':
+      case 'Contacted':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'Pending':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'Rejected':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
@@ -158,14 +107,14 @@ export function RequirementsListPage() {
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'answered':
-        return <CheckCircle2 className="h-4 w-4 text-green-400" />;
-      case 'pending':
+      case 'Contacted':
+        return <CheckCircle2 className="h-4 w-4 text-blue-400" />;
+      case 'Pending':
         return <Clock className="h-4 w-4 text-yellow-400" />;
-      case 'reviewed':
-        return <AlertCircle className="h-4 w-4 text-blue-400" />;
+      case 'Rejected':
+        return <XCircle className="h-4 w-4 text-red-400" />;
       default:
-        return <XCircle className="h-4 w-4 text-gray-400" />;
+        return <AlertCircle className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -218,7 +167,7 @@ export function RequirementsListPage() {
 
             {/* Filter Tabs */}
             <div className="mb-6 flex gap-2">
-              {(['all', 'pending', 'answered', 'reviewed'] as const).map((filterOption) => (
+              {(['all', 'Contacted', 'Pending', 'Rejected'] as const).map((filterOption) => (
                 <button
                   key={filterOption}
                   onClick={() => setFilter(filterOption)}
@@ -229,7 +178,7 @@ export function RequirementsListPage() {
                       : "bg-slate-800/50 text-gray-400 hover:text-white hover:bg-slate-800/70"
                   )}
                 >
-                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  {filterOption === 'all' ? 'All' : filterOption}
                 </button>
               ))}
             </div>
@@ -294,26 +243,14 @@ export function RequirementsListPage() {
                         </div>
                       </div>
 
-                      {/* Question/Quotation */}
-                      {requirement.question && (
+                      {/* Budget */}
+                      {requirement.Budget && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
-                            Question
+                            Budget
                           </p>
                           <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                            {requirement.question}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Quotation */}
-                      {requirement.quotation && (
-                        <div className="mb-3 flex-1">
-                          <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
-                            Quotation
-                          </p>
-                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                            {requirement.quotation}
+                            {requirement.Budget}
                           </p>
                         </div>
                       )}
@@ -345,24 +282,41 @@ export function RequirementsListPage() {
                         </div>
                       )}
 
-                      {/* Footer with Dates */}
+                      {/* Footer with Dates and Edit Button */}
                       <div className="mt-auto pt-3 border-t border-white/10">
-                        <div className="flex items-center justify-between text-xs text-gray-400 font-footer">
-                          <span className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-400 font-footer">
                             <Clock className="h-3.5 w-3.5" />
                             <span className="line-clamp-1">
-                              {new Date(requirement.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                              {requirement.updated_at !== requirement.created_at ? (
+                                <>
+                                  {new Date(requirement.updated_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                  <span className="text-gray-500 text-[10px] ml-2">
+                                    Updated
+                                  </span>
+                                </>
+                              ) : (
+                                new Date(requirement.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })
+                              )}
                             </span>
-                          </span>
-                          {requirement.updated_at !== requirement.created_at && (
-                            <span className="text-gray-500 text-[10px]">
-                              Updated
-                            </span>
-                          )}
+                          </div>
+                          <Button
+                            onClick={() => handleEdit(requirement)}
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-3 border-white/10 text-gray-400 hover:text-white hover:border-white/20 text-xs"
+                          >
+                            <Edit2 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -373,6 +327,14 @@ export function RequirementsListPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Requirement Dialog */}
+      <EditRequirementDialog
+        open={editingRequirement !== null}
+        onClose={() => setEditingRequirement(null)}
+        requirement={editingRequirement}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }

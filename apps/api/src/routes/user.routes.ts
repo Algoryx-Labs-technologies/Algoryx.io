@@ -16,6 +16,7 @@ const updateProfileSchema = z.object({
 
 // Routes
 router.get('/profile', authenticate, userController.getProfile.bind(userController));
+router.get('/:id', authenticate, userController.getUserById.bind(userController));
 router.patch(
   '/profile',
   authenticate,

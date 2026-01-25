@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { SupportChat } from '../components/SupportChat';
 import { CalendarWidget } from './widgets/CalendarWidget';
@@ -9,10 +10,37 @@ import { NotificationsWidget } from './widgets/NotificationsWidget';
 import { useSidebar } from '../contexts/SidebarContext';
 import { useShineEffect } from '../contexts/ShineEffectContext';
 import { cn } from '../components/ui/utils';
+import { apiClient } from '@/lib/api';
+
+interface User {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+}
 
 export function DashboardPage() {
   const { isCollapsed } = useSidebar();
   const { shouldShine } = useShineEffect();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<User>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
@@ -33,10 +61,10 @@ export function DashboardPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
         {/* Content - Full height, no scrolling */}
-        <div className="relative z-10 h-full w-full px-8 flex flex-col overflow-hidden">
+        <div className="relative z-10 h-full w-full px-4 flex flex-col overflow-hidden">
           {/* Welcome Message - Enhanced and Personalized */}
-          <div className="mb-4 flex-shrink-0 pt-6">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-hero tracking-tight">
+          <div className="mb-2 flex-shrink-0 pt-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-hero tracking-tight">
               <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent dark:from-blue-300 dark:via-cyan-200 dark:to-blue-400">
                 {(() => {
                   const hour = new Date().getHours();
@@ -45,18 +73,26 @@ export function DashboardPage() {
                   return "Good Evening";
                 })()}
               </span>
-              <span className="text-white dark:text-white ml-3">
-                John
+              <span className="text-white dark:text-white ml-2">
+                {loading ? (
+                  '...'
+                ) : user ? (
+                  user.firstName 
+                    ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`
+                    : user.email.split('@')[0]
+                ) : (
+                  'User'
+                )}
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 dark:text-gray-300 mt-3 font-serif italic tracking-wide">
+            <p className="text-base md:text-lg text-gray-300 dark:text-gray-300 mt-1.5 font-serif italic tracking-wide">
               Welcome back to <span className="text-blue-400 dark:text-blue-400 font-semibold not-italic">AlgoryxLabs</span> <span className="mx-2 text-gray-500 dark:text-gray-500">•</span> <span className="text-gray-400 dark:text-gray-400">Dashboard</span>
             </p>
           </div>
 
           {/* Widgets Grid - Centered vertically with equal gaps */}
           <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="grid grid-cols-12 gap-6 auto-rows-fr max-w-[92%] max-h-[78%] w-full">
+            <div className="grid grid-cols-12 gap-4 auto-rows-fr max-w-[95%] max-h-[85%] w-full">
             {/* Calendar - Top Left, spans 2 rows */}
             <div className="col-span-12 md:col-span-3 row-span-2 min-h-0">
               <CalendarWidget shouldShine={shouldShine} />

@@ -4,6 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../../components/ui/utils';
+import { apiClient } from '@/lib/api';
+
+interface UserData {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phoneNumber?: string | null;
+  country?: string | null;
+}
 
 function ClockDisplay() {
   const [time, setTime] = useState(new Date());
@@ -82,7 +92,7 @@ function ClockDisplay() {
   const secondsArc = createArcPath(outerRadius, startAngle, secondsEndAngle);
 
   return (
-    <div className="relative w-full min-h-[140px] flex items-center justify-center">
+    <div className="relative w-full min-h-[90px] flex items-center justify-center">
       {/* Grid background pattern - teal-blue dots */}
       <div 
         className="absolute inset-0 opacity-30"
@@ -98,13 +108,13 @@ function ClockDisplay() {
       <div className="relative z-10 w-full flex items-center justify-between px-2">
         {/* Date Display - Left Side */}
         <div className="flex flex-col text-white">
-          <div className="text-sm font-semibold font-hero mb-1">{dayName}</div>
-          <div className="text-base font-semibold font-hero">{monthName} {day}</div>
+          <div className="text-xs font-semibold font-hero mb-0.5">{dayName}</div>
+          <div className="text-sm font-semibold font-hero">{monthName} {day}</div>
         </div>
 
         {/* Clock Display - Right Side */}
         <div className="relative flex items-center justify-center">
-          <svg width="120" height="120" viewBox="0 0 100 100" className="drop-shadow-lg">
+          <svg width="80" height="80" viewBox="0 0 100 100" className="drop-shadow-lg">
             {/* Outer circle track - dark gray for seconds */}
             <circle
               cx={centerX}
@@ -242,7 +252,7 @@ function ClockDisplay() {
           
           {/* Time display in center */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-xl font-bold text-white font-hero tracking-wider">
+            <div className="text-sm font-bold text-white font-hero tracking-wider">
               {hours}:{minutesStr}
             </div>
           </div>
@@ -253,40 +263,91 @@ function ClockDisplay() {
 }
 
 export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }) {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get<UserData>('/auth/me');
+        if (response.success && response.data) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Helper function to get display name (same logic as DashboardPage)
+  const getDisplayName = () => {
+    if (loading) return '...';
+    if (!user) return 'User';
+    if (user.firstName) {
+      return `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`;
+    }
+    return user.email.split('@')[0];
+  };
+
+  // Helper function to get display email
+  const getDisplayEmail = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.email;
+  };
+
+  // Helper function to get display country
+  const getDisplayCountry = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.country || 'N/A';
+  };
+
+  // Helper function to get display phone number
+  const getDisplayPhone = () => {
+    if (loading) return '...';
+    if (!user) return 'N/A';
+    return user.phoneNumber || 'N/A';
+  };
+
   return (
-    <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-3xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
-      <CardHeader className="px-2.5 pt-2.5 pb-1.5 flex-shrink-0">
-        <CardTitle className="text-3xl font-semibold font-hero text-white flex items-center gap-1.5">
-          <User className="h-9 w-9 text-blue-400" />
+    <Card className={cn("group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col shine-effect", shouldShine && "active")}>
+      <CardHeader className="px-2 pt-2 pb-1 flex-shrink-0">
+        <CardTitle className="text-xl font-semibold font-hero text-white flex items-center gap-1.5">
+          <User className="h-5 w-5 text-blue-400" />
           Profile
         </CardTitle>
-        <CardDescription className="text-gray-400 font-footer text-sm mt-0.5">
+        <CardDescription className="text-gray-400 font-footer text-xs mt-0.5">
           Your account information
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-2.5 pb-2.5 flex-1 flex flex-col">
-        <div className="space-y-2.5 flex-1">
+      <CardContent className="px-2 pb-2 flex-1 flex flex-col">
+        <div className="space-y-1.5 flex-1">
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1.5">
-              <User className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-1">
+              <User className="h-5 w-5 text-white" />
             </div>
-            <p className="text-sm text-white font-footer font-semibold">John Doe</p>
-            <p className="text-sm text-gray-400 font-footer">john.doe@company.com</p>
+            <p className="text-xs text-white font-footer font-semibold">{getDisplayName()}</p>
+            <p className="text-xs text-gray-400 font-footer">{getDisplayEmail()}</p>
           </div>
           
           {/* Clock UI */}
-          <div className="mt-2 pt-2 border-t border-white/10">
+          <div className="mt-1.5 pt-1.5 border-t border-white/10">
             <ClockDisplay />
           </div>
           
           <div className="space-y-1 pt-1.5 border-t border-white/10">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400 font-footer">Name</span>
-              <span className="text-sm text-white font-footer">John Doe</span>
+              <span className="text-xs text-gray-400 font-footer">Country</span>
+              <span className="text-xs text-white font-footer">{getDisplayCountry()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400 font-footer">Email</span>
-              <span className="text-sm text-white font-footer truncate ml-2">john.doe@company.com</span>
+              <span className="text-xs text-gray-400 font-footer">Phone</span>
+              <span className="text-xs text-white font-footer truncate ml-2">{getDisplayPhone()}</span>
             </div>
           </div>
         </div>

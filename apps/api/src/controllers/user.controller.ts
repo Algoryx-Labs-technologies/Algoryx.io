@@ -40,6 +40,25 @@ export class UserController {
       message: 'Profile updated successfully',
     });
   }
+
+  async getUserById(req: AuthenticatedRequest, res: Response) {
+    if (!req.supabaseUser) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    const { id } = req.params;
+
+    const user = await userService.findById(id);
+    
+    if (!user) {
+      throw new AppError(404, 'User not found');
+    }
+
+    res.json({
+      success: true,
+      data: user,
+    });
+  }
 }
 
 export const userController = new UserController();

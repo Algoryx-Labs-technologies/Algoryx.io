@@ -7,40 +7,39 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schemas
-const createRequirementSchema = z.object({
+const createRequirementSchema = {
   body: z.object({
-    projectId: z.string().optional(),
     projectTitle: z.string().optional(),
-    question: z.string().optional(),
     description: z.string().optional(),
-    priority: z.string().optional(),
-    answer: z.string().optional(),
+    Budget: z.string().optional(),
   }),
-});
+};
 
-const updateRequirementSchema = z.object({
+const updateRequirementSchema = {
   body: z.object({
     projectTitle: z.string().optional(),
-    question: z.string().optional(),
     description: z.string().optional(),
-    priority: z.string().optional(),
-    answer: z.string().optional(),
+    Budget: z.string().optional(),
+    status: z.enum(['Contacted', 'Pending', 'Rejected']).optional(),
   }),
-});
+};
 
 // Routes
+// GET - Get all requirements (for authenticated user)
 router.get(
   '/',
   authenticate,
   requirementController.getAllRequirements.bind(requirementController)
 );
 
+// GET - Get requirements by user ID
 router.get(
-  '/:id',
+  '/user/:userId',
   authenticate,
-  requirementController.getRequirementById.bind(requirementController)
+  requirementController.getRequirementsByUserId.bind(requirementController)
 );
 
+// POST - Create requirement
 router.post(
   '/',
   authenticate,
@@ -48,6 +47,7 @@ router.post(
   requirementController.createRequirement.bind(requirementController)
 );
 
+// PATCH - Update requirement
 router.patch(
   '/:id',
   authenticate,
@@ -55,6 +55,7 @@ router.patch(
   requirementController.updateRequirement.bind(requirementController)
 );
 
+// DELETE - Delete requirement
 router.delete(
   '/:id',
   authenticate,

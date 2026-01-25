@@ -4,18 +4,61 @@ import { AppError } from '@/types';
 
 export class RequirementService {
   async findByClientId(clientId: string): Promise<Requirement[]> {
-    // Get all requirements for projects belonging to this client
+    // Get all requirements for this client
     return prisma.requirement.findMany({
       where: {
-        Project: {
-          clientId: clientId,
-        },
+        clientId: clientId,
       },
       include: {
-        Project: {
+        User: {
           select: {
             id: true,
-            projectTitle: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
+  async findByUserId(userId: string): Promise<Requirement[]> {
+    return prisma.requirement.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
@@ -29,18 +72,29 @@ export class RequirementService {
     const where: any = { uid };
     
     if (clientId) {
-      where.Project = {
-        clientId: clientId,
-      };
+      where.clientId = clientId;
     }
 
     return prisma.requirement.findFirst({
       where,
       include: {
-        Project: {
+        User: {
           select: {
             id: true,
-            projectTitle: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
@@ -48,20 +102,38 @@ export class RequirementService {
   }
 
   async create(data: {
-    projectId?: string;
+    userId?: string;
+    clientId?: string;
+    partnerId?: string;
     projectTitle?: string;
     question?: string;
     description?: string;
     priority?: string;
     answer?: string;
+    Budget?: string;
+    userName?: string;
+    email?: string;
   }): Promise<Requirement> {
     return prisma.requirement.create({
       data,
       include: {
-        Project: {
+        User: {
           select: {
             id: true,
-            projectTitle: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
@@ -70,16 +142,24 @@ export class RequirementService {
 
   async update(
     uid: string,
-    clientId: string,
+    userId: string,
     data: Partial<{
       projectTitle: string;
       question: string;
       description: string;
       priority: string;
       answer: string;
+      Budget: string;
+      status: string;
     }>
   ): Promise<Requirement> {
-    const requirement = await this.findById(uid, clientId);
+    // Verify the requirement belongs to the user
+    const requirement = await prisma.requirement.findFirst({
+      where: {
+        uid,
+        userId: userId,
+      },
+    });
     
     if (!requirement) {
       throw new AppError(404, 'Requirement not found');
@@ -92,18 +172,37 @@ export class RequirementService {
         updated_at: new Date(),
       },
       include: {
-        Project: {
+        User: {
           select: {
             id: true,
-            projectTitle: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
           },
         },
       },
     });
   }
 
-  async delete(uid: string, clientId: string): Promise<void> {
-    const requirement = await this.findById(uid, clientId);
+  async delete(uid: string, userId: string): Promise<void> {
+    // Verify the requirement belongs to the user
+    const requirement = await prisma.requirement.findFirst({
+      where: {
+        uid,
+        userId: userId,
+      },
+    });
     
     if (!requirement) {
       throw new AppError(404, 'Requirement not found');
@@ -118,18 +217,16 @@ export class RequirementService {
   async findWithStatus(clientId: string) {
     const requirements = await this.findByClientId(clientId);
     
-    return requirements.map((req) => {
-      let status: 'pending' | 'answered' | 'reviewed' = 'pending';
-      
-      if (req.answer && req.answer.trim()) {
-        status = 'answered';
-      }
-      
-      return {
-        ...req,
-        status,
-      };
-    });
+    // Status is now stored in the database, so we just return the requirements as-is
+    return requirements;
+  }
+
+  // Get requirements by userId with status
+  async findWithStatusByUserId(userId: string) {
+    const requirements = await this.findByUserId(userId);
+    
+    // Status is now stored in the database, so we just return the requirements as-is
+    return requirements;
   }
 }
 

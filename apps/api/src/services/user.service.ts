@@ -6,6 +6,27 @@ export class UserService {
   async findById(id: string): Promise<User | null> {
     return prisma.user.findUnique({
       where: { id },
+      include: {
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Admin: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+            companyDescription: true,
+            companyEmail: true,
+            companyWebsite: true,
+          },
+        },
+      },
     });
   }
 
