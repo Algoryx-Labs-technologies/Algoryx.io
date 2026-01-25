@@ -2,11 +2,11 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Card, CardContent } from '../components/ui/card';
-import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2, Save, X, Loader2, ChevronDown } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, AlertCircle, XCircle, Edit2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
+import { EditRequirementDialog } from './EditRequirementDialog';
 
 interface Requirement {
   uid: string;
@@ -34,9 +34,7 @@ export function RequirementsListPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'answered' | 'reviewed'>('all');
   const [user, setUser] = useState<UserData | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Requirement>>({});
-  const [saving, setSaving] = useState(false);
+  const [editingRequirement, setEditingRequirement] = useState<Requirement | null>(null);
 
   // Fetch user data
   useEffect(() => {
@@ -83,48 +81,13 @@ export function RequirementsListPage() {
   };
 
   const handleEdit = (requirement: Requirement) => {
-    setEditingId(requirement.uid);
-    setEditForm({
-      projectTitle: requirement.projectTitle || '',
-      description: requirement.description || '',
-      Budget: requirement.Budget || '',
-    });
+    setEditingRequirement(requirement);
   };
 
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  const handleSaveEdit = async (uid: string) => {
-    setSaving(true);
-    try {
-      const response = await apiClient.patch(`/requirements/${uid}`, {
-        projectTitle: editForm.projectTitle,
-        description: editForm.description,
-        Budget: editForm.Budget,
-      });
-
-      if (response.success && response.data) {
-        // Update the requirement in the list
-        setRequirements((prev) =>
-          prev.map((req) =>
-            req.uid === uid
-              ? { ...req, ...response.data, updated_at: new Date().toISOString() }
-              : req
-          )
-        );
-        setEditingId(null);
-        setEditForm({});
-      } else {
-        console.error('Error updating requirement:', response.error);
-        alert(response.error || 'Failed to update requirement');
-      }
-    } catch (error) {
-      console.error('Error updating requirement:', error);
-      alert('Failed to update requirement. Please try again.');
-    } finally {
-      setSaving(false);
+  const handleEditSuccess = () => {
+    // Refresh requirements after successful edit
+    if (user?.id) {
+      fetchRequirements();
     }
   };
 
@@ -264,18 +227,9 @@ export function RequirementsListPage() {
                             <FileText className="h-4 w-4 text-blue-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            {editingId === requirement.uid ? (
-                              <Input
-                                value={editForm.projectTitle || ''}
-                                onChange={(e) => setEditForm({ ...editForm, projectTitle: e.target.value })}
-                                className="bg-slate-800/50 border-white/10 text-white text-sm mb-1.5"
-                                placeholder="Project Title"
-                              />
-                            ) : (
-                              <h3 className="text-xl font-semibold font-hero text-white mb-1.5 line-clamp-2">
-                                {requirement.projectTitle || 'Untitled Project'}
-                              </h3>
-                            )}
+                            <h3 className="text-xl font-semibold font-hero text-white mb-1.5 line-clamp-2">
+                              {requirement.projectTitle || 'Untitled Project'}
+                            </h3>
                             {requirement.priority && (
                               <span className={cn(
                                 "inline-block text-xs font-footer px-2 py-1 rounded-full",
@@ -289,57 +243,14 @@ export function RequirementsListPage() {
                       </div>
 
                       {/* Budget */}
-                      {(requirement.Budget || editingId === requirement.uid) && (
+                      {requirement.Budget && (
                         <div className="mb-3 flex-1">
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Budget
                           </p>
-                          {editingId === requirement.uid ? (
-                            <div className="relative">
-                              <select
-                                value={editForm.Budget || ''}
-                                onChange={(e) => setEditForm({ ...editForm, Budget: e.target.value })}
-                                disabled={saving}
-                                className="w-full h-8 px-2 pr-8 bg-slate-800/50 border border-white/10 rounded-md text-white font-footer text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <option value="" className="bg-slate-800 text-white">
-                                  Select Budget Range
-                                </option>
-                                <option value="$0 - $1,000" className="bg-slate-800 text-white">
-                                  $0 - $1,000
-                                </option>
-                                <option value="$1,000 - $5,000" className="bg-slate-800 text-white">
-                                  $1,000 - $5,000
-                                </option>
-                                <option value="$5,000 - $10,000" className="bg-slate-800 text-white">
-                                  $5,000 - $10,000
-                                </option>
-                                <option value="$10,000 - $25,000" className="bg-slate-800 text-white">
-                                  $10,000 - $25,000
-                                </option>
-                                <option value="$25,000 - $50,000" className="bg-slate-800 text-white">
-                                  $25,000 - $50,000
-                                </option>
-                                <option value="$50,000 - $100,000" className="bg-slate-800 text-white">
-                                  $50,000 - $100,000
-                                </option>
-                                <option value="$100,000 - $250,000" className="bg-slate-800 text-white">
-                                  $100,000 - $250,000
-                                </option>
-                                <option value="$250,000 - $500,000" className="bg-slate-800 text-white">
-                                  $250,000 - $500,000
-                                </option>
-                                <option value="$500,000+" className="bg-slate-800 text-white">
-                                  $500,000+
-                                </option>
-                              </select>
-                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                            </div>
-                          ) : (
-                            <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
-                              {requirement.Budget}
-                            </p>
-                          )}
+                          <p className="text-base text-white font-footer leading-relaxed line-clamp-2">
+                            {requirement.Budget}
+                          </p>
                         </div>
                       )}
 
@@ -349,18 +260,9 @@ export function RequirementsListPage() {
                           <p className="text-sm text-gray-400 font-footer mb-1.5 font-medium uppercase tracking-wide">
                             Description
                           </p>
-                          {editingId === requirement.uid ? (
-                            <textarea
-                              value={editForm.description || ''}
-                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                              className="w-full bg-slate-800/50 border border-white/10 rounded-lg p-2 text-white text-sm font-footer min-h-[80px] resize-none focus:outline-none focus:border-blue-500/50"
-                              placeholder="Description"
-                            />
-                          ) : (
-                            <p className="text-base text-gray-300 font-footer leading-relaxed line-clamp-2">
-                              {requirement.description}
-                            </p>
-                          )}
+                          <p className="text-base text-gray-300 font-footer leading-relaxed line-clamp-2">
+                            {requirement.description}
+                          </p>
                         </div>
                       )}
 
@@ -397,44 +299,15 @@ export function RequirementsListPage() {
                               </span>
                             )}
                           </div>
-                          {editingId === requirement.uid ? (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                onClick={() => handleSaveEdit(requirement.uid)}
-                                disabled={saving}
-                                size="sm"
-                                className="h-7 px-3 bg-green-600 hover:bg-green-700 text-white text-xs"
-                              >
-                                {saving ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Save className="h-3 w-3 mr-1" />
-                                    Save
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                onClick={handleCancelEdit}
-                                disabled={saving}
-                                size="sm"
-                                variant="outline"
-                                className="h-7 px-3 border-white/10 text-gray-400 hover:text-white text-xs"
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => handleEdit(requirement)}
-                              size="sm"
-                              variant="outline"
-                              className="h-7 px-3 border-white/10 text-gray-400 hover:text-white hover:border-white/20 text-xs"
-                            >
-                              <Edit2 className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                          )}
+                          <Button
+                            onClick={() => handleEdit(requirement)}
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-3 border-white/10 text-gray-400 hover:text-white hover:border-white/20 text-xs"
+                          >
+                            <Edit2 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -445,6 +318,14 @@ export function RequirementsListPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Requirement Dialog */}
+      <EditRequirementDialog
+        open={editingRequirement !== null}
+        onClose={() => setEditingRequirement(null)}
+        requirement={editingRequirement}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }
