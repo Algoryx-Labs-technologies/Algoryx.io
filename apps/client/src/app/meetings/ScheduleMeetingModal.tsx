@@ -218,6 +218,14 @@ export function ScheduleMeetingModal({
     participants: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Reset success state when modal opens/closes
+  useEffect(() => {
+    if (!open) {
+      setShowSuccess(false);
+    }
+  }, [open]);
   
   // Get minimum time based on selected date
   const getMinTime = (): string | undefined => {
@@ -319,12 +327,18 @@ export function ScheduleMeetingModal({
           participants: '',
         });
         setSelectedDate(new Date());
-        onClose();
         
-        // Call success callback
-        if (onSuccess) {
-          onSuccess();
-        }
+        // Show success message
+        setShowSuccess(true);
+        
+        // Close modal and call success callback after 2 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+          onClose();
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 2000);
       } else {
         alert(response.error || 'Failed to create meeting');
       }
@@ -542,6 +556,18 @@ export function ScheduleMeetingModal({
             {loading ? 'Scheduling...' : 'Schedule Meeting'}
           </Button>
         </div>
+
+        {/* Success Message */}
+        {showSuccess && (
+          <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 backdrop-blur-sm border-t border-green-500/50 rounded-b-xl p-4 animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center gap-2 text-white">
+              <CheckCircle2 className="h-5 w-5 text-green-100" />
+              <span className="font-footer text-sm font-medium">
+                Meeting scheduled successfully!
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

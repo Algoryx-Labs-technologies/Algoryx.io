@@ -144,7 +144,7 @@ export function MeetingsSidebar({
       </div>
 
       {/* Meetings List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <h3 className="text-sm font-semibold text-white mb-3 font-hero">All Meetings</h3>
         {loading ? (
           <div className="text-gray-400 text-sm font-footer">Loading meetings...</div>
