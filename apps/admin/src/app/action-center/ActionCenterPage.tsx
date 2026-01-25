@@ -19,7 +19,7 @@ import {
   XCircle,
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
 export function ActionCenterPage() {
@@ -104,8 +104,15 @@ export function ActionCenterPage() {
     setTimeout(() => setMessage(null), 5000);
   };
 
-  const getAuthToken = () => {
-    return localStorage.getItem('auth_token') || '';
+  const getAuthToken = async () => {
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.access_token || '';
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return '';
+    }
   };
 
   const handleSubmit = async (endpoint: string, method: string, data: any, actionName: string) => {
@@ -113,11 +120,12 @@ export function ActionCenterPage() {
     setMessage(null);
 
     try {
+      const token = await getAuthToken();
       const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin${endpoint}`, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(data),
       });

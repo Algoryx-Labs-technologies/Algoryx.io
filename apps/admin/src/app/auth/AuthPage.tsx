@@ -1,18 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle } from 'lucide-react';
 import { ForgotPassword } from './ForgotPassword';
+import { useAuth } from '../contexts/AuthContext';
 
 type AuthMode = 'signin' | 'signup';
 
 export function AuthPage() {
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, signUp } = useAuth();
+  
+  // Determine initial mode based on route
+  const getInitialMode = (): AuthMode => {
+    if (location.pathname === '/signup') return 'signup';
+    if (location.pathname === '/login') return 'signin';
+    return 'signin';
+  };
+  
+  const [mode, setMode] = useState<AuthMode>(getInitialMode());
+  
+  // Update mode when route changes
+  useEffect(() => {
+    setMode(getInitialMode());
+  }, [location.pathname]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,10 +44,67 @@ export function AuthPage() {
     return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with Clerk authentication
-    console.log('Form submitted:', { mode, formData });
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (mode === 'signup') {
+        // Validate password match
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+
+        // Validate password length
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
+          setLoading(false);
+          return;
+        }
+
+        // Split name into firstName and lastName
+        const nameParts = formData.name.trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const { error: signUpError } = await signUp(
+          formData.email,
+          formData.password,
+          {
+            firstName,
+            lastName,
+          }
+        );
+
+        if (signUpError) {
+          setError(signUpError.message);
+          setLoading(false);
+          return;
+        }
+
+        // Show success message or redirect
+        alert('Account created! Please check your email to verify your account.');
+        setMode('signin');
+        setFormData({ email: '', password: '', confirmPassword: '', name: '' });
+      } else {
+        const { error: signInError } = await signIn(formData.email, formData.password);
+
+        if (signInError) {
+          setError(signInError.message);
+          setLoading(false);
+          return;
+        }
+
+        // Redirect to dashboard on successful sign in
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -68,6 +145,13 @@ export function AuthPage() {
           </CardHeader>
           <CardContent className="px-8 pb-8 relative z-10">
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <p className="text-sm text-red-400 font-footer">{error}</p>
+                </div>
+              )}
+
               {mode === 'signup' && (
                 <div className="space-y-2">
                   <Label htmlFor="name" className="font-footer text-gray-300">Full Name</Label>
@@ -170,8 +254,15 @@ export function AuthPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600" size="lg">
-                {mode === 'signin' ? (
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 text-base font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
+                size="lg"
+              >
+                {loading ? (
+                  'Loading...'
+                ) : mode === 'signin' ? (
                   <>
                     <LogIn className="h-4 w-4" />
                     Sign In
@@ -235,6 +326,7 @@ export function AuthPage() {
                 onClick={() => {
                   setMode(mode === 'signin' ? 'signup' : 'signin');
                   setFormData({ email: '', password: '', confirmPassword: '', name: '' });
+                  setError(null);
                 }}
                 className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"
               >

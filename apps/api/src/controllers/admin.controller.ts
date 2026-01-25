@@ -110,11 +110,37 @@ export class AdminController {
       throw new AppError(404, 'Admin profile not found');
     }
 
+    // Normalize clientId and partnerId - convert empty strings to null
+    let clientId: string | null = null;
+    let partnerId: string | null = null;
+
+    // Validate and set clientId if provided (strict validation - client must exist)
+    if (req.body.clientId && req.body.clientId.trim() !== '') {
+      const clientExists = await prisma.client.findUnique({
+        where: { uid: req.body.clientId },
+      });
+      if (!clientExists) {
+        throw new AppError(400, `Client with ID ${req.body.clientId} not found`);
+      }
+      clientId = req.body.clientId;
+    }
+
+    // Validate and set partnerId if provided (forgiving - if invalid, just set to null)
+    if (req.body.partnerId && req.body.partnerId.trim() !== '') {
+      const partnerExists = await prisma.partner.findUnique({
+        where: { uid: req.body.partnerId },
+      });
+      if (partnerExists) {
+        partnerId = req.body.partnerId;
+      }
+      // If partner doesn't exist, just leave partnerId as null (don't throw error)
+    }
+
     const project = await prisma.project.create({
       data: {
         adminId,
-        clientId: req.body.clientId || null,
-        partnerId: req.body.partnerId || null,
+        clientId,
+        partnerId,
         description: req.body.description,
         readMe: req.body.readMe,
         techStack: req.body.techStack,
@@ -160,12 +186,47 @@ export class AdminController {
       throw new AppError(404, 'Project not found');
     }
 
+    // Prepare update data, handling empty strings for foreign keys
+    const updateData: any = {
+      ...req.body,
+      updated_at: new Date(),
+    };
+
+    // Normalize clientId - convert empty strings to null
+    if ('clientId' in req.body) {
+      if (req.body.clientId && req.body.clientId.trim() !== '') {
+        const clientExists = await prisma.client.findUnique({
+          where: { uid: req.body.clientId },
+        });
+        if (!clientExists) {
+          throw new AppError(400, `Client with ID ${req.body.clientId} not found`);
+        }
+        updateData.clientId = req.body.clientId;
+      } else {
+        updateData.clientId = null;
+      }
+    }
+
+    // Normalize partnerId - convert empty strings to null (forgiving - if invalid, just set to null)
+    if ('partnerId' in req.body) {
+      if (req.body.partnerId && req.body.partnerId.trim() !== '') {
+        const partnerExists = await prisma.partner.findUnique({
+          where: { uid: req.body.partnerId },
+        });
+        if (partnerExists) {
+          updateData.partnerId = req.body.partnerId;
+        } else {
+          // If partner doesn't exist, just set to null (don't throw error)
+          updateData.partnerId = null;
+        }
+      } else {
+        updateData.partnerId = null;
+      }
+    }
+
     const updatedProject = await prisma.project.update({
       where: { id },
-      data: {
-        ...req.body,
-        updated_at: new Date(),
-      },
+      data: updateData,
       include: {
         Client: true,
         Partner: true,
