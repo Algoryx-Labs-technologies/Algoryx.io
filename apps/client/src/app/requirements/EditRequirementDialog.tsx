@@ -14,7 +14,7 @@ interface Requirement {
   answer?: string;
   created_at: string;
   updated_at: string;
-  status?: 'pending' | 'answered' | 'reviewed';
+  status?: 'Contacted' | 'Pending' | 'Rejected';
 }
 
 interface EditRequirementDialogProps {

@@ -18,7 +18,7 @@ interface Requirement {
   answer?: string;
   created_at: string;
   updated_at: string;
-  status?: 'pending' | 'answered' | 'reviewed';
+  status?: 'Contacted' | 'Pending' | 'Rejected';
 }
 
 interface UserData {
@@ -32,7 +32,7 @@ export function RequirementsListPage() {
   const { isCollapsed } = useSidebar();
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'answered' | 'reviewed'>('all');
+  const [filter, setFilter] = useState<'all' | 'Contacted' | 'Pending' | 'Rejected'>('all');
   const [user, setUser] = useState<UserData | null>(null);
   const [editingRequirement, setEditingRequirement] = useState<Requirement | null>(null);
 
@@ -65,11 +65,8 @@ export function RequirementsListPage() {
     try {
       const response = await apiClient.get<Requirement[]>(`/requirements/user/${user.id}`);
       if (response.success && response.data) {
-        const requirementsWithStatus = (response.data || []).map((req: Requirement) => ({
-          ...req,
-          status: 'pending' as const,
-        }));
-        setRequirements(requirementsWithStatus);
+        // Use the status from the API response (it should already have the correct status)
+        setRequirements(response.data || []);
       } else {
         console.error('Error fetching requirements:', response.error);
       }
@@ -97,12 +94,12 @@ export function RequirementsListPage() {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'answered':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'reviewed':
+      case 'Contacted':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'Pending':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'Rejected':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
@@ -110,14 +107,14 @@ export function RequirementsListPage() {
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'answered':
-        return <CheckCircle2 className="h-4 w-4 text-green-400" />;
-      case 'pending':
+      case 'Contacted':
+        return <CheckCircle2 className="h-4 w-4 text-blue-400" />;
+      case 'Pending':
         return <Clock className="h-4 w-4 text-yellow-400" />;
-      case 'reviewed':
-        return <AlertCircle className="h-4 w-4 text-blue-400" />;
+      case 'Rejected':
+        return <XCircle className="h-4 w-4 text-red-400" />;
       default:
-        return <XCircle className="h-4 w-4 text-gray-400" />;
+        return <AlertCircle className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -170,7 +167,7 @@ export function RequirementsListPage() {
 
             {/* Filter Tabs */}
             <div className="mb-6 flex gap-2">
-              {(['all', 'pending', 'answered', 'reviewed'] as const).map((filterOption) => (
+              {(['all', 'Contacted', 'Pending', 'Rejected'] as const).map((filterOption) => (
                 <button
                   key={filterOption}
                   onClick={() => setFilter(filterOption)}
@@ -181,7 +178,7 @@ export function RequirementsListPage() {
                       : "bg-slate-800/50 text-gray-400 hover:text-white hover:bg-slate-800/70"
                   )}
                 >
-                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  {filterOption === 'all' ? 'All' : filterOption}
                 </button>
               ))}
             </div>
