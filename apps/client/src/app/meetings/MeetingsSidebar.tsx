@@ -45,7 +45,7 @@ export function MeetingsSidebar({
   onDeleteMeeting,
   loading = false
 }: MeetingsSidebarProps) {
-  const [filter, setFilter] = useState<FilterOption>('all');
+  const [filter, setFilter] = useState<FilterOption>('thisWeek');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +56,7 @@ export function MeetingsSidebar({
     { value: 'thisMonth', label: 'This Month' },
   ];
 
-  const selectedFilterLabel = filterOptions.find(opt => opt.value === filter)?.label || 'All';
+  const selectedFilterLabel = filterOptions.find(opt => opt.value === filter)?.label || 'This Week';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,6 +86,9 @@ export function MeetingsSidebar({
   const filteredMeetings = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Use selectedDate if available, otherwise use today
+    const referenceDate = selectedDate || today;
+    const refDateOnly = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate());
     
     return meetings.filter(meeting => {
       const meetingDate = typeof meeting.date === 'string' ? parseISO(meeting.date) : new Date(meeting.date);
@@ -93,21 +96,21 @@ export function MeetingsSidebar({
       
       switch (filter) {
         case 'today':
-          return isSameDay(meetingDateOnly, today);
+          return isSameDay(meetingDateOnly, refDateOnly);
         case 'thisWeek':
-          const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
-          const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+          const weekStart = startOfWeek(refDateOnly, { weekStartsOn: 1 }); // Monday
+          const weekEnd = endOfWeek(refDateOnly, { weekStartsOn: 1 });
           return isWithinInterval(meetingDateOnly, { start: weekStart, end: weekEnd });
         case 'thisMonth':
-          const monthStart = startOfMonth(today);
-          const monthEnd = endOfMonth(today);
+          const monthStart = startOfMonth(refDateOnly);
+          const monthEnd = endOfMonth(refDateOnly);
           return isWithinInterval(meetingDateOnly, { start: monthStart, end: monthEnd });
         case 'all':
         default:
           return true;
       }
     });
-  }, [meetings, filter]);
+  }, [meetings, filter, selectedDate]);
 
   // Sort meetings by date and time
   const sortedMeetings = useMemo(() => {

@@ -208,26 +208,16 @@ export function WeeklyCalendarView({
                       <div
                         key={meeting.id}
                         className={cn(
-                          "absolute left-0 right-0 mx-1 rounded px-2 py-1 border-l-2 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity z-10",
+                          "absolute left-0 right-0 mx-1 rounded px-2 py-1 border-l-2 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity z-10 flex items-center gap-1.5",
                           getTypeColor(meeting.type)
                         )}
                         style={style}
                         title={`${meeting.title} - ${meeting.startTime} to ${meeting.endTime}`}
                       >
-                        <div className="flex items-center gap-1 mb-0.5">
-                          {getTypeIcon(meeting.type)}
-                          <span className="text-xs font-semibold font-hero truncate">
-                            {meeting.startTime}
-                          </span>
-                        </div>
-                        <div className="text-xs font-footer truncate">
+                        {getTypeIcon(meeting.type)}
+                        <span className="text-xs font-semibold font-hero truncate flex-1">
                           {meeting.title}
-                        </div>
-                        {meeting.location && (
-                          <div className="text-xs font-footer truncate opacity-90">
-                            {meeting.location}
-                          </div>
-                        )}
+                        </span>
                       </div>
                     );
                   })}
