@@ -84,11 +84,15 @@ export function RequirementsListPage() {
     setEditingRequirement(requirement);
   };
 
-  const handleEditSuccess = () => {
-    // Refresh requirements after successful edit
-    if (user?.id) {
-      fetchRequirements();
-    }
+  const handleEditSuccess = (updatedRequirement: Requirement) => {
+    // Update the requirement in the list immediately with the updated data
+    setRequirements((prev) =>
+      prev.map((req) =>
+        req.uid === updatedRequirement.uid
+          ? { ...req, ...updatedRequirement }
+          : req
+      )
+    );
   };
 
   const getStatusColor = (status?: string) => {
@@ -287,17 +291,25 @@ export function RequirementsListPage() {
                           <div className="flex items-center gap-1.5 text-xs text-gray-400 font-footer">
                             <Clock className="h-3.5 w-3.5" />
                             <span className="line-clamp-1">
-                              {new Date(requirement.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                              {requirement.updated_at !== requirement.created_at ? (
+                                <>
+                                  {new Date(requirement.updated_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                  <span className="text-gray-500 text-[10px] ml-2">
+                                    Updated
+                                  </span>
+                                </>
+                              ) : (
+                                new Date(requirement.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })
+                              )}
                             </span>
-                            {requirement.updated_at !== requirement.created_at && (
-                              <span className="text-gray-500 text-[10px] ml-2">
-                                Updated
-                              </span>
-                            )}
                           </div>
                           <Button
                             onClick={() => handleEdit(requirement)}

@@ -21,7 +21,7 @@ interface EditRequirementDialogProps {
   open: boolean;
   onClose: () => void;
   requirement: Requirement | null;
-  onSuccess?: () => void;
+  onSuccess?: (updatedRequirement: Requirement) => void;
 }
 
 export function EditRequirementDialog({
@@ -86,16 +86,18 @@ export function EditRequirementDialog({
       });
 
       if (response.success && response.data) {
+        // Immediately call success callback with updated requirement to update the UI
+        if (onSuccess && response.data) {
+          onSuccess(response.data as Requirement);
+        }
+        
         // Show success message
         setShowSuccess(true);
         
-        // Close modal and call success callback after 2 seconds
+        // Close modal after 2 seconds
         setTimeout(() => {
           setShowSuccess(false);
           onClose();
-          if (onSuccess) {
-            onSuccess();
-          }
         }, 2000);
       } else {
         alert(response.error || 'Failed to update requirement');
