@@ -3,12 +3,15 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { cn } from './ui/utils';
 import { useSidebar } from '../contexts/SidebarContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { signOut } = useAuth();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const menuItems = [
     {
@@ -55,8 +58,38 @@ export function Sidebar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    navigate('/auth');
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // Sign out from Supabase (clears session and cookies)
+      await signOut();
+      
+      // Clear localStorage (remove any cached data)
+      localStorage.clear();
+      
+      // Clear sessionStorage
+      sessionStorage.clear();
+      
+      // Clear all cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Navigate to auth page
+      navigate('/auth', { replace: true });
+      
+      // Force reload to ensure all state is cleared
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Even if there's an error, try to navigate to auth page
+      navigate('/auth', { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutDialog(false);
+    }
   };
 
   return (
@@ -148,7 +181,7 @@ export function Sidebar() {
           {/* Overlay */}
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowLogoutDialog(false)}
+            onClick={() => !isLoggingOut && setShowLogoutDialog(false)}
           />
           
           {/* Dialog */}
@@ -174,15 +207,17 @@ export function Sidebar() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowLogoutDialog(false)}
-                className="px-6 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all duration-200 font-semibold"
+                disabled={isLoggingOut}
+                className="px-6 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-200 font-semibold shadow-lg shadow-red-600/20"
+                disabled={isLoggingOut}
+                className="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-200 font-semibold shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Yes, Logout
+                {isLoggingOut ? 'Logging out...' : 'Yes, Logout'}
               </button>
             </div>
           </div>
