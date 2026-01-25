@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { format, startOfWeek, addDays, isSameDay, parseISO, getDay } from 'date-fns';
 import { cn } from '../components/ui/utils';
-import { Video, MapPin, Users } from 'lucide-react';
+import { Video, MapPin, Users, Info, ExternalLink } from 'lucide-react';
 
 interface Meeting {
   id: string;
@@ -30,6 +30,8 @@ export function WeeklyCalendarView({
 }: WeeklyCalendarViewProps) {
   const today = new Date();
   const currentDate = selectedDate || today;
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Get the start of the week (Monday)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -112,6 +114,31 @@ export function WeeklyCalendarView({
     if (hour < 12) return `${hour} AM`;
     if (hour === 12) return '12 PM';
     return `${hour - 12} PM`;
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId) {
+        const menuRef = menuRefs.current[openMenuId];
+        if (menuRef && !menuRef.contains(event.target as Node)) {
+          setOpenMenuId(null);
+        }
+      }
+    };
+
+    if (openMenuId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
+
+  const handleJoinMeeting = (meetingLink: string) => {
+    window.open(meetingLink, '_blank', 'noopener,noreferrer');
+    setOpenMenuId(null);
   };
 
   return (
@@ -204,11 +231,13 @@ export function WeeklyCalendarView({
                   {/* Meetings */}
                   {dayMeetings.map((meeting) => {
                     const style = getMeetingStyle(meeting);
+                    const isMenuOpen = openMenuId === meeting.id;
+                    
                     return (
                       <div
                         key={meeting.id}
                         className={cn(
-                          "absolute left-0 right-0 mx-1 rounded px-2 py-1 border-l-2 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity z-10 flex items-center gap-1.5",
+                          "absolute left-0 right-0 mx-1 rounded px-2 py-1 border-l-2 overflow-visible cursor-pointer hover:opacity-90 transition-opacity z-10 flex items-center gap-1.5 group",
                           getTypeColor(meeting.type)
                         )}
                         style={style}
@@ -218,6 +247,35 @@ export function WeeklyCalendarView({
                         <span className="text-xs font-semibold font-hero truncate flex-1">
                           {meeting.title}
                         </span>
+                        {meeting.meetingLink && (
+                          <div className="relative flex-shrink-0" ref={(el) => (menuRefs.current[meeting.id] = el)}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuId(isMenuOpen ? null : meeting.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-white/20 rounded"
+                              title="Meeting info"
+                            >
+                              <Info className="h-3 w-3" />
+                            </button>
+                            
+                            {isMenuOpen && (
+                              <div className="absolute right-0 top-full mt-1 z-50 bg-slate-800 border border-white/10 rounded-md shadow-lg min-w-[160px] overflow-hidden">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJoinMeeting(meeting.meetingLink!);
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-xs text-white font-footer hover:bg-blue-600/20 transition-colors flex items-center gap-2"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  <span>Join Meeting</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
