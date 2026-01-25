@@ -94,6 +94,83 @@ const calculateDuration = (startTime: string, endTime: string): number => {
   return Math.round(duration * 2) / 2; // Round to nearest 0.5
 };
 
+interface MeetingTypePickerProps {
+  value: 'video' | 'phone';
+  onChange: (value: 'video' | 'phone') => void;
+  label: string;
+}
+
+function MeetingTypePicker({ value, onChange, label }: MeetingTypePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const options = [
+    { value: 'video' as const, label: 'Video Call' },
+    { value: 'phone' as const, label: 'Phone Call' },
+  ];
+
+  const selectedLabel = options.find(opt => opt.value === value)?.label || 'Select Type';
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleSelect = (optionValue: 'video' | 'phone') => {
+    onChange(optionValue);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {label && (
+        <label className="block text-xs font-medium text-gray-300 mb-1.5 font-footer">
+          {label} <span className="text-red-400">*</span>
+        </label>
+      )}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 h-9 text-sm text-white text-left flex items-center justify-between hover:border-white/20 transition-colors"
+      >
+        <span className={selectedLabel ? '' : 'text-gray-500'}>
+          {selectedLabel}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-white/10 rounded-md shadow-lg overflow-hidden">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleSelect(option.value)}
+              className={cn(
+                "w-full px-3 py-2 text-left text-sm text-white hover:bg-blue-600/20 transition-colors",
+                value === option.value && "bg-blue-600/30"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface TimePickerProps {
   value: string; // 24-hour format
   onChange: (value: string) => void;
@@ -105,6 +182,9 @@ interface TimePickerProps {
 
 function TimePicker({ value, onChange, label, minTime, startTime, className }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [customTimeInput, setCustomTimeInput] = useState('');
+  const [customTimeError, setCustomTimeError] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const timeSlots = generateTimeSlots(minTime);
@@ -125,10 +205,55 @@ function TimePicker({ value, onChange, label, minTime, startTime, className }: T
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (showCustomDialog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showCustomDialog]);
   
   const handleSelect = (time24: string) => {
     onChange(time24);
     setIsOpen(false);
+  };
+
+  const handleCustomTimeSubmit = () => {
+    setCustomTimeError('');
+    
+    // Validate format HH:MM (24-hour)
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(customTimeInput)) {
+      setCustomTimeError('Please enter time in HH:MM format (24-hour, e.g., 14:30)');
+      return;
+    }
+
+    // Validate minimum time if provided
+    if (minTime && customTimeInput < minTime) {
+      setCustomTimeError(`Time must be after ${formatTo12Hour(minTime)}`);
+      return;
+    }
+
+    // Validate end time is after start time
+    if (startTime && customTimeInput <= startTime) {
+      setCustomTimeError(`End time must be after ${formatTo12Hour(startTime)}`);
+      return;
+    }
+
+    onChange(customTimeInput);
+    setCustomTimeInput('');
+    setShowCustomDialog(false);
+    setIsOpen(false);
+  };
+
+  const handleOpenCustomDialog = () => {
+    setCustomTimeInput('');
+    setCustomTimeError('');
+    setShowCustomDialog(true);
   };
   
   return (
@@ -183,18 +308,83 @@ function TimePicker({ value, onChange, label, minTime, startTime, className }: T
           })}
           <button
             type="button"
-            onClick={() => {
-              // For custom time, we'll use a prompt for now
-              const customTime = prompt('Enter custom time (HH:MM format, 24-hour):');
-              if (customTime && /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(customTime)) {
-                onChange(customTime);
-                setIsOpen(false);
-              }
-            }}
+            onClick={handleOpenCustomDialog}
             className="w-full px-3 py-2 text-left text-sm text-blue-400 hover:bg-blue-600/20 transition-colors border-t border-white/10"
           >
             Custom
           </button>
+        </div>
+      )}
+
+      {/* Custom Time Input Dialog */}
+      {showCustomDialog && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowCustomDialog(false)}
+          />
+          
+          {/* Dialog */}
+          <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-white/10 p-6 shadow-2xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200">
+            <div className="flex items-start justify-between mb-4">
+              <h2 className="text-lg font-semibold font-hero text-white">
+                Enter Custom Time
+              </h2>
+              <button
+                onClick={() => setShowCustomDialog(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
+                Time (24-hour format)
+              </label>
+              <Input
+                type="text"
+                value={customTimeInput}
+                onChange={(e) => {
+                  setCustomTimeInput(e.target.value);
+                  setCustomTimeError('');
+                }}
+                placeholder="HH:MM (e.g., 14:30)"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-10 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCustomTimeSubmit();
+                  }
+                }}
+                autoFocus
+              />
+              {customTimeError && (
+                <p className="text-xs text-red-400 mt-2 font-footer">
+                  {customTimeError}
+                </p>
+              )}
+              <p className="text-xs text-gray-400 mt-2 font-footer">
+                Enter time in 24-hour format (00:00 to 23:59)
+              </p>
+            </div>
+            
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowCustomDialog(false)}
+                className="border-white/10 text-gray-400 hover:text-white hover:border-white/20"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCustomTimeSubmit}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Confirm
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -212,8 +402,7 @@ export function ScheduleMeetingModal({
     description: '',
     startTime: '', // 24-hour format
     endTime: '', // 24-hour format
-    type: 'video' as 'video' | 'in-person' | 'phone',
-    location: '',
+    type: 'video' as 'video' | 'phone',
     meetingLink: '',
     participants: '',
   });
@@ -306,8 +495,7 @@ export function ScheduleMeetingModal({
         date: format(selectedDate, 'yyyy-MM-dd'),
         startTime: formData.startTime,
         endTime: formData.endTime,
-        type: formData.type === 'in-person' ? 'in_person' : formData.type,
-        location: formData.type === 'in-person' ? formData.location || undefined : undefined,
+        type: formData.type,
         meetingLink: formData.type === 'video' ? formData.meetingLink || undefined : undefined,
         participants: participants.length > 0 ? participants : undefined,
       };
@@ -322,7 +510,6 @@ export function ScheduleMeetingModal({
           startTime: '',
           endTime: '',
           type: 'video',
-          location: '',
           meetingLink: '',
           participants: '',
         });
@@ -404,18 +591,11 @@ export function ScheduleMeetingModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1.5 font-footer">
-                Meeting Type <span className="text-red-400">*</span>
-              </label>
-              <select
+              <MeetingTypePicker
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'video' | 'in-person' | 'phone' })}
-                className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-sm text-white h-9 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="video">Video Call</option>
-                <option value="in-person">In-Person</option>
-                <option value="phone">Phone Call</option>
-              </select>
+                onChange={(value) => setFormData({ ...formData, type: value })}
+                label="Meeting Type"
+              />
             </div>
 
             <div>
@@ -458,21 +638,6 @@ export function ScheduleMeetingModal({
                 </div>
               </div>
             </div>
-
-            {formData.type === 'in-person' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1.5 font-footer">
-                  Location
-                </label>
-                <Input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Enter meeting location"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-sm"
-                />
-              </div>
-            )}
 
             {formData.type === 'video' && (
               <div>
