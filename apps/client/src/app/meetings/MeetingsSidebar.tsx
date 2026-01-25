@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { Calendar } from '../components/ui/calendar';
 import { Card } from '../components/ui/card';
 import { 
@@ -7,9 +7,10 @@ import {
   Video, 
   MapPin, 
   Users,
-  Trash2
+  Trash2,
+  ChevronDown
 } from 'lucide-react';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { Button } from '../components/ui/button';
 import { cn } from '../components/ui/utils';
 
@@ -35,6 +36,8 @@ interface MeetingsSidebarProps {
   loading?: boolean;
 }
 
+type FilterOption = 'all' | 'today' | 'thisWeek' | 'thisMonth';
+
 export function MeetingsSidebar({
   meetings,
   selectedDate,
@@ -42,6 +45,35 @@ export function MeetingsSidebar({
   onDeleteMeeting,
   loading = false
 }: MeetingsSidebarProps) {
+  const [filter, setFilter] = useState<FilterOption>('all');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const filterOptions: { value: FilterOption; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'today', label: 'Today' },
+    { value: 'thisWeek', label: 'This Week' },
+    { value: 'thisMonth', label: 'This Month' },
+  ];
+
+  const selectedFilterLabel = filterOptions.find(opt => opt.value === filter)?.label || 'All';
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   // Get dates that have meetings
   const datesWithMeetings = useMemo(() => {
     return meetings.map(meeting => {
@@ -50,9 +82,36 @@ export function MeetingsSidebar({
     });
   }, [meetings]);
 
+  // Filter meetings based on selected filter
+  const filteredMeetings = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return meetings.filter(meeting => {
+      const meetingDate = typeof meeting.date === 'string' ? parseISO(meeting.date) : new Date(meeting.date);
+      const meetingDateOnly = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
+      
+      switch (filter) {
+        case 'today':
+          return isSameDay(meetingDateOnly, today);
+        case 'thisWeek':
+          const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+          const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+          return isWithinInterval(meetingDateOnly, { start: weekStart, end: weekEnd });
+        case 'thisMonth':
+          const monthStart = startOfMonth(today);
+          const monthEnd = endOfMonth(today);
+          return isWithinInterval(meetingDateOnly, { start: monthStart, end: monthEnd });
+        case 'all':
+        default:
+          return true;
+      }
+    });
+  }, [meetings, filter]);
+
   // Sort meetings by date and time
   const sortedMeetings = useMemo(() => {
-    return [...meetings].sort((a, b) => {
+    return [...filteredMeetings].sort((a, b) => {
       const dateA = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
       const dateB = typeof b.date === 'string' ? parseISO(b.date) : new Date(b.date);
       
@@ -66,7 +125,7 @@ export function MeetingsSidebar({
       const minutesB = timeB[0] * 60 + timeB[1];
       return minutesA - minutesB;
     });
-  }, [meetings]);
+  }, [filteredMeetings]);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -145,12 +204,51 @@ export function MeetingsSidebar({
 
       {/* Meetings List */}
       <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <h3 className="text-sm font-semibold text-white mb-3 font-hero">All Meetings</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-white font-hero">All Meetings</h3>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-md px-2.5 py-1.5 text-xs text-white font-footer hover:border-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <span>{selectedFilterLabel}</span>
+              <ChevronDown className={cn("h-3 w-3 text-gray-400 transition-transform", isDropdownOpen && "rotate-180")} />
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-slate-800 border border-white/10 rounded-md shadow-lg min-w-[140px] overflow-hidden">
+                {filterOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setFilter(option.value);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "w-full px-3 py-2 text-left text-xs text-white font-footer hover:bg-blue-600/20 transition-colors",
+                      filter === option.value && "bg-blue-600/30"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         {loading ? (
           <div className="text-gray-400 text-sm font-footer">Loading meetings...</div>
         ) : sortedMeetings.length === 0 ? (
           <div className="text-gray-400 text-sm font-footer text-center py-8">
-            No meetings scheduled
+            {filter === 'all' 
+              ? 'No meetings scheduled'
+              : filter === 'today'
+              ? 'No meetings today'
+              : filter === 'thisWeek'
+              ? 'No meetings this week'
+              : 'No meetings this month'}
           </div>
         ) : (
           <div className="space-y-3">
