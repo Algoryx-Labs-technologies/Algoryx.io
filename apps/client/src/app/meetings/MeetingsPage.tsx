@@ -2,6 +2,7 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Button } from '../components/ui/button';
+import { AlertDialog } from '../components/ui/alert-dialog';
 import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
@@ -43,6 +44,8 @@ export function MeetingsPage() {
   const [loading, setLoading] = useState(true);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -76,13 +79,16 @@ export function MeetingsPage() {
     }
   };
 
-  const handleDeleteMeeting = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this meeting?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setMeetingToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!meetingToDelete) return;
 
     try {
-      const response = await apiClient.delete(`/meetings/${id}`);
+      const response = await apiClient.delete(`/meetings/${meetingToDelete}`);
       
       if (response.success) {
         // Refresh meetings list
@@ -96,6 +102,8 @@ export function MeetingsPage() {
     } catch (error) {
       console.error('Error deleting meeting:', error);
       alert('Failed to delete meeting. Please try again.');
+    } finally {
+      setMeetingToDelete(null);
     }
   };
 
@@ -127,7 +135,7 @@ export function MeetingsPage() {
             meetings={meetings}
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
-            onDeleteMeeting={handleDeleteMeeting}
+            onDeleteMeeting={handleDeleteClick}
             loading={loading}
           />
 
@@ -167,6 +175,21 @@ export function MeetingsPage() {
         open={showScheduleModal}
         onClose={() => setShowScheduleModal(false)}
         onSuccess={refreshMeetings}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setMeetingToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Meeting"
+        description="Are you sure you want to delete this meeting? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
       />
     </div>
   );
