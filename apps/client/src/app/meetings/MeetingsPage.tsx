@@ -2,18 +2,12 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Calendar } from '../components/ui/calendar';
-import { 
-  Plus, 
-  X,
-  CheckCircle2
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import { apiClient } from '../../lib/api';
 import { MeetingsSidebar } from './MeetingsSidebar';
 import { WeeklyCalendarView } from './WeeklyCalendarView';
+import { ScheduleMeetingModal } from './ScheduleMeetingModal';
 
 interface MeetingParticipant {
   id: string;
@@ -49,16 +43,6 @@ export function MeetingsPage() {
   const [loading, setLoading] = useState(true);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    startTime: '',
-    endTime: '',
-    type: 'video' as 'video' | 'in-person' | 'phone',
-    location: '',
-    meetingLink: '',
-    participants: '',
-  });
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -81,72 +65,14 @@ export function MeetingsPage() {
     fetchMeetings();
   }, []);
 
-  const handleScheduleMeeting = async () => {
-    if (!selectedDate || !formData.title || !formData.startTime || !formData.endTime) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    // For video meetings, meeting link is required
-    if (formData.type === 'video' && !formData.meetingLink) {
-      alert('Meeting link is required for video meetings');
-      return;
-    }
-
+  const refreshMeetings = async () => {
     try {
-      // Parse participants
-      const participants = formData.participants
-        ? formData.participants.split(',').map(p => {
-            const trimmed = p.trim();
-            // Try to parse as "Name <email>" or just email
-            const emailMatch = trimmed.match(/<(.+)>/);
-            const email = emailMatch ? emailMatch[1] : trimmed;
-            const nameMatch = trimmed.match(/^(.+?)\s*</);
-            const name = nameMatch ? nameMatch[1].trim() : undefined;
-            return { email, name };
-          }).filter(p => p.email)
-        : [];
-
-      const meetingData = {
-        title: formData.title,
-        description: formData.description || undefined,
-        date: format(selectedDate, 'yyyy-MM-dd'),
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        type: formData.type === 'in-person' ? 'in_person' : formData.type,
-        location: formData.type === 'in-person' ? formData.location || undefined : undefined,
-        meetingLink: formData.type === 'video' ? formData.meetingLink || undefined : undefined,
-        participants: participants.length > 0 ? participants : undefined,
-      };
-
-      const response = await apiClient.post<Meeting>('/meetings', meetingData);
-      
+      const response = await apiClient.get<Meeting[]>('/meetings');
       if (response.success && response.data) {
-        // Refresh meetings list
-        const refreshResponse = await apiClient.get<Meeting[]>('/meetings');
-        if (refreshResponse.success && refreshResponse.data) {
-          setMeetings(refreshResponse.data);
-        }
-
-        // Reset form
-        setFormData({
-          title: '',
-          description: '',
-          startTime: '',
-          endTime: '',
-          type: 'video',
-          location: '',
-          meetingLink: '',
-          participants: '',
-        });
-        setSelectedDate(new Date());
-        setShowScheduleModal(false);
-      } else {
-        alert(response.error || 'Failed to create meeting');
+        setMeetings(response.data);
       }
     } catch (error) {
-      console.error('Error creating meeting:', error);
-      alert('Failed to create meeting. Please try again.');
+      console.error('Error fetching meetings:', error);
     }
   };
 
@@ -237,181 +163,11 @@ export function MeetingsPage() {
       </div>
 
       {/* Schedule Meeting Modal */}
-      {showScheduleModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          {/* Overlay */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowScheduleModal(false)}
-          />
-          
-          {/* Modal */}
-          <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-white/10 p-8 shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold font-hero text-white">Schedule New Meeting</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowScheduleModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column - Form */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                    Meeting Title <span className="text-red-400">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Enter meeting title"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Enter meeting description"
-                    rows={3}
-                    className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                    Meeting Type <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'video' | 'in-person' | 'phone' })}
-                    className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="video">Video Call</option>
-                    <option value="in-person">In-Person</option>
-                    <option value="phone">Phone Call</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                      Start Time <span className="text-red-400">*</span>
-                    </label>
-                    <Input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                      End Time <span className="text-red-400">*</span>
-                    </label>
-                    <Input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                      className="bg-white/5 border-white/10 text-white"
-                    />
-                  </div>
-                </div>
-
-                {formData.type === 'in-person' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                      Location
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="Enter meeting location"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                    />
-                  </div>
-                )}
-
-                {formData.type === 'video' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                      Meeting Link <span className="text-red-400">*</span>
-                    </label>
-                    <Input
-                      type="url"
-                      value={formData.meetingLink}
-                      onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-                      placeholder="Enter meeting link (e.g., https://meet.google.com/xxx-xxxx-xxx)"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      required
-                    />
-                    <p className="text-xs text-gray-400 mt-1 font-footer">
-                      Please provide a meeting link (Google Meet, Zoom, Teams, etc.)
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                    Participants
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.participants}
-                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                    placeholder="Enter participant names (comma-separated)"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-              </div>
-
-              {/* Right Column - Calendar */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2 font-footer">
-                  Select Date <span className="text-red-400">*</span>
-                </label>
-                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                    className="rounded-md"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end mt-6 pt-6 border-t border-white/10">
-              <Button
-                variant="outline"
-                onClick={() => setShowScheduleModal(false)}
-                className="font-footer"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleScheduleMeeting}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-footer"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Schedule Meeting
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ScheduleMeetingModal
+        open={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        onSuccess={refreshMeetings}
+      />
     </div>
   );
 }
