@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '@/types';
 import { meetingService } from '@/services/meeting.service';
-import { googleCalendarService } from '@/services/google-calendar.service';
 import { AppError } from '@/types';
 import { prisma } from '@/config/database';
 import { MeetingType, MeetingStatus } from '@prisma/client';
@@ -171,6 +170,11 @@ export class MeetingController {
       throw new AppError(400, 'Invalid meeting type. Must be video, in_person, or phone');
     }
 
+    // For video meetings, meeting link is required
+    if (type === 'video' && !meetingLink) {
+      throw new AppError(400, 'Meeting link is required for video meetings');
+    }
+
     // Get role-specific IDs
     const clientId = await this.getClientId(user.id);
     const partnerId = await this.getPartnerId(user.id);
@@ -188,11 +192,6 @@ export class MeetingController {
       throw new AppError(400, 'Invalid time format. Use HH:mm format');
     }
 
-    // For video meetings, auto-generate Google Meet link if not provided
-    let finalMeetingLink = type === 'video' ? meetingLink : undefined;
-    let finalGoogleEventId = googleEventId || undefined;
-    let finalSyncedWithGoogle = syncedWithGoogle || false;
-
     // Create meeting data
     const meetingData = {
       userId: user.id,
@@ -203,102 +202,18 @@ export class MeetingController {
       endTime,
       type: type as MeetingType,
       location: type === 'in_person' ? location : undefined,
-      meetingLink: finalMeetingLink,
+      meetingLink: type === 'video' ? meetingLink : undefined,
       clientId: clientId || undefined,
       partnerId: partnerId || undefined,
       adminId: adminId || undefined,
       projectId: projectId || undefined,
       participants: participants || [],
-      googleEventId: finalGoogleEventId,
-      syncedWithGoogle: finalSyncedWithGoogle,
+      googleEventId: googleEventId || undefined,
+      syncedWithGoogle: syncedWithGoogle || false,
     };
 
-    // Create the meeting first
+    // Create the meeting
     const meeting = await meetingService.create(meetingData);
-
-    // For video meetings without a link, try to generate a real Google Meet link
-    if (type === 'video' && !finalMeetingLink) {
-      // Check if Google Calendar is configured
-      if (googleCalendarService.isConfigured()) {
-        try {
-          // NOTE: To generate REAL Google Meet links, you need:
-          // 1. Google OAuth credentials in .env (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
-          // 2. User's Google OAuth access token (stored in database or provided)
-          // 
-          // For now, we'll check if there's a way to get user's token
-          // You can either:
-          // - Store user's Google tokens in User table or separate GoogleToken table
-          // - Use a service account for generating all Meet links
-          // - Have users authenticate with Google when creating meetings
-          
-          // TODO: Get user's Google OAuth token from database
-          // Example: const userGoogleToken = await getUserGoogleToken(user.id);
-          
-          // For now, if you want to use a service account or admin's Google account:
-          // You can set GOOGLE_ACCESS_TOKEN and GOOGLE_REFRESH_TOKEN in .env
-          // and use them here:
-          const adminAccessToken = process.env.GOOGLE_ACCESS_TOKEN;
-          const adminRefreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-          
-          if (adminAccessToken) {
-            // Use admin's Google account to create the event
-            googleCalendarService.setCredentials(adminAccessToken, adminRefreshToken);
-            
-            // Create Google Calendar event with Google Meet
-            const { eventId, meetLink } = await googleCalendarService.createEvent(meeting, true);
-            
-            if (meetLink) {
-              // Update meeting with real Google Meet link and event ID
-              const updatedMeeting = await meetingService.update(
-                meeting.id,
-                user.id,
-                false,
-                {
-                  meetingLink: meetLink,
-                  googleEventId: eventId,
-                  syncedWithGoogle: true,
-                }
-              );
-
-              res.status(201).json({
-                success: true,
-                data: updatedMeeting,
-                message: 'Meeting created successfully with Google Meet link synced to calendar',
-              });
-              return;
-            }
-          } else {
-            // Google Calendar is configured but no access token available
-            throw new AppError(
-              400,
-              'Google Calendar is configured but no access token available. Please add GOOGLE_ACCESS_TOKEN to .env or implement user OAuth authentication.'
-            );
-          }
-        } catch (error: any) {
-          console.error('Error creating Google Meet link:', error);
-          
-          // If it's our custom error, throw it
-          if (error instanceof AppError) {
-            throw error;
-          }
-          
-          // Otherwise, return error but don't fail the meeting creation
-          res.status(201).json({
-            success: true,
-            data: meeting,
-            message: 'Meeting created but Google Meet link generation failed. Please configure Google OAuth tokens.',
-            warning: error.message || 'Failed to generate Google Meet link',
-          });
-          return;
-        }
-      } else {
-        // Google Calendar not configured - return error
-        throw new AppError(
-          400,
-          'Google Meet link generation requires Google Calendar API configuration. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env file, and either GOOGLE_ACCESS_TOKEN or implement user OAuth authentication.'
-        );
-      }
-    }
 
     res.status(201).json({
       success: true,
