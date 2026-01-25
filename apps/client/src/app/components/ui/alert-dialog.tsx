@@ -2,6 +2,14 @@ import { useEffect } from 'react';
 import { Button } from './button';
 import { cn } from './utils';
 import { X } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+
+interface MeetingDetails {
+  title: string;
+  date: string | Date;
+  startTime: string;
+  endTime: string;
+}
 
 interface AlertDialogProps {
   open: boolean;
@@ -12,6 +20,7 @@ interface AlertDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: 'default' | 'destructive';
+  meetingDetails?: MeetingDetails;
 }
 
 export function AlertDialog({
@@ -23,6 +32,7 @@ export function AlertDialog({
   confirmText = 'OK',
   cancelText = 'Cancel',
   variant = 'default',
+  meetingDetails,
 }: AlertDialogProps) {
   useEffect(() => {
     if (open) {
@@ -52,6 +62,33 @@ export function AlertDialog({
     onClose();
   };
 
+  const formatMeetingDate = (date: string | Date) => {
+    const d = typeof date === 'string' ? parseISO(date) : new Date(date);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+      return 'Today';
+    } else if (dateOnly.getTime() === tomorrowOnly.getTime()) {
+      return 'Tomorrow';
+    } else {
+      return format(d, 'MMM d, yyyy');
+    }
+  };
+
+  const formatTime = (time24: string): string => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center">
       {/* Overlay */}
@@ -74,9 +111,28 @@ export function AlertDialog({
           </button>
         </div>
         
-        <p className="text-sm text-gray-300 font-footer mb-6">
-          {description}
-        </p>
+        <div className="mb-6">
+          <p className="text-sm text-gray-300 font-footer mb-4">
+            {description}
+          </p>
+          {meetingDetails && (
+            <div className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2">
+              <div className="text-sm font-semibold text-white font-hero">
+                {meetingDetails.title}
+              </div>
+              <div className="text-xs text-gray-400 font-footer space-y-1">
+                <div>
+                  <span className="text-gray-500">Date: </span>
+                  {formatMeetingDate(meetingDetails.date)}
+                </div>
+                <div>
+                  <span className="text-gray-500">Time: </span>
+                  {formatTime(meetingDetails.startTime)} - {formatTime(meetingDetails.endTime)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         
         <div className="flex gap-2 justify-end">
           <Button

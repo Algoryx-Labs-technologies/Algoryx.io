@@ -45,7 +45,7 @@ export function MeetingsPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
+  const [meetingToDelete, setMeetingToDelete] = useState<Meeting | null>(null);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -80,15 +80,18 @@ export function MeetingsPage() {
   };
 
   const handleDeleteClick = (id: string) => {
-    setMeetingToDelete(id);
-    setDeleteDialogOpen(true);
+    const meeting = meetings.find(m => m.id === id);
+    if (meeting) {
+      setMeetingToDelete(meeting);
+      setDeleteDialogOpen(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
     if (!meetingToDelete) return;
 
     try {
-      const response = await apiClient.delete(`/meetings/${meetingToDelete}`);
+      const response = await apiClient.delete(`/meetings/${meetingToDelete.id}`);
       
       if (response.success) {
         // Refresh meetings list
@@ -190,6 +193,12 @@ export function MeetingsPage() {
         confirmText="Delete"
         cancelText="Cancel"
         variant="destructive"
+        meetingDetails={meetingToDelete ? {
+          title: meetingToDelete.title,
+          date: meetingToDelete.date,
+          startTime: meetingToDelete.startTime,
+          endTime: meetingToDelete.endTime,
+        } : undefined}
       />
     </div>
   );
