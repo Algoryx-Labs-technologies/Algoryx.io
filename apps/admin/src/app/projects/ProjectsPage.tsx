@@ -87,6 +87,7 @@ export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedDeleteProjectId, setSelectedDeleteProjectId] = useState<string>('');
 
   // Project Form State
   const [projectForm, setProjectForm] = useState({
@@ -141,37 +142,38 @@ export function ProjectsPage() {
     fetchClients();
   }, []);
 
+  // Fetch projects function
+  const fetchProjects = async () => {
+    setLoadingProjects(true);
+    try {
+      const token = await getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/projects`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to fetch projects');
+      }
+
+      if (result.success && result.data) {
+        setProjects(result.data);
+      }
+    } catch (error: any) {
+      console.error('Error fetching projects:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch projects' });
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
   // Fetch projects on component mount
   useEffect(() => {
-    const fetchProjects = async () => {
-      setLoadingProjects(true);
-      try {
-        const token = await getAuthToken();
-        const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/projects`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || 'Failed to fetch projects');
-        }
-
-        if (result.success && result.data) {
-          setProjects(result.data);
-        }
-      } catch (error: any) {
-        console.error('Error fetching projects:', error);
-        setMessage({ type: 'error', text: 'Failed to fetch projects' });
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-
     fetchProjects();
   }, []);
 
@@ -731,25 +733,47 @@ export function ProjectsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-gray-300">Project ID *</Label>
-                  <Input
-                    id="delete-project-id"
-                    className="bg-slate-800/50 border-white/10 text-white mt-1"
-                    placeholder="Enter project ID"
-                  />
+                  <Label className="text-gray-300">Select Project to Delete *</Label>
+                  <select
+                    value={selectedDeleteProjectId}
+                    onChange={(e) => setSelectedDeleteProjectId(e.target.value)}
+                    className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                    disabled={loadingProjects}
+                  >
+                    <option value="">Select a project to delete</option>
+                    {projects.map((project) => {
+                      const clientName = project.Client?.User
+                        ? `${project.Client.User.firstName || ''} ${project.Client.User.lastName || ''}`.trim() || project.Client.User.email
+                        : 'No Client';
+                      const projectLabel = project.description
+                        ? `${project.description.substring(0, 50)}${project.description.length > 50 ? '...' : ''} - ${clientName}`
+                        : `Project ${project.id.substring(0, 8)} - ${clientName}`;
+                      return (
+                        <option key={project.id} value={project.id}>
+                          {projectLabel}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {loadingProjects && (
+                    <p className="text-gray-400 text-sm mt-1">Loading projects...</p>
+                  )}
                 </div>
                 <Button
                   onClick={async () => {
-                    const projectId = (document.getElementById('delete-project-id') as HTMLInputElement)?.value;
-                    if (!projectId) {
-                      setMessage({ type: 'error', text: 'Project ID is required' });
+                    if (!selectedDeleteProjectId) {
+                      setMessage({ type: 'error', text: 'Please select a project to delete' });
                       return;
                     }
-                    if (confirm('Are you sure you want to delete this project?')) {
-                      await handleApiRequest(`/projects/${projectId}`, 'DELETE', {}, setLoading, setMessage, 'Delete Project');
+                    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                      await handleApiRequest(`/projects/${selectedDeleteProjectId}`, 'DELETE', {}, setLoading, setMessage, 'Delete Project');
+                      // Refresh projects list after successful deletion
+                      await fetchProjects();
+                      // Clear selection
+                      setSelectedDeleteProjectId('');
                     }
                   }}
-                  disabled={loading === 'Delete Project'}
+                  disabled={loading === 'Delete Project' || !selectedDeleteProjectId}
                   className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600"
                 >
                   {loading === 'Delete Project' ? 'Deleting...' : 'Delete Project'}
