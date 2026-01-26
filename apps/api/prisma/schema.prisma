@@ -7,155 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             String          @id @default(cuid())
-  supabaseUserId String          @unique
-  role           Role
-  email          String
-  phoneNumber    String?
-  country        String?
-  state          String?
-  firstName      String?
-  lastName       String?
-  created_at     DateTime        @default(now())
-  Admin          Admin?
-  Client         Client?
-  feedbacks      Feedback[]
-  meetings       Meeting[]
-  notifications  Notification[]
-  Partner        Partner?
-  payments       Payment[]
-  qnaQuestions   QnA[]
-  qnaAnswers     QnAAnswer[]
-  requirements   Requirement[]
-  supportTickets SupportTicket[]
+model Admin {
+  uid     String    @id
+  userId  String    @unique
+  User    User      @relation(fields: [userId], references: [id])
+  Meeting Meeting[]
+  Project Project[]
 }
 
 model Client {
-  uid            String          @id @default(cuid())
-  userId         String          @unique
-  User           User            @relation(fields: [userId], references: [id])
-  feedbacks      Feedback[]
-  meetings       Meeting[]
-  projects       Project[]
-  requirements   Requirement[]
-  supportTickets SupportTicket[]
+  uid           String          @id
+  userId        String          @unique
+  User          User            @relation(fields: [userId], references: [id])
+  Feedback      Feedback[]
+  Meeting       Meeting[]
+  Project       Project[]
+  Requirement   Requirement[]
+  SupportTicket SupportTicket[]
 }
 
-model Admin {
-  uid      String    @id @default(cuid())
-  userId   String    @unique
-  User     User      @relation(fields: [userId], references: [id])
-  meetings Meeting[]
-  projects Project[]
-}
-
-model Partner {
-  uid                String          @id @default(cuid())
-  userId             String          @unique
-  companyName        String?
-  companyDescription String?
-  BRD                String?
-  meetingDate        DateTime?
-  Agreement          String?
-  phoneNumber        String?
-  companyEmail       String?
-  companyWebsite     String?
-  feedbacks          Feedback[]
-  meetings           Meeting[]
-  User               User            @relation(fields: [userId], references: [id])
-  projects           Project[]
-  requirements       Requirement[]
-  supportTickets     SupportTicket[]
-}
-
-model Project {
-  id                 String         @id @default(cuid())
-  clientId           String?
-  adminId            String?
-  partnerId          String?
-  description        String?
-  readMe             String?
-  techStack          String?
-  clientRequirement  String?
-  projectInformation String?
-  projectTimeline    Json?
-  projectStatus      ProjectStatus?
-  projectFeatures    String?
-  priority           Priority?
-  progressStatus     String?
-  miscellaneousData  Json?
-  paymentStatus      PaymentStatus?
-  updated_at         DateTime       @default(now())
-  created_at         DateTime       @default(now())
-  Budget             String?
-  meetings           Meeting[]
-  payments           Payment[]
-  Admin              Admin?         @relation(fields: [adminId], references: [uid])
-  Client             Client?        @relation(fields: [clientId], references: [uid])
-  Partner            Partner?       @relation(fields: [partnerId], references: [uid])
-}
-
-model Requirement {
-  uid          String            @id @default(cuid())
-  projectTitle String?
-  description  String?
-  updated_at   DateTime          @default(now())
-  created_at   DateTime          @default(now())
-  Budget       String?
-  clientId     String?
-  partnerId    String?
-  userId       String?
-  email        String?
-  userName     String?
-  status       RequirementStatus @default(Pending)
-  Client       Client?           @relation(fields: [clientId], references: [uid])
-  Partner      Partner?          @relation(fields: [partnerId], references: [uid])
-  User         User?             @relation(fields: [userId], references: [id])
-}
-
-model LandingEnquiry {
-  uid        String   @id @default(cuid())
-  fullName   String
-  email      String
-  phone      String
-  companyOrg String?
-  message    String
-  haveSource String?
-  updated_at DateTime @default(now())
+model Community {
+  id         String   @id
+  title      String
+  content    String
+  authorId   String?
+  category   String?
+  tags       String[]
+  likes      Int      @default(0)
+  views      Int      @default(0)
+  isPinned   Boolean  @default(false)
   created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
 model CourseEnquiry {
-  uid        String   @id @default(cuid())
+  uid        String   @id
   courseId   String
   email      String
   created_at DateTime @default(now())
 }
 
-model SupportTicket {
-  uid               String        @id @default(cuid())
-  ticketId          String        @unique
-  userId            String?
-  clientId          String?
-  partnerId         String?
-  issueType         String
-  description       String
-  priority          Priority
-  additionalDetails String?
-  status            TicketStatus  @default(pending)
-  userName          String?
-  email             String?
-  updated_at        DateTime      @default(now())
-  created_at        DateTime      @default(now())
-  Client            Client?       @relation(fields: [clientId], references: [uid])
-  Partner           Partner?      @relation(fields: [partnerId], references: [uid])
-  User              User?         @relation(fields: [userId], references: [id])
-  replies           TicketReply[]
-}
-
 model Feedback {
-  uid             String   @id @default(cuid())
+  uid             String   @id
   userId          String?
   clientId        String?
   partnerId       String?
@@ -178,8 +71,58 @@ model Feedback {
   User            User?    @relation(fields: [userId], references: [id])
 }
 
+model LandingEnquiry {
+  uid        String   @id
+  fullName   String
+  email      String
+  phone      String
+  companyOrg String?
+  message    String
+  haveSource String?
+  updated_at DateTime @default(now())
+  created_at DateTime @default(now())
+}
+
+model Meeting {
+  id                 String               @id
+  title              String
+  description        String?
+  date               DateTime
+  startTime          String
+  endTime            String
+  type               MeetingType
+  location           String?
+  meetingLink        String?
+  status             MeetingStatus        @default(upcoming)
+  userId             String
+  clientId           String?
+  partnerId          String?
+  adminId            String?
+  projectId          String?
+  googleEventId      String?              @unique
+  syncedWithGoogle   Boolean              @default(false)
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @default(now())
+  Admin              Admin?               @relation(fields: [adminId], references: [uid])
+  Client             Client?              @relation(fields: [clientId], references: [uid])
+  Partner            Partner?             @relation(fields: [partnerId], references: [uid])
+  Project            Project?             @relation(fields: [projectId], references: [id])
+  User               User                 @relation(fields: [userId], references: [id])
+  MeetingParticipant MeetingParticipant[]
+}
+
+model MeetingParticipant {
+  id         String   @id
+  meetingId  String
+  email      String
+  name       String?
+  role       String?
+  created_at DateTime @default(now())
+  Meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
 model Notification {
-  id         String           @id @default(cuid())
+  id         String           @id
   title      String
   message    String
   type       NotificationType @default(info)
@@ -190,8 +133,27 @@ model Notification {
   User       User?            @relation(fields: [userId], references: [id])
 }
 
+model Partner {
+  uid                String          @id
+  userId             String          @unique
+  companyName        String?
+  companyDescription String?
+  BRD                String?
+  meetingDate        DateTime?
+  Agreement          String?
+  phoneNumber        String?
+  companyEmail       String?
+  companyWebsite     String?
+  Feedback           Feedback[]
+  Meeting            Meeting[]
+  User               User            @relation(fields: [userId], references: [id])
+  Project            Project[]
+  Requirement        Requirement[]
+  SupportTicket      SupportTicket[]
+}
+
 model Payment {
-  id            String        @id @default(cuid())
+  id            String        @id
   userId        String?
   clientId      String?
   projectId     String?
@@ -208,22 +170,35 @@ model Payment {
   User          User?         @relation(fields: [userId], references: [id])
 }
 
-model Community {
-  id         String   @id @default(cuid())
-  title      String
-  content    String
-  authorId   String?
-  category   String?
-  tags       String[]
-  likes      Int      @default(0)
-  views      Int      @default(0)
-  isPinned   Boolean  @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+model Project {
+  id                 String         @id
+  clientId           String?
+  adminId            String?
+  partnerId          String?
+  description        String?
+  readMe             String?
+  techStack          String?
+  clientRequirement  String?
+  projectInformation String?
+  projectTimeline    Json?
+  projectStatus      ProjectStatus?
+  projectFeatures    String?
+  priority           Priority?
+  progressStatus     String?
+  miscellaneousData  Json?
+  paymentStatus      PaymentStatus?
+  updated_at         DateTime       @default(now())
+  created_at         DateTime       @default(now())
+  Budget             String?
+  Meeting            Meeting[]
+  Payment            Payment[]
+  Admin              Admin?         @relation(fields: [adminId], references: [uid])
+  Client             Client?        @relation(fields: [clientId], references: [uid])
+  Partner            Partner?       @relation(fields: [partnerId], references: [uid])
 }
 
 model QnA {
-  id         String      @id @default(cuid())
+  id         String      @id
   question   String
   answer     String?
   userId     String?
@@ -234,11 +209,11 @@ model QnA {
   created_at DateTime    @default(now())
   updated_at DateTime    @default(now())
   User       User?       @relation(fields: [userId], references: [id])
-  answers    QnAAnswer[]
+  QnAAnswer  QnAAnswer[]
 }
 
 model QnAAnswer {
-  id         String   @id @default(cuid())
+  id         String   @id
   qnaId      String
   answer     String
   userId     String?
@@ -249,8 +224,47 @@ model QnAAnswer {
   User       User?    @relation(fields: [userId], references: [id])
 }
 
+model Requirement {
+  uid          String            @id
+  projectTitle String?
+  description  String?
+  updated_at   DateTime          @default(now())
+  created_at   DateTime          @default(now())
+  Budget       String?
+  clientId     String?
+  partnerId    String?
+  userId       String?
+  email        String?
+  userName     String?
+  status       RequirementStatus @default(Pending)
+  Client       Client?           @relation(fields: [clientId], references: [uid])
+  Partner      Partner?          @relation(fields: [partnerId], references: [uid])
+  User         User?             @relation(fields: [userId], references: [id])
+}
+
+model SupportTicket {
+  uid               String        @id
+  ticketId          String        @unique
+  userId            String?
+  clientId          String?
+  partnerId         String?
+  issueType         String
+  description       String
+  priority          Priority
+  additionalDetails String?
+  status            TicketStatus  @default(pending)
+  userName          String?
+  email             String?
+  updated_at        DateTime      @default(now())
+  created_at        DateTime      @default(now())
+  Client            Client?       @relation(fields: [clientId], references: [uid])
+  Partner           Partner?      @relation(fields: [partnerId], references: [uid])
+  User              User?         @relation(fields: [userId], references: [id])
+  TicketReply       TicketReply[]
+}
+
 model TicketReply {
-  id            String        @id @default(cuid())
+  id            String        @id
   ticketId      String
   reply         String
   userId        String?
@@ -260,48 +274,56 @@ model TicketReply {
   SupportTicket SupportTicket @relation(fields: [ticketId], references: [uid], onDelete: Cascade)
 }
 
-model Meeting {
-  id               String               @id @default(cuid())
-  title            String
-  description      String?
-  date             DateTime
-  startTime        String
-  endTime          String
-  type             MeetingType
-  location         String?
-  meetingLink      String?
-  status           MeetingStatus        @default(upcoming)
-  userId           String
-  clientId         String?
-  partnerId        String?
-  adminId          String?
-  projectId        String?
-  googleEventId    String?              @unique
-  syncedWithGoogle Boolean              @default(false)
-  created_at       DateTime             @default(now())
-  updated_at       DateTime             @default(now())
-  Admin            Admin?               @relation(fields: [adminId], references: [uid])
-  Client           Client?              @relation(fields: [clientId], references: [uid])
-  Partner          Partner?             @relation(fields: [partnerId], references: [uid])
-  Project          Project?             @relation(fields: [projectId], references: [id])
-  User             User                 @relation(fields: [userId], references: [id])
-  participants     MeetingParticipant[]
+model User {
+  id             String          @id
+  supabaseUserId String          @unique
+  role           Role
+  email          String
+  phoneNumber    String?
+  country        String?
+  state          String?
+  firstName      String?
+  lastName       String?
+  created_at     DateTime        @default(now())
+  Admin          Admin?
+  Client         Client?
+  Feedback       Feedback[]
+  Meeting        Meeting[]
+  Notification   Notification[]
+  Partner        Partner?
+  Payment        Payment[]
+  QnA            QnA[]
+  QnAAnswer      QnAAnswer[]
+  Requirement    Requirement[]
+  SupportTicket  SupportTicket[]
 }
 
-model MeetingParticipant {
-  id         String   @id @default(cuid())
-  meetingId  String
-  email      String
-  name       String?
-  role       String?
-  created_at DateTime @default(now())
-  Meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+enum MeetingStatus {
+  upcoming
+  completed
+  cancelled
 }
 
-enum Role {
-  client
-  admin
-  partner
+enum MeetingType {
+  video
+  in_person
+  phone
+}
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+  reminder
+  update
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
 }
 
 enum Priority {
@@ -318,11 +340,16 @@ enum ProjectStatus {
   delivered
 }
 
-enum PaymentStatus {
-  pending
-  paid
-  failed
-  refunded
+enum RequirementStatus {
+  Contacted
+  Pending
+  Rejected
+}
+
+enum Role {
+  client
+  admin
+  partner
 }
 
 enum TicketStatus {
@@ -330,31 +357,4 @@ enum TicketStatus {
   in_progress
   resolved
   closed
-}
-
-enum RequirementStatus {
-  Contacted
-  Pending
-  Rejected
-}
-
-enum NotificationType {
-  info
-  success
-  warning
-  error
-  reminder
-  update
-}
-
-enum MeetingType {
-  video
-  in_person
-  phone
-}
-
-enum MeetingStatus {
-  upcoming
-  completed
-  cancelled
 }
