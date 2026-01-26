@@ -206,6 +206,7 @@ router.post(
 // GET Routes
 router.get('/users', adminController.getAllUsers.bind(adminController));
 router.get('/landing-requirements', adminController.getLandingRequirements.bind(adminController));
+router.get('/landing-enquiries', adminController.getLandingEnquiries.bind(adminController));
 router.get('/requirements', adminController.getClientRequirements.bind(adminController));
 router.get('/support-tickets', adminController.getClientSupportTickets.bind(adminController));
 router.get('/feedback', adminController.getFeedback.bind(adminController));

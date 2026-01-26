@@ -11,6 +11,7 @@ import { CommunityPage } from './community/CommunityPage';
 import { FeedbackPage } from './feedback/FeedbackPage';
 import { RequirementsPage } from './requirements/RequirementsPage';
 import { QnAPage } from './qna/QnAPage';
+import { LandingEnquiryPage } from './landing-enquiry/LandingEnquiryPage';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/requirements" element={<RequirementsPage />} />
         <Route path="/qna" element={<QnAPage />} />
+        <Route path="/landing-enquiry" element={<LandingEnquiryPage />} />
       </Routes>
     </BrowserRouter>
   );

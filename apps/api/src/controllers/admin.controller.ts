@@ -174,13 +174,14 @@ export class AdminController {
     }
 
     const { id } = req.params;
+    const projectId = Array.isArray(id) ? id[0] : id;
     const adminId = await this.getAdminId(req.user.id);
     if (!adminId) {
       throw new AppError(404, 'Admin profile not found');
     }
 
     const project = await prisma.project.findUnique({
-      where: { id },
+      where: { id: projectId },
     });
 
     if (!project) {
@@ -195,14 +196,15 @@ export class AdminController {
 
     // Normalize clientId - convert empty strings to null
     if ('clientId' in req.body) {
-      if (req.body.clientId && req.body.clientId.trim() !== '') {
+      const clientIdValue = Array.isArray(req.body.clientId) ? req.body.clientId[0] : req.body.clientId;
+      if (clientIdValue && typeof clientIdValue === 'string' && clientIdValue.trim() !== '') {
         const clientExists = await prisma.client.findUnique({
-          where: { uid: req.body.clientId },
+          where: { uid: clientIdValue },
         });
         if (!clientExists) {
-          throw new AppError(400, `Client with ID ${req.body.clientId} not found`);
+          throw new AppError(400, `Client with ID ${clientIdValue} not found`);
         }
-        updateData.clientId = req.body.clientId;
+        updateData.clientId = clientIdValue;
       } else {
         updateData.clientId = null;
       }
@@ -210,12 +212,13 @@ export class AdminController {
 
     // Normalize partnerId - convert empty strings to null (forgiving - if invalid, just set to null)
     if ('partnerId' in req.body) {
-      if (req.body.partnerId && req.body.partnerId.trim() !== '') {
+      const partnerIdValue = Array.isArray(req.body.partnerId) ? req.body.partnerId[0] : req.body.partnerId;
+      if (partnerIdValue && typeof partnerIdValue === 'string' && partnerIdValue.trim() !== '') {
         const partnerExists = await prisma.partner.findUnique({
-          where: { uid: req.body.partnerId },
+          where: { uid: partnerIdValue },
         });
         if (partnerExists) {
-          updateData.partnerId = req.body.partnerId;
+          updateData.partnerId = partnerIdValue;
         } else {
           // If partner doesn't exist, just set to null (don't throw error)
           updateData.partnerId = null;
@@ -226,7 +229,7 @@ export class AdminController {
     }
 
     const updatedProject = await prisma.project.update({
-      where: { id },
+      where: { id: projectId },
       data: updateData,
       include: {
         Client: true,
@@ -248,13 +251,14 @@ export class AdminController {
     }
 
     const { id } = req.params;
+    const projectId = Array.isArray(id) ? id[0] : id;
     const adminId = await this.getAdminId(req.user.id);
     if (!adminId) {
       throw new AppError(404, 'Admin profile not found');
     }
 
     const project = await prisma.project.findUnique({
-      where: { id },
+      where: { id: projectId },
     });
 
     if (!project) {
@@ -262,7 +266,7 @@ export class AdminController {
     }
 
     await prisma.project.delete({
-      where: { id },
+      where: { id: projectId },
     });
 
     res.json({
@@ -343,9 +347,10 @@ export class AdminController {
     }
 
     const { ticketId } = req.params;
+    const ticketUid = Array.isArray(ticketId) ? ticketId[0] : ticketId;
 
     const ticket = await prisma.supportTicket.findUnique({
-      where: { uid: ticketId },
+      where: { uid: ticketUid },
     });
 
     if (!ticket) {
@@ -368,7 +373,7 @@ export class AdminController {
     // Update ticket status if provided
     if (req.body.status) {
       await prisma.supportTicket.update({
-        where: { uid: ticketId },
+        where: { uid: ticketUid },
         data: { status: req.body.status },
       });
     }
@@ -411,10 +416,11 @@ export class AdminController {
     }
 
     const { feedbackId } = req.params;
+    const feedbackUid = Array.isArray(feedbackId) ? feedbackId[0] : feedbackId;
     const { isTop } = req.body;
 
     const feedback = await prisma.feedback.findUnique({
-      where: { uid: feedbackId },
+      where: { uid: feedbackUid },
     });
 
     if (!feedback) {
@@ -422,7 +428,7 @@ export class AdminController {
     }
 
     const updatedFeedback = await prisma.feedback.update({
-      where: { uid: feedbackId },
+      where: { uid: feedbackUid },
       data: { isTopFeedback: isTop !== undefined ? isTop : true },
     });
 
@@ -440,9 +446,10 @@ export class AdminController {
     }
 
     const { requirementId } = req.params;
+    const requirementUid = Array.isArray(requirementId) ? requirementId[0] : requirementId;
 
     const requirement = await prisma.requirement.findUnique({
-      where: { uid: requirementId },
+      where: { uid: requirementUid },
     });
 
     if (!requirement) {
@@ -450,7 +457,7 @@ export class AdminController {
     }
 
     const updatedRequirement = await prisma.requirement.update({
-      where: { uid: requirementId },
+      where: { uid: requirementUid },
       data: { status: 'Contacted' },
     });
 
@@ -468,9 +475,10 @@ export class AdminController {
     }
 
     const { qnaId } = req.params;
+    const qnaIdString = Array.isArray(qnaId) ? qnaId[0] : qnaId;
 
     const qna = await prisma.qnA.findUnique({
-      where: { id: qnaId },
+      where: { id: qnaIdString },
     });
 
     if (!qna) {
@@ -488,7 +496,7 @@ export class AdminController {
 
     // Update QnA as answered (store answer in QnA model as well)
     await prisma.qnA.update({
-      where: { id: qnaId },
+      where: { id: qnaIdString },
       data: { 
         isAnswered: true,
         answer: req.body.answer,
@@ -534,6 +542,25 @@ export class AdminController {
 
   // ========== GET LANDING REQUIREMENTS ==========
   async getLandingRequirements(req: AuthenticatedRequest, res: Response) {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    const enquiries = await prisma.landingEnquiry.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    res.json({
+      success: true,
+      data: enquiries,
+      count: enquiries.length,
+    });
+  }
+
+  // ========== GET LANDING ENQUIRIES ==========
+  async getLandingEnquiries(req: AuthenticatedRequest, res: Response) {
     if (!req.user) {
       throw new AppError(401, 'Unauthorized');
     }
@@ -669,6 +696,7 @@ export class AdminController {
     }
 
     const { ticketId } = req.params;
+    const ticketUid = Array.isArray(ticketId) ? ticketId[0] : ticketId;
     const { status, priority, issueType, description, additionalDetails } = req.body;
 
     // Validate status if provided
@@ -689,7 +717,7 @@ export class AdminController {
     if (additionalDetails !== undefined) updateData.additionalDetails = additionalDetails;
 
     const ticket = await prisma.supportTicket.update({
-      where: { uid: ticketId },
+      where: { uid: ticketUid },
       data: updateData,
       include: {
         User: {
@@ -834,9 +862,10 @@ export class AdminController {
     }
 
     const { id } = req.params;
+    const paymentId = Array.isArray(id) ? id[0] : id;
 
     const payment = await prisma.payment.findUnique({
-      where: { id },
+      where: { id: paymentId },
     });
 
     if (!payment) {
@@ -844,7 +873,7 @@ export class AdminController {
     }
 
     const updatedPayment = await prisma.payment.update({
-      where: { id },
+      where: { id: paymentId },
       data: {
         ...req.body,
         updated_at: new Date(),
