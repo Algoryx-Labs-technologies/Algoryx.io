@@ -56,6 +56,18 @@ const refreshSessionSchema = {
   }),
 };
 
+const adminSignupSchema = {
+  body: z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    phoneNumber: z.string().optional(),
+    country: z.string().optional(),
+    state: z.string().optional(),
+  }),
+};
+
 // Public routes
 router.post(
   '/signup',
@@ -67,6 +79,19 @@ router.post(
   '/signin',
   validate(signinSchema),
   authController.signin.bind(authController)
+);
+
+// Admin-specific auth routes
+router.post(
+  '/admin/signup',
+  validate(adminSignupSchema),
+  authController.adminSignup.bind(authController)
+);
+
+router.post(
+  '/admin/signin',
+  validate(signinSchema),
+  authController.adminSignin.bind(authController)
 );
 
 router.post(

@@ -21,14 +21,14 @@ model User {
   Admin          Admin?
   Client         Client?
   feedbacks      Feedback[]
-  Partner        Partner?
-  requirements   Requirement[]
-  supportTickets SupportTicket[]
+  meetings       Meeting[]
   notifications  Notification[]
+  Partner        Partner?
   payments       Payment[]
   qnaQuestions   QnA[]
   qnaAnswers     QnAAnswer[]
-  meetings       Meeting[]
+  requirements   Requirement[]
+  supportTickets SupportTicket[]
 }
 
 model Client {
@@ -36,18 +36,18 @@ model Client {
   userId         String          @unique
   User           User            @relation(fields: [userId], references: [id])
   feedbacks      Feedback[]
+  meetings       Meeting[]
   projects       Project[]
   requirements   Requirement[]
   supportTickets SupportTicket[]
-  meetings       Meeting[]
 }
 
 model Admin {
   uid      String    @id @default(cuid())
   userId   String    @unique
   User     User      @relation(fields: [userId], references: [id])
-  projects Project[]
   meetings Meeting[]
+  projects Project[]
 }
 
 model Partner {
@@ -62,11 +62,11 @@ model Partner {
   companyEmail       String?
   companyWebsite     String?
   feedbacks          Feedback[]
+  meetings           Meeting[]
   User               User            @relation(fields: [userId], references: [id])
   projects           Project[]
   requirements       Requirement[]
   supportTickets     SupportTicket[]
-  meetings           Meeting[]
 }
 
 model Project {
@@ -89,8 +89,8 @@ model Project {
   updated_at         DateTime       @default(now())
   created_at         DateTime       @default(now())
   Budget             String?
-  payments           Payment[]
   meetings           Meeting[]
+  payments           Payment[]
   Admin              Admin?         @relation(fields: [adminId], references: [uid])
   Client             Client?        @relation(fields: [clientId], references: [uid])
   Partner            Partner?       @relation(fields: [partnerId], references: [uid])
@@ -134,8 +134,8 @@ model CourseEnquiry {
 }
 
 model SupportTicket {
-  uid               String          @id @default(cuid())
-  ticketId          String          @unique
+  uid               String        @id @default(cuid())
+  ticketId          String        @unique
   userId            String?
   clientId          String?
   partnerId         String?
@@ -143,15 +143,15 @@ model SupportTicket {
   description       String
   priority          Priority
   additionalDetails String?
-  status            TicketStatus    @default(pending)
+  status            TicketStatus  @default(pending)
   userName          String?
   email             String?
-  updated_at        DateTime        @default(now())
-  created_at        DateTime        @default(now())
+  updated_at        DateTime      @default(now())
+  created_at        DateTime      @default(now())
+  Client            Client?       @relation(fields: [clientId], references: [uid])
+  Partner           Partner?      @relation(fields: [partnerId], references: [uid])
+  User              User?         @relation(fields: [userId], references: [id])
   replies           TicketReply[]
-  Client            Client?         @relation(fields: [clientId], references: [uid])
-  Partner           Partner?        @relation(fields: [partnerId], references: [uid])
-  User              User?           @relation(fields: [userId], references: [id])
 }
 
 model Feedback {
@@ -170,24 +170,24 @@ model Feedback {
   favoriteFeature String?
   userName        String?
   email           String?
-  isTopFeedback   Boolean  @default(false)
   updated_at      DateTime @default(now())
   created_at      DateTime @default(now())
+  isTopFeedback   Boolean  @default(false)
   Client          Client?  @relation(fields: [clientId], references: [uid])
   Partner         Partner? @relation(fields: [partnerId], references: [uid])
   User            User?    @relation(fields: [userId], references: [id])
 }
 
 model Notification {
-  id          String   @id @default(cuid())
-  title       String
-  message     String
-  type        NotificationType @default(info)
-  userId      String?
-  isRead      Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-  User        User?    @relation(fields: [userId], references: [id])
+  id         String           @id @default(cuid())
+  title      String
+  message    String
+  type       NotificationType @default(info)
+  userId     String?
+  isRead     Boolean          @default(false)
+  created_at DateTime         @default(now())
+  updated_at DateTime         @default(now())
+  User       User?            @relation(fields: [userId], references: [id])
 }
 
 model Payment {
@@ -204,60 +204,98 @@ model Payment {
   metadata      Json?
   created_at    DateTime      @default(now())
   updated_at    DateTime      @default(now())
-  User          User?         @relation(fields: [userId], references: [id])
   Project       Project?      @relation(fields: [projectId], references: [id])
+  User          User?         @relation(fields: [userId], references: [id])
 }
 
 model Community {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  authorId    String?
-  category    String?
-  tags        String[]
-  likes       Int      @default(0)
-  views       Int      @default(0)
-  isPinned    Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  authorId   String?
+  category   String?
+  tags       String[]
+  likes      Int      @default(0)
+  views      Int      @default(0)
+  isPinned   Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
 model QnA {
-  id          String      @id @default(cuid())
-  question    String
-  answer      String?
-  userId      String?
-  category    String?
-  tags        String[]
-  isAnswered  Boolean     @default(false)
-  views       Int         @default(0)
-  created_at  DateTime    @default(now())
-  updated_at  DateTime    @default(now())
-  answers     QnAAnswer[]
-  User        User?       @relation(fields: [userId], references: [id])
+  id         String      @id @default(cuid())
+  question   String
+  answer     String?
+  userId     String?
+  category   String?
+  tags       String[]
+  isAnswered Boolean     @default(false)
+  views      Int         @default(0)
+  created_at DateTime    @default(now())
+  updated_at DateTime    @default(now())
+  User       User?       @relation(fields: [userId], references: [id])
+  answers    QnAAnswer[]
 }
 
 model QnAAnswer {
-  id          String   @id @default(cuid())
-  qnaId       String
-  answer      String
-  userId      String?
-  isAccepted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-  QnA         QnA      @relation(fields: [qnaId], references: [id], onDelete: Cascade)
-  User        User?    @relation(fields: [userId], references: [id])
+  id         String   @id @default(cuid())
+  qnaId      String
+  answer     String
+  userId     String?
+  isAccepted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  QnA        QnA      @relation(fields: [qnaId], references: [id], onDelete: Cascade)
+  User       User?    @relation(fields: [userId], references: [id])
 }
 
 model TicketReply {
-  id          String   @id @default(cuid())
-  ticketId    String
-  reply       String
-  userId      String?
-  isAdmin     Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id            String        @id @default(cuid())
+  ticketId      String
+  reply         String
+  userId        String?
+  isAdmin       Boolean       @default(false)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @default(now())
   SupportTicket SupportTicket @relation(fields: [ticketId], references: [uid], onDelete: Cascade)
+}
+
+model Meeting {
+  id               String               @id @default(cuid())
+  title            String
+  description      String?
+  date             DateTime
+  startTime        String
+  endTime          String
+  type             MeetingType
+  location         String?
+  meetingLink      String?
+  status           MeetingStatus        @default(upcoming)
+  userId           String
+  clientId         String?
+  partnerId        String?
+  adminId          String?
+  projectId        String?
+  googleEventId    String?              @unique
+  syncedWithGoogle Boolean              @default(false)
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @default(now())
+  Admin            Admin?               @relation(fields: [adminId], references: [uid])
+  Client           Client?              @relation(fields: [clientId], references: [uid])
+  Partner          Partner?             @relation(fields: [partnerId], references: [uid])
+  Project          Project?             @relation(fields: [projectId], references: [id])
+  User             User                 @relation(fields: [userId], references: [id])
+  participants     MeetingParticipant[]
+}
+
+model MeetingParticipant {
+  id         String   @id @default(cuid())
+  meetingId  String
+  email      String
+  name       String?
+  role       String?
+  created_at DateTime @default(now())
+  Meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -307,54 +345,6 @@ enum NotificationType {
   error
   reminder
   update
-}
-
-model Meeting {
-  id                String              @id @default(cuid())
-  title             String
-  description       String?
-  date              DateTime
-  startTime         String
-  endTime           String
-  type              MeetingType
-  location          String?
-  meetingLink       String?
-  status            MeetingStatus        @default(upcoming)
-  
-  // Relationships
-  userId            String
-  clientId          String?
-  partnerId         String?
-  adminId           String?
-  projectId         String?
-  
-  // Google Calendar sync
-  googleEventId     String?              @unique
-  syncedWithGoogle  Boolean              @default(false)
-  
-  // Participants
-  participants      MeetingParticipant[]
-  
-  created_at        DateTime             @default(now())
-  updated_at        DateTime             @default(now())
-  
-  User              User                 @relation(fields: [userId], references: [id])
-  Client            Client?              @relation(fields: [clientId], references: [uid])
-  Partner           Partner?             @relation(fields: [partnerId], references: [uid])
-  Admin             Admin?               @relation(fields: [adminId], references: [uid])
-  Project           Project?             @relation(fields: [projectId], references: [id])
-}
-
-model MeetingParticipant {
-  id          String   @id @default(cuid())
-  meetingId   String
-  email       String
-  name        String?
-  role        String?  // organizer, attendee, optional, etc.
-  
-  Meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  
-  created_at  DateTime @default(now())
 }
 
 enum MeetingType {

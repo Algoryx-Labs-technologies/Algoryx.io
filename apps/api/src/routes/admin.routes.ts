@@ -4,7 +4,7 @@ import { requireAdmin } from '@/middleware/auth';
 import { validate } from '@/middleware/validate';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
 const createProjectSchema = {

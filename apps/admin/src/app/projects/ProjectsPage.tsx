@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { FolderKanban, CheckCircle2, XCircle } from 'lucide-react';
 import { handleApiRequest, getAuthToken } from '../action-center/utils';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
 interface Client {
@@ -86,6 +86,7 @@ export function ProjectsPage() {
   const [loadingClients, setLoadingClients] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   // Project Form State
   const [projectForm, setProjectForm] = useState({
@@ -111,11 +112,12 @@ export function ProjectsPage() {
     const fetchClients = async () => {
       setLoadingClients(true);
       try {
+        const token = await getAuthToken();
         const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/clients`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAuthToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -144,11 +146,12 @@ export function ProjectsPage() {
     const fetchProjects = async () => {
       setLoadingProjects(true);
       try {
+        const token = await getAuthToken();
         const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/projects`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getAuthToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -402,9 +405,13 @@ export function ProjectsPage() {
                 </div>
                 <Button
                   onClick={() => {
-                    // Parse JSON fields before sending
-                    const formData = {
+                    // Parse JSON fields before sending and clean up empty strings
+                    const formData: any = {
                       ...projectForm,
+                      // Convert empty strings to null for optional foreign keys
+                      clientId: projectForm.clientId && projectForm.clientId.trim() !== '' ? projectForm.clientId : null,
+                      partnerId: projectForm.partnerId && projectForm.partnerId.trim() !== '' ? projectForm.partnerId : null,
+                      // Parse JSON fields
                       projectTimeline: projectForm.projectTimeline ? (() => {
                         try {
                           return JSON.parse(projectForm.projectTimeline);
@@ -420,6 +427,14 @@ export function ProjectsPage() {
                         }
                       })() : undefined,
                     };
+                    // Remove undefined values
+                    Object.keys(formData).forEach(key => {
+                      if (formData[key] === undefined || formData[key] === '') {
+                        if (key !== 'clientId' && key !== 'partnerId') {
+                          delete formData[key];
+                        }
+                      }
+                    });
                     handleApiRequest('/projects', 'POST', formData, setLoading, setMessage, 'Create Project', resetProjectForm);
                   }}
                   disabled={loading === 'Create Project'}
@@ -437,55 +452,271 @@ export function ProjectsPage() {
                   <FolderKanban className="h-5 w-5 text-blue-400" />
                   Update Project
                 </CardTitle>
-                <CardDescription>Update an existing project</CardDescription>
+                <CardDescription>Select a project to update</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-gray-300">Project ID *</Label>
-                  <Input
-                    id="update-project-id"
-                    className="bg-slate-800/50 border-white/10 text-white mt-1"
-                    placeholder="Enter project ID"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-300">Description</Label>
-                  <textarea
-                    id="update-project-description"
-                    className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                    placeholder="Project description"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-300">Project Status</Label>
+                  <Label className="text-gray-300">Select Project *</Label>
                   <select
-                    id="update-project-status"
+                    value={selectedProjectId}
+                    onChange={(e) => {
+                      const projectId = e.target.value;
+                      setSelectedProjectId(projectId);
+                      if (projectId) {
+                        const project = projects.find(p => p.id === projectId);
+                        if (project) {
+                          // Populate form fields with selected project data
+                          setProjectForm({
+                            clientId: project.clientId || '',
+                            partnerId: project.partnerId || '',
+                            description: project.description || '',
+                            readMe: project.readMe || '',
+                            techStack: project.techStack || '',
+                            clientRequirement: project.clientRequirement || '',
+                            projectInformation: project.projectInformation || '',
+                            projectTimeline: project.projectTimeline ? JSON.stringify(project.projectTimeline, null, 2) : '',
+                            projectStatus: project.projectStatus || '',
+                            projectFeatures: project.projectFeatures || '',
+                            priority: project.priority || '',
+                            progressStatus: project.progressStatus || '',
+                            miscellaneousData: project.miscellaneousData ? JSON.stringify(project.miscellaneousData, null, 2) : '',
+                            Budget: project.Budget || '',
+                            paymentStatus: project.paymentStatus || '',
+                          });
+                        }
+                      }
+                    }}
                     className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                    disabled={loadingProjects}
                   >
-                    <option value="">Select status</option>
-                    <option value="not_started">Not Started</option>
-                    <option value="initiated">Initiated</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="delivered">Delivered</option>
+                    <option value="">Select a project to update</option>
+                    {projects.map((project) => {
+                      const clientName = project.Client?.User
+                        ? `${project.Client.User.firstName || ''} ${project.Client.User.lastName || ''}`.trim() || project.Client.User.email
+                        : 'No Client';
+                      const projectLabel = project.description
+                        ? `${project.description.substring(0, 50)}${project.description.length > 50 ? '...' : ''} - ${clientName}`
+                        : `Project ${project.id.substring(0, 8)} - ${clientName}`;
+                      return (
+                        <option key={project.id} value={project.id}>
+                          {projectLabel}
+                        </option>
+                      );
+                    })}
                   </select>
+                  {loadingProjects && (
+                    <p className="text-gray-400 text-sm mt-1">Loading projects...</p>
+                  )}
                 </div>
-                <Button
-                  onClick={async () => {
-                    const projectId = (document.getElementById('update-project-id') as HTMLInputElement)?.value;
-                    const description = (document.getElementById('update-project-description') as HTMLTextAreaElement)?.value;
-                    const status = (document.getElementById('update-project-status') as HTMLSelectElement)?.value;
-                    if (!projectId) {
-                      setMessage({ type: 'error', text: 'Project ID is required' });
-                      return;
-                    }
-                    await handleApiRequest(`/projects/${projectId}`, 'PATCH', { description, projectStatus: status }, setLoading, setMessage, 'Update Project');
-                  }}
-                  disabled={loading === 'Update Project'}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                >
-                  {loading === 'Update Project' ? 'Updating...' : 'Update Project'}
-                </Button>
+                {selectedProjectId && (
+                  <>
+                    <div>
+                      <Label className="text-gray-300">Client</Label>
+                      <select
+                        value={projectForm.clientId}
+                        onChange={(e) => setProjectForm({ ...projectForm, clientId: e.target.value })}
+                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        disabled={loadingClients}
+                      >
+                        <option value="">No client</option>
+                        {clients.map((client) => {
+                          const clientName = client.User.firstName || client.User.lastName
+                            ? `${client.User.firstName || ''} ${client.User.lastName || ''}`.trim()
+                            : client.User.email;
+                          return (
+                            <option key={client.uid} value={client.uid}>
+                              {clientName} ({client.User.email})
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Description</Label>
+                      <textarea
+                        value={projectForm.description}
+                        onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                        className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        placeholder="Project description"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Tech Stack</Label>
+                      <Input
+                        value={projectForm.techStack}
+                        onChange={(e) => setProjectForm({ ...projectForm, techStack: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="e.g., React, Node.js, PostgreSQL"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Priority</Label>
+                      <select
+                        value={projectForm.priority}
+                        onChange={(e) => setProjectForm({ ...projectForm, priority: e.target.value })}
+                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                      >
+                        <option value="">Select priority</option>
+                        <option value="low">Low</option>
+                        <option value="mid">Mid</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Project Status</Label>
+                      <select
+                        value={projectForm.projectStatus}
+                        onChange={(e) => setProjectForm({ ...projectForm, projectStatus: e.target.value })}
+                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                      >
+                        <option value="">Select status</option>
+                        <option value="not_started">Not Started</option>
+                        <option value="initiated">Initiated</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Partner ID (Optional)</Label>
+                      <Input
+                        value={projectForm.partnerId}
+                        onChange={(e) => setProjectForm({ ...projectForm, partnerId: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="Enter partner ID"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">ReadMe</Label>
+                      <textarea
+                        value={projectForm.readMe}
+                        onChange={(e) => setProjectForm({ ...projectForm, readMe: e.target.value })}
+                        className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        placeholder="Project README content"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Client Requirement</Label>
+                      <textarea
+                        value={projectForm.clientRequirement}
+                        onChange={(e) => setProjectForm({ ...projectForm, clientRequirement: e.target.value })}
+                        className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        placeholder="Client requirements and specifications"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Project Information</Label>
+                      <textarea
+                        value={projectForm.projectInformation}
+                        onChange={(e) => setProjectForm({ ...projectForm, projectInformation: e.target.value })}
+                        className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        placeholder="Additional project information"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Project Timeline (JSON)</Label>
+                      <textarea
+                        value={projectForm.projectTimeline}
+                        onChange={(e) => setProjectForm({ ...projectForm, projectTimeline: e.target.value })}
+                        className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
+                        placeholder='{"startDate": "2024-01-01", "endDate": "2024-12-31", "milestones": []}'
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Project Features</Label>
+                      <textarea
+                        value={projectForm.projectFeatures}
+                        onChange={(e) => setProjectForm({ ...projectForm, projectFeatures: e.target.value })}
+                        className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                        placeholder="List of project features"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Progress Status</Label>
+                      <Input
+                        value={projectForm.progressStatus}
+                        onChange={(e) => setProjectForm({ ...projectForm, progressStatus: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="e.g., 50%, Phase 2, etc."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Miscellaneous Data (JSON)</Label>
+                      <textarea
+                        value={projectForm.miscellaneousData}
+                        onChange={(e) => setProjectForm({ ...projectForm, miscellaneousData: e.target.value })}
+                        className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
+                        placeholder='{"key": "value"}'
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Budget</Label>
+                      <Input
+                        value={projectForm.Budget}
+                        onChange={(e) => setProjectForm({ ...projectForm, Budget: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="Enter budget"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-300">Payment Status</Label>
+                      <select
+                        value={projectForm.paymentStatus}
+                        onChange={(e) => setProjectForm({ ...projectForm, paymentStatus: e.target.value })}
+                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                      >
+                        <option value="">Select payment status</option>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="failed">Failed</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
+                    </div>
+                    <Button
+                      onClick={async () => {
+                        if (!selectedProjectId) {
+                          setMessage({ type: 'error', text: 'Please select a project' });
+                          return;
+                        }
+                        // Parse JSON fields before sending and clean up empty strings
+                        const formData: any = {
+                          ...projectForm,
+                          // Convert empty strings to null for optional foreign keys
+                          clientId: projectForm.clientId && projectForm.clientId.trim() !== '' ? projectForm.clientId : null,
+                          partnerId: projectForm.partnerId && projectForm.partnerId.trim() !== '' ? projectForm.partnerId : null,
+                          // Parse JSON fields
+                          projectTimeline: projectForm.projectTimeline ? (() => {
+                            try {
+                              return JSON.parse(projectForm.projectTimeline);
+                            } catch {
+                              return projectForm.projectTimeline;
+                            }
+                          })() : undefined,
+                          miscellaneousData: projectForm.miscellaneousData ? (() => {
+                            try {
+                              return JSON.parse(projectForm.miscellaneousData);
+                            } catch {
+                              return projectForm.miscellaneousData;
+                            }
+                          })() : undefined,
+                        };
+                        // Remove undefined values
+                        Object.keys(formData).forEach(key => {
+                          if (formData[key] === undefined || formData[key] === '') {
+                            if (key !== 'clientId' && key !== 'partnerId') {
+                              delete formData[key];
+                            }
+                          }
+                        });
+                        await handleApiRequest(`/projects/${selectedProjectId}`, 'PATCH', formData, setLoading, setMessage, 'Update Project');
+                      }}
+                      disabled={loading === 'Update Project' || !selectedProjectId}
+                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+                    >
+                      {loading === 'Update Project' ? 'Updating...' : 'Update Project'}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
 

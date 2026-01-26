@@ -278,6 +278,148 @@ export class AuthController {
       message: 'Session refreshed successfully',
     });
   }
+
+  /**
+   * Admin-specific sign up
+   * Creates a new admin user and Admin record
+   */
+  async adminSignup(req: AuthenticatedRequest, res: Response) {
+    const { email, password, firstName, lastName, phoneNumber, country, state } = req.body;
+
+    if (!email || !password) {
+      throw new AppError(400, 'Email and password are required');
+    }
+
+    // Sign up with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          firstName,
+          lastName,
+          phoneNumber,
+          country,
+          state,
+          role: 'admin',
+        },
+      },
+    });
+
+    if (authError) {
+      throw new AppError(400, authError.message);
+    }
+
+    if (!authData.user) {
+      throw new AppError(500, 'Failed to create user');
+    }
+
+    // Create user with admin role and Admin record
+    const user = await authService.createOrFindUser(
+      authData.user.id,
+      email,
+      {
+        firstName,
+        lastName,
+        phoneNumber,
+        country,
+        state,
+        role: 'admin' as any,
+      }
+    );
+
+    // Fetch user with Admin relation to return in response
+    const userWithAdmin = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        Admin: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        user: userWithAdmin,
+        session: authData.session,
+      },
+      message: 'Admin account created successfully. Please check your email to verify your account.',
+    });
+  }
+
+  /**
+   * Admin-specific sign in
+   * Validates that the user is an admin
+   */
+  async adminSignin(req: AuthenticatedRequest, res: Response) {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      throw new AppError(400, 'Email and password are required');
+    }
+
+    // Sign in with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      throw new AppError(401, authError.message);
+    }
+
+    if (!authData.user || !authData.session) {
+      throw new AppError(500, 'Failed to sign in');
+    }
+
+    // Find or create user in database
+    const user = await authService.createOrFindUser(
+      authData.user.id,
+      email,
+      {
+        firstName: authData.user.user_metadata?.firstName,
+        lastName: authData.user.user_metadata?.lastName,
+        phoneNumber: authData.user.user_metadata?.phoneNumber,
+        country: authData.user.user_metadata?.country,
+        state: authData.user.user_metadata?.state,
+      }
+    );
+
+    // Verify user is an admin
+    if (user.role !== 'admin') {
+      throw new AppError(403, 'Access denied. Admin privileges required.');
+    }
+
+    // Ensure Admin record exists
+    const adminRecord = await prisma.admin.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!adminRecord) {
+      // Create Admin record if it doesn't exist
+      await prisma.admin.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+
+    // Fetch user with Admin relation
+    const userWithAdmin = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        Admin: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        user: userWithAdmin,
+        session: authData.session,
+      },
+      message: 'Signed in successfully',
+    });
+  }
 }
 
 export const authController = new AuthController();
