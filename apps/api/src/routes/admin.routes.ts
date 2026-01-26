@@ -74,6 +74,16 @@ const replyToTicketSchema = {
   }),
 };
 
+const updateSupportTicketSchema = {
+  body: z.object({
+    status: z.enum(['pending', 'in_progress', 'resolved', 'closed']).optional(),
+    priority: z.enum(['low', 'mid', 'high']).optional(),
+    issueType: z.string().optional(),
+    description: z.string().optional(),
+    additionalDetails: z.string().optional(),
+  }),
+};
+
 const createCommunityPostSchema = {
   body: z.object({
     title: z.string().min(1, 'Title is required'),
@@ -157,6 +167,13 @@ router.post(
   '/support-tickets/:ticketId/reply',
   validate(replyToTicketSchema),
   adminController.replyToTicket.bind(adminController)
+);
+
+// Support Ticket Update Routes
+router.patch(
+  '/support-tickets/:ticketId',
+  validate(updateSupportTicketSchema),
+  adminController.updateSupportTicket.bind(adminController)
 );
 
 // Community Management Routes

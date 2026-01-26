@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { randomUUID } from 'crypto';
 import { AuthenticatedRequest } from '@/types';
 import { AppError } from '@/types';
 import { prisma } from '@/config/database';
@@ -351,8 +352,12 @@ export class AdminController {
       throw new AppError(404, 'Support ticket not found');
     }
 
+    // Generate unique ID for the reply
+    const replyId = randomUUID();
+
     const reply = await prisma.ticketReply.create({
       data: {
+        id: replyId,
         ticketId: ticket.uid,
         reply: req.body.reply,
         userId: req.user.id,
@@ -639,7 +644,7 @@ export class AdminController {
             },
           },
         },
-        replies: {
+        TicketReply: {
           orderBy: {
             created_at: 'desc',
           },
@@ -654,6 +659,83 @@ export class AdminController {
       success: true,
       data: tickets,
       count: tickets.length,
+    });
+  }
+
+  // ========== UPDATE SUPPORT TICKET ==========
+  async updateSupportTicket(req: AuthenticatedRequest, res: Response) {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    const { ticketId } = req.params;
+    const { status, priority, issueType, description, additionalDetails } = req.body;
+
+    // Validate status if provided
+    if (status && !['pending', 'in_progress', 'resolved', 'closed'].includes(status)) {
+      throw new AppError(400, 'Invalid status. Must be pending, in_progress, resolved, or closed');
+    }
+
+    // Validate priority if provided
+    if (priority && !['low', 'mid', 'high'].includes(priority)) {
+      throw new AppError(400, 'Invalid priority. Must be low, mid, or high');
+    }
+
+    const updateData: any = {};
+    if (status !== undefined) updateData.status = status;
+    if (priority !== undefined) updateData.priority = priority;
+    if (issueType !== undefined) updateData.issueType = issueType;
+    if (description !== undefined) updateData.description = description;
+    if (additionalDetails !== undefined) updateData.additionalDetails = additionalDetails;
+
+    const ticket = await prisma.supportTicket.update({
+      where: { uid: ticketId },
+      data: updateData,
+      include: {
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        Partner: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        TicketReply: {
+          orderBy: {
+            created_at: 'desc',
+          },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: ticket,
+      message: 'Support ticket updated successfully',
     });
   }
 

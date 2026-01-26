@@ -176,6 +176,53 @@ export class SupportTicketService {
   }
 
 
+  async update(uid: string, data: {
+    status?: TicketStatus;
+    priority?: Priority;
+    issueType?: string;
+    description?: string;
+    additionalDetails?: string;
+  }): Promise<SupportTicket> {
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { uid },
+    });
+
+    if (!ticket) {
+      throw new AppError(404, 'Support ticket not found');
+    }
+
+    return prisma.supportTicket.update({
+      where: { uid },
+      data,
+      include: {
+        User: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Client: {
+          select: {
+            uid: true,
+          },
+        },
+        Partner: {
+          select: {
+            uid: true,
+            companyName: true,
+          },
+        },
+        TicketReply: {
+          orderBy: {
+            created_at: 'desc',
+          },
+        },
+      },
+    });
+  }
+
   async delete(uid: string, clientId?: string, partnerId?: string): Promise<void> {
     const ticket = await this.findById(uid, clientId, partnerId);
     
