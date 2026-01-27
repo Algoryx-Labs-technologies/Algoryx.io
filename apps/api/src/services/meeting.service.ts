@@ -1,5 +1,5 @@
 import { prisma } from '@/config/database';
-import { Meeting, MeetingParticipant, MeetingType, MeetingStatus } from '@prisma/client';
+import { Meeting, MeetingType, MeetingStatus } from '@prisma/client';
 import { AppError } from '@/types';
 
 export class MeetingService {
@@ -40,7 +40,6 @@ export class MeetingService {
             description: true,
           },
         },
-        participants: true,
       },
       orderBy: {
         date: 'asc',
@@ -95,7 +94,6 @@ export class MeetingService {
             description: true,
           },
         },
-        participants: true,
       },
       orderBy: {
         date: 'asc',
@@ -143,7 +141,6 @@ export class MeetingService {
             description: true,
           },
         },
-        participants: true,
       },
     });
   }
@@ -162,14 +159,11 @@ export class MeetingService {
     partnerId?: string;
     adminId?: string;
     projectId?: string;
-    participants?: Array<{ email: string; name?: string; role?: string }>;
     googleEventId?: string;
     syncedWithGoogle?: boolean;
   }): Promise<Meeting> {
-    const { participants, ...meetingData } = data;
-
     const meeting = await prisma.meeting.create({
-      data: meetingData,
+      data,
       include: {
         User: {
           select: {
@@ -202,23 +196,9 @@ export class MeetingService {
             description: true,
           },
         },
-        participants: true,
       },
     });
 
-    // Create participants if provided
-    if (participants && participants.length > 0) {
-      await prisma.meetingParticipant.createMany({
-        data: participants.map(p => ({
-          meetingId: meeting.id,
-          email: p.email,
-          name: p.name,
-          role: p.role || 'attendee',
-        })),
-      });
-    }
-
-    // Fetch meeting with participants
     return this.findById(meeting.id, data.userId, false) as Promise<Meeting>;
   }
 
@@ -304,7 +284,6 @@ export class MeetingService {
             description: true,
           },
         },
-        participants: true,
       },
     });
   }
@@ -334,35 +313,6 @@ export class MeetingService {
 
     await prisma.meeting.delete({
       where: { id },
-    });
-  }
-
-  async addParticipant(
-    meetingId: string,
-    participant: { email: string; name?: string; role?: string }
-  ): Promise<MeetingParticipant> {
-    // Verify meeting exists
-    const meeting = await prisma.meeting.findFirst({
-      where: { id: meetingId },
-    });
-
-    if (!meeting) {
-      throw new AppError(404, 'Meeting not found');
-    }
-
-    return prisma.meetingParticipant.create({
-      data: {
-        meetingId,
-        email: participant.email,
-        name: participant.name,
-        role: participant.role || 'attendee',
-      },
-    });
-  }
-
-  async removeParticipant(meetingId: string, participantId: string): Promise<void> {
-    await prisma.meetingParticipant.delete({
-      where: { id: participantId },
     });
   }
 }

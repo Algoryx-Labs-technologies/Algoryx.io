@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { randomUUID } from 'crypto';
 import { supabase, supabaseAdmin } from '@/config/supabase';
 import { env } from '@/config/env';
 import { AuthenticatedRequest } from '@/types';
@@ -152,10 +153,23 @@ export class AuthController {
       throw new AppError(401, 'Unauthorized');
     }
 
-    const user = await authService.findBySupabaseUserId(req.supabaseUser.id);
+    // Try to find user, or create if doesn't exist (handles case where user exists in Supabase but not in DB)
+    let user = await authService.findBySupabaseUserId(req.supabaseUser.id);
 
     if (!user) {
-      throw new AppError(404, 'User not found');
+      // User exists in Supabase Auth but not in database - create it
+      user = await authService.createOrFindUser(
+        req.supabaseUser.id,
+        req.supabaseUser.email!,
+        {
+          firstName: req.supabaseUser.user_metadata?.firstName,
+          lastName: req.supabaseUser.user_metadata?.lastName,
+          phoneNumber: req.supabaseUser.user_metadata?.phoneNumber,
+          country: req.supabaseUser.user_metadata?.country,
+          state: req.supabaseUser.user_metadata?.state,
+          role: req.supabaseUser.user_metadata?.role as any || undefined,
+        }
+      );
     }
 
     res.json({
@@ -398,6 +412,7 @@ export class AuthController {
       // Create Admin record if it doesn't exist
       await prisma.admin.create({
         data: {
+          uid: randomUUID(),
           userId: user.id,
         },
       });

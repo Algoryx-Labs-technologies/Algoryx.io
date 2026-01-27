@@ -84,41 +84,30 @@ model LandingEnquiry {
 }
 
 model Meeting {
-  id                 String               @id
-  title              String
-  description        String?
-  date               DateTime
-  startTime          String
-  endTime            String
-  type               MeetingType
-  location           String?
-  meetingLink        String?
-  status             MeetingStatus        @default(upcoming)
-  userId             String
-  clientId           String?
-  partnerId          String?
-  adminId            String?
-  projectId          String?
-  googleEventId      String?              @unique
-  syncedWithGoogle   Boolean              @default(false)
-  created_at         DateTime             @default(now())
-  updated_at         DateTime             @default(now())
-  Admin              Admin?               @relation(fields: [adminId], references: [uid])
-  Client             Client?              @relation(fields: [clientId], references: [uid])
-  Partner            Partner?             @relation(fields: [partnerId], references: [uid])
-  Project            Project?             @relation(fields: [projectId], references: [id])
-  User               User                 @relation(fields: [userId], references: [id])
-  MeetingParticipant MeetingParticipant[]
-}
-
-model MeetingParticipant {
-  id         String   @id
-  meetingId  String
-  email      String
-  name       String?
-  role       String?
-  created_at DateTime @default(now())
-  Meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  id               String        @id
+  title            String
+  description      String?
+  date             DateTime
+  startTime        String
+  endTime          String
+  type             MeetingType
+  location         String?
+  meetingLink      String?
+  status           MeetingStatus @default(upcoming)
+  userId           String
+  clientId         String?
+  partnerId        String?
+  adminId          String?
+  projectId        String?
+  googleEventId    String?       @unique
+  syncedWithGoogle Boolean       @default(false)
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @default(now())
+  Admin            Admin?        @relation(fields: [adminId], references: [uid])
+  Client           Client?       @relation(fields: [clientId], references: [uid])
+  Partner          Partner?      @relation(fields: [partnerId], references: [uid])
+  Project          Project?      @relation(fields: [projectId], references: [id])
+  User             User          @relation(fields: [userId], references: [id])
 }
 
 model Notification {
