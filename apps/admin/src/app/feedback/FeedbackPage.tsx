@@ -5,9 +5,8 @@ import { cn } from '../components/ui/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 import { Star, CheckCircle2, XCircle, RefreshCw, Search } from 'lucide-react';
-import { handleApiRequest, getAuthToken } from '../action-center/utils';
+import { getAuthToken } from '../action-center/utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
@@ -64,15 +63,6 @@ export function FeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const [feedbackForm, setFeedbackForm] = useState({
-    feedbackId: '',
-    isTop: true,
-  });
-
-  const resetForm = () => {
-    setFeedbackForm({ feedbackId: '', isTop: true });
-  };
 
   // Fetch all feedback
   const fetchFeedbacks = async () => {
@@ -366,47 +356,6 @@ export function FeedbackPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Select Top Feedback Form */}
-          <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 max-w-2xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Star className="h-5 w-5 text-blue-400" />
-                Select Top Feedback
-              </CardTitle>
-              <CardDescription>Mark feedback as top feedback by ID</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-gray-300">Feedback ID *</Label>
-                <Input
-                  value={feedbackForm.feedbackId}
-                  onChange={(e) => setFeedbackForm({ ...feedbackForm, feedbackId: e.target.value })}
-                  className="bg-slate-800/50 border-white/10 text-white mt-1"
-                  placeholder="Enter feedback ID"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={feedbackForm.isTop}
-                  onChange={(e) => setFeedbackForm({ ...feedbackForm, isTop: e.target.checked })}
-                  className="rounded"
-                />
-                <Label className="text-gray-300">Mark as top feedback</Label>
-              </div>
-              <Button
-                onClick={() => handleApiRequest(`/feedback/${feedbackForm.feedbackId}/top`, 'POST', { isTop: feedbackForm.isTop }, setLoading, setMessage, 'Select Top Feedback', () => {
-                  resetForm();
-                  fetchFeedbacks();
-                })}
-                disabled={loading === 'Select Top Feedback' || !feedbackForm.feedbackId}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-              >
-                {loading === 'Select Top Feedback' ? 'Updating...' : 'Select Top Feedback'}
-              </Button>
             </CardContent>
           </Card>
         </div>
