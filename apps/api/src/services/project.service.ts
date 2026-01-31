@@ -32,7 +32,7 @@ export class ProjectService {
 
   async create(data: {
     clientId: string;
-    description?: string;
+    projectName?: string;
     readMe?: string;
     techStack?: string;
     clientRequirement?: string;
@@ -57,7 +57,7 @@ export class ProjectService {
     id: string,
     clientId: string,
     data: Partial<{
-      description: string;
+      projectName: string;
       readMe: string;
       techStack: string;
       clientRequirement: string;

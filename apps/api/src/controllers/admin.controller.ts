@@ -143,7 +143,7 @@ export class AdminController {
         adminId,
         clientId,
         partnerId,
-        description: req.body.description,
+        projectName: req.body.projectName,
         readMe: req.body.readMe,
         techStack: req.body.techStack,
         clientRequirement: req.body.clientRequirement,

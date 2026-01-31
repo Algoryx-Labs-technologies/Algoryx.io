@@ -33,7 +33,7 @@ interface Project {
   clientId: string | null;
   adminId: string | null;
   partnerId: string | null;
-  description: string | null;
+  projectName: string | null;
   readMe: string | null;
   techStack: string | null;
   clientRequirement: string | null;
@@ -98,7 +98,7 @@ export function ProjectsPage() {
   const [projectForm, setProjectForm] = useState({
     clientId: '',
     partnerId: '',
-    description: '',
+    projectName: '',
     readMe: '',
     techStack: '',
     clientRequirement: '',
@@ -185,7 +185,7 @@ export function ProjectsPage() {
     setProjectForm({
       clientId: '',
       partnerId: '',
-      description: '',
+      projectName: '',
       readMe: '',
       techStack: '',
       clientRequirement: '',
@@ -327,7 +327,7 @@ export function ProjectsPage() {
     setProjectForm({
       clientId: project.clientId || '',
       partnerId: project.partnerId || '',
-      description: project.description || '',
+      projectName: project.projectName || '',
       readMe: project.readMe || '',
       techStack: project.techStack || '',
       clientRequirement: project.clientRequirement || '',
@@ -355,13 +355,13 @@ export function ProjectsPage() {
     const clientName = project.Client?.User
       ? `${project.Client.User.firstName || ''} ${project.Client.User.lastName || ''}`.trim() || project.Client.User.email
       : 'N/A';
-    const description = project.description || '';
+    const projectName = project.projectName || '';
     const techStack = project.techStack || '';
     
     return (
       project.id.toLowerCase().includes(searchLower) ||
       clientName.toLowerCase().includes(searchLower) ||
-      description.toLowerCase().includes(searchLower) ||
+      projectName.toLowerCase().includes(searchLower) ||
       techStack.toLowerCase().includes(searchLower) ||
       (project.projectStatus || '').toLowerCase().includes(searchLower) ||
       (project.priority || '').toLowerCase().includes(searchLower)
@@ -506,7 +506,7 @@ export function ProjectsPage() {
                             <td className="py-4 px-4">
                               <div className="flex flex-col">
                                 <span className="text-white font-medium">
-                                  {project.description ? (project.description.length > 40 ? `${project.description.substring(0, 40)}...` : project.description) : 'Untitled Project'}
+                                  {project.projectName ? (project.projectName.length > 40 ? `${project.projectName.substring(0, 40)}...` : project.projectName) : 'Untitled Project'}
                                 </span>
                                 <span className="text-gray-500 text-xs font-mono mt-1">{project.id.substring(0, 8)}...</span>
                               </div>
@@ -691,12 +691,12 @@ export function ProjectsPage() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-gray-300">Description</Label>
-                    <textarea
-                      value={projectForm.description}
-                      onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Project description"
+                    <Label className="text-gray-300">Project Name</Label>
+                    <Input
+                      value={projectForm.projectName}
+                      onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
+                      className="bg-slate-800/50 border-white/10 text-white mt-1"
+                      placeholder="Enter project name"
                     />
                   </div>
                   <div>
@@ -907,12 +907,12 @@ export function ProjectsPage() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-gray-300">Description</Label>
-                    <textarea
-                      value={projectForm.description}
-                      onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Project description"
+                    <Label className="text-gray-300">Project Name</Label>
+                    <Input
+                      value={projectForm.projectName}
+                      onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
+                      className="bg-slate-800/50 border-white/10 text-white mt-1"
+                      placeholder="Enter project name"
                     />
                   </div>
                   <div>

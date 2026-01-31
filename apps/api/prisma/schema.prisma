@@ -164,7 +164,7 @@ model Project {
   clientId           String?
   adminId            String?
   partnerId          String?
-  description        String?
+  projectName        String?
   readMe             String?
   techStack          String?
   clientRequirement  String?

@@ -11,7 +11,7 @@ const createProjectSchema = {
   body: z.object({
     clientId: z.string().optional(),
     partnerId: z.string().optional(),
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
@@ -29,7 +29,7 @@ const updateProjectSchema = {
   body: z.object({
     clientId: z.string().optional(),
     partnerId: z.string().optional(),
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),

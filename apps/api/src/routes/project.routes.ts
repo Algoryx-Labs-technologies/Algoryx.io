@@ -9,7 +9,7 @@ const router = Router();
 // Validation schemas
 const createProjectSchema = z.object({
   body: z.object({
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
@@ -23,7 +23,7 @@ const createProjectSchema = z.object({
 
 const updateProjectSchema = z.object({
   body: z.object({
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
