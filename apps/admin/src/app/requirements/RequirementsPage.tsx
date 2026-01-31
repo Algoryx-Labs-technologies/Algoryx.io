@@ -5,9 +5,8 @@ import { cn } from '../components/ui/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
 import { FileText, CheckCircle2, XCircle, RefreshCw, Search, Clock, AlertCircle } from 'lucide-react';
-import { handleApiRequest, getAuthToken } from '../action-center/utils';
+import { getAuthToken } from '../action-center/utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
@@ -58,14 +57,6 @@ export function RequirementsPage() {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loadingRequirements, setLoadingRequirements] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const [requirementForm, setRequirementForm] = useState({
-    requirementId: '',
-  });
-
-  const resetForm = () => {
-    setRequirementForm({ requirementId: '' });
-  };
 
   // Fetch all requirements
   const fetchRequirements = async () => {
@@ -348,38 +339,6 @@ export function RequirementsPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Mark Requirement as Contacted Form */}
-          <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 max-w-2xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-400" />
-                Mark Requirement as Contacted
-              </CardTitle>
-              <CardDescription>Mark a requirement as contacted by ID</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-gray-300">Requirement ID *</Label>
-                <Input
-                  value={requirementForm.requirementId}
-                  onChange={(e) => setRequirementForm({ ...requirementForm, requirementId: e.target.value })}
-                  className="bg-slate-800/50 border-white/10 text-white mt-1"
-                  placeholder="Enter requirement ID"
-                />
-              </div>
-              <Button
-                onClick={() => handleApiRequest(`/requirements/${requirementForm.requirementId}/contacted`, 'POST', {}, setLoading, setMessage, 'Mark Requirement Contacted', () => {
-                  resetForm();
-                  fetchRequirements();
-                })}
-                disabled={loading === 'Mark Requirement Contacted' || !requirementForm.requirementId}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-              >
-                {loading === 'Mark Requirement Contacted' ? 'Updating...' : 'Mark as Contacted'}
-              </Button>
             </CardContent>
           </Card>
         </div>
