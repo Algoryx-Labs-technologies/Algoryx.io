@@ -5,21 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { FolderKanban, Calendar, DollarSign, FileText, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { apiClient } from '../../lib/api';
 
 interface Project {
   id: string;
-  projectTitle?: string;
-  description?: string;
+  projectName?: string;
   projectStatus?: string;
   progressStatus?: string;
   priority?: string;
-  projectTimeline?: string;
-  deadline?: string;
-  paymentStatus?: 'paid' | 'pending' | 'overdue';
+  projectTimeline?: any;
+  deadline?: string | null;
+  paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
   agreementStatus?: 'signed' | 'pending' | 'draft';
   techStack?: string;
-  created_at: string;
-  updated_at: string;
+  created_at: string | Date;
+  updated_at: string | Date;
+  Budget?: string;
 }
 
 export function ProjectsListPage() {
@@ -27,93 +28,25 @@ export function ProjectsListPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+        setLoading(true);
+        setError(null);
         
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token'); // Get from your auth system
-        // const response = await fetch(`${API_BASE_URL}/projects`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   setProjects(data.data || []);
-        // } else {
-        //   console.error('Error fetching projects:', data.message);
-        // }
+        const response = await apiClient.get<Project[]>('/projects');
         
-        // Mock data for now
-        setProjects([
-          {
-            id: '1',
-            projectTitle: 'E-Commerce Platform',
-            description: 'Full-stack e-commerce solution with payment integration',
-            projectStatus: 'in_progress',
-            progressStatus: '65',
-            priority: 'high',
-            projectTimeline: '3 months',
-            deadline: '2024-12-31',
-            paymentStatus: 'paid',
-            agreementStatus: 'signed',
-            techStack: 'React, Node.js, PostgreSQL',
-            created_at: '2024-09-01',
-            updated_at: '2024-11-15',
-          },
-          {
-            id: '2',
-            projectTitle: 'Mobile App Development',
-            description: 'Cross-platform mobile application for iOS and Android',
-            projectStatus: 'initiated',
-            progressStatus: '30',
-            priority: 'mid',
-            projectTimeline: '4 months',
-            deadline: '2025-01-15',
-            paymentStatus: 'pending',
-            agreementStatus: 'signed',
-            techStack: 'React Native, Firebase',
-            created_at: '2024-10-01',
-            updated_at: '2024-11-10',
-          },
-          {
-            id: '3',
-            projectTitle: 'Data Analytics Dashboard',
-            description: 'Real-time analytics dashboard with data visualization',
-            projectStatus: 'in_progress',
-            progressStatus: '80',
-            priority: 'high',
-            projectTimeline: '2 months',
-            deadline: '2024-12-15',
-            paymentStatus: 'paid',
-            agreementStatus: 'signed',
-            techStack: 'Vue.js, Python, MongoDB',
-            created_at: '2024-08-15',
-            updated_at: '2024-11-20',
-          },
-          {
-            id: '4',
-            projectTitle: 'API Integration Service',
-            description: 'Third-party API integration and microservices architecture',
-            projectStatus: 'not_started',
-            progressStatus: '0',
-            priority: 'low',
-            projectTimeline: '1 month',
-            deadline: '2025-02-01',
-            paymentStatus: 'pending',
-            agreementStatus: 'draft',
-            techStack: 'Node.js, Express, Redis',
-            created_at: '2024-11-01',
-            updated_at: '2024-11-01',
-          },
-        ]);
+        if (response.success && response.data) {
+          setProjects(response.data || []);
+        } else {
+          setError(response.error || 'Failed to fetch projects');
+          console.error('Error fetching projects:', response.error);
+        }
       } catch (error) {
         console.error('Error fetching projects:', error);
+        setError('An unexpected error occurred');
       } finally {
         setLoading(false);
       }
@@ -156,23 +89,25 @@ export function ProjectsListPage() {
         return 'bg-green-500/20 text-green-400';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400';
-      case 'overdue':
+      case 'failed':
+      case 'refunded':
         return 'bg-red-500/20 text-red-400';
       default:
         return 'bg-gray-500/20 text-gray-400';
     }
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string | Date | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
 
-  const getDaysUntilDeadline = (deadline?: string) => {
+  const getDaysUntilDeadline = (deadline?: string | null) => {
     if (!deadline) return null;
     const today = new Date();
     const deadlineDate = new Date(deadline);
@@ -211,6 +146,15 @@ export function ProjectsListPage() {
               </p>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <Card className="bg-red-500/10 border-red-500/50 mb-6">
+                <CardContent className="p-4">
+                  <p className="text-red-400 font-footer">{error}</p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Projects Grid */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
@@ -240,11 +184,8 @@ export function ProjectsListPage() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <CardTitle className="text-xl font-semibold font-hero text-white mb-2 line-clamp-1">
-                              {project.projectTitle || 'Untitled Project'}
+                              {project.projectName || 'Untitled Project'}
                             </CardTitle>
-                            <p className="text-base text-gray-300 font-footer line-clamp-2">
-                              {project.description || 'No description'}
-                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -350,4 +291,3 @@ export function ProjectsListPage() {
     </div>
   );
 }
-

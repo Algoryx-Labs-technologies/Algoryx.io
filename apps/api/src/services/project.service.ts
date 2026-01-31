@@ -7,9 +7,6 @@ export class ProjectService {
   async findByClientId(clientId: string): Promise<Project[]> {
     return prisma.project.findMany({
       where: { clientId },
-      include: {
-        requirements: true,
-      },
       orderBy: {
         created_at: 'desc',
       },
@@ -24,9 +21,6 @@ export class ProjectService {
 
     return prisma.project.findFirst({
       where,
-      include: {
-        requirements: true,
-      },
     });
   }
 
@@ -46,9 +40,6 @@ export class ProjectService {
       data: {
         id: randomUUID(),
         ...data,
-      },
-      include: {
-        requirements: true,
       },
     });
   }
@@ -79,9 +70,6 @@ export class ProjectService {
       data: {
         ...data,
         updated_at: new Date(),
-      },
-      include: {
-        requirements: true,
       },
     });
   }
