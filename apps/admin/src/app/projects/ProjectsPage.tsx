@@ -89,6 +89,7 @@ export function ProjectsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedDeleteProjectId, setSelectedDeleteProjectId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -243,6 +244,7 @@ export function ProjectsPage() {
         resetProjectForm();
         setIsCreateModalOpen(false);
         fetchProjects();
+        setIsSuccessDialogOpen(true);
       }
     );
   };
@@ -581,7 +583,7 @@ export function ProjectsPage() {
           {/* Create Project Modal */}
           {isCreateModalOpen && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <CardHeader className="sticky top-0 bg-slate-900/95 z-10 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
@@ -796,7 +798,7 @@ export function ProjectsPage() {
           {/* Edit Project Modal */}
           {isEditModalOpen && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <CardHeader className="sticky top-0 bg-slate-900/95 z-10 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1045,6 +1047,52 @@ export function ProjectsPage() {
                       Cancel
                     </Button>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Success Dialog */}
+          {isSuccessDialogOpen && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-green-500/50 max-w-md w-full">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-400" />
+                        Success!
+                      </CardTitle>
+                      <CardDescription>Project created successfully</CardDescription>
+                    </div>
+                    <Button
+                      onClick={() => setIsSuccessDialogOpen(false)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <CheckCircle2 className="h-6 w-6 text-green-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Project Created Successfully!</p>
+                      <p className="text-gray-400 text-sm">Your project has been created and is now available in the projects list.</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => setIsSuccessDialogOpen(false)}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600"
+                  >
+                    Got it
+                  </Button>
                 </CardContent>
               </Card>
             </div>
