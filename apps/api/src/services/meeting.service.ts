@@ -4,11 +4,12 @@ import { AppError } from '@/types';
 
 export class MeetingService {
   async findAll(userId: string, isAdmin: boolean = false): Promise<Meeting[]> {
-    const where: any = isAdmin ? {} : { userId };
-    
-    return prisma.meeting.findMany({
-      where,
-      include: {
+    try {
+      const where: any = isAdmin ? {} : { userId };
+      
+      return await prisma.meeting.findMany({
+        where,
+        include: {
         User: {
           select: {
             id: true,
@@ -37,7 +38,8 @@ export class MeetingService {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
+            projectInformation: true,
           },
         },
       },
@@ -45,24 +47,29 @@ export class MeetingService {
         date: 'asc',
       },
     });
+    } catch (error: any) {
+      console.error('Error in MeetingService.findAll:', error);
+      throw new AppError(500, `Failed to fetch meetings: ${error.message}`);
+    }
   }
 
   async findUpcoming(userId: string, isAdmin: boolean = false): Promise<Meeting[]> {
-    const now = new Date();
-    const where: any = isAdmin 
-      ? { 
-          date: { gte: now },
-          status: 'upcoming',
-        }
-      : { 
-          userId,
-          date: { gte: now },
-          status: 'upcoming',
-        };
-    
-    return prisma.meeting.findMany({
-      where,
-      include: {
+    try {
+      const now = new Date();
+      const where: any = isAdmin 
+        ? { 
+            date: { gte: now },
+            status: 'upcoming',
+          }
+        : { 
+            userId,
+            date: { gte: now },
+            status: 'upcoming',
+          };
+      
+      return await prisma.meeting.findMany({
+        where,
+        include: {
         User: {
           select: {
             id: true,
@@ -91,7 +98,8 @@ export class MeetingService {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
+            projectInformation: true,
           },
         },
       },
@@ -99,17 +107,22 @@ export class MeetingService {
         date: 'asc',
       },
     });
+    } catch (error: any) {
+      console.error('Error in MeetingService.findUpcoming:', error);
+      throw new AppError(500, `Failed to fetch upcoming meetings: ${error.message}`);
+    }
   }
 
   async findById(id: string, userId: string, isAdmin: boolean = false): Promise<Meeting | null> {
-    const where: any = { id };
-    if (!isAdmin) {
-      where.userId = userId;
-    }
+    try {
+      const where: any = { id };
+      if (!isAdmin) {
+        where.userId = userId;
+      }
 
-    return prisma.meeting.findFirst({
-      where,
-      include: {
+      return await prisma.meeting.findFirst({
+        where,
+        include: {
         User: {
           select: {
             id: true,
@@ -138,11 +151,16 @@ export class MeetingService {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
+            projectInformation: true,
           },
         },
       },
     });
+    } catch (error: any) {
+      console.error('Error in MeetingService.findById:', error);
+      throw new AppError(500, `Failed to fetch meeting: ${error.message}`);
+    }
   }
 
   async create(data: {
@@ -162,9 +180,10 @@ export class MeetingService {
     googleEventId?: string;
     syncedWithGoogle?: boolean;
   }): Promise<Meeting> {
-    const meeting = await prisma.meeting.create({
-      data,
-      include: {
+    try {
+      const meeting = await prisma.meeting.create({
+        data,
+        include: {
         User: {
           select: {
             id: true,
@@ -193,13 +212,22 @@ export class MeetingService {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
+            projectInformation: true,
           },
         },
       },
     });
 
-    return this.findById(meeting.id, data.userId, false) as Promise<Meeting>;
+      const createdMeeting = await this.findById(meeting.id, data.userId, false);
+      if (!createdMeeting) {
+        throw new AppError(500, 'Failed to retrieve created meeting');
+      }
+      return createdMeeting;
+    } catch (error: any) {
+      console.error('Error in MeetingService.create:', error);
+      throw new AppError(500, `Failed to create meeting: ${error.message}`);
+    }
   }
 
   async update(
@@ -224,96 +252,107 @@ export class MeetingService {
       syncedWithGoogle: boolean;
     }>
   ): Promise<Meeting> {
-    // Verify the meeting belongs to the user (unless admin)
-    if (!isAdmin) {
-      const meeting = await prisma.meeting.findFirst({
-        where: {
-          id,
-          userId,
-        },
-      });
-      
-      if (!meeting) {
-        throw new AppError(404, 'Meeting not found');
+    try {
+      // Verify the meeting belongs to the user (unless admin)
+      if (!isAdmin) {
+        const meeting = await prisma.meeting.findFirst({
+          where: {
+            id,
+            userId,
+          },
+        });
+        
+        if (!meeting) {
+          throw new AppError(404, 'Meeting not found');
+        }
+      } else {
+        const meeting = await prisma.meeting.findFirst({
+          where: { id },
+        });
+        
+        if (!meeting) {
+          throw new AppError(404, 'Meeting not found');
+        }
       }
-    } else {
-      const meeting = await prisma.meeting.findFirst({
-        where: { id },
-      });
-      
-      if (!meeting) {
-        throw new AppError(404, 'Meeting not found');
-      }
-    }
 
-    return prisma.meeting.update({
-      where: { id },
-      data: {
-        ...data,
-        updated_at: new Date(),
-      },
-      include: {
-        User: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
+      return await prisma.meeting.update({
+        where: { id },
+        data: {
+          ...data,
+          updated_at: new Date(),
+        },
+        include: {
+          User: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+            },
+          },
+          Client: {
+            select: {
+              uid: true,
+            },
+          },
+          Partner: {
+            select: {
+              uid: true,
+              companyName: true,
+            },
+          },
+          Admin: {
+            select: {
+              uid: true,
+            },
+          },
+          Project: {
+            select: {
+              id: true,
+              projectName: true,
+              projectInformation: true,
+            },
           },
         },
-        Client: {
-          select: {
-            uid: true,
-          },
-        },
-        Partner: {
-          select: {
-            uid: true,
-            companyName: true,
-          },
-        },
-        Admin: {
-          select: {
-            uid: true,
-          },
-        },
-        Project: {
-          select: {
-            id: true,
-            description: true,
-          },
-        },
-      },
-    });
+      });
+    } catch (error: any) {
+      console.error('Error in MeetingService.update:', error);
+      throw new AppError(500, `Failed to update meeting: ${error.message}`);
+    }
   }
 
   async delete(id: string, userId: string, isAdmin: boolean): Promise<void> {
-    // Verify the meeting belongs to the user (unless admin)
-    if (!isAdmin) {
-      const meeting = await prisma.meeting.findFirst({
-        where: {
-          id,
-          userId,
-        },
-      });
-      
-      if (!meeting) {
-        throw new AppError(404, 'Meeting not found');
+    try {
+      // Verify the meeting belongs to the user (unless admin)
+      if (!isAdmin) {
+        const meeting = await prisma.meeting.findFirst({
+          where: {
+            id,
+            userId,
+          },
+        });
+        
+        if (!meeting) {
+          throw new AppError(404, 'Meeting not found');
+        }
+      } else {
+        const meeting = await prisma.meeting.findFirst({
+          where: { id },
+        });
+        
+        if (!meeting) {
+          throw new AppError(404, 'Meeting not found');
+        }
       }
-    } else {
-      const meeting = await prisma.meeting.findFirst({
+
+      await prisma.meeting.delete({
         where: { id },
       });
-      
-      if (!meeting) {
-        throw new AppError(404, 'Meeting not found');
-      }
+    } catch (error: any) {
+      console.error('Error in MeetingService.delete:', error);
+      throw new AppError(500, `Failed to delete meeting: ${error.message}`);
     }
-
-    await prisma.meeting.delete({
-      where: { id },
-    });
   }
 }
 
