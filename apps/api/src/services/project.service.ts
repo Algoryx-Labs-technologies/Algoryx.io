@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { Project } from '@prisma/client';
 import { AppError } from '@/types';
@@ -6,9 +7,6 @@ export class ProjectService {
   async findByClientId(clientId: string): Promise<Project[]> {
     return prisma.project.findMany({
       where: { clientId },
-      include: {
-        requirements: true,
-      },
       orderBy: {
         created_at: 'desc',
       },
@@ -23,15 +21,12 @@ export class ProjectService {
 
     return prisma.project.findFirst({
       where,
-      include: {
-        requirements: true,
-      },
     });
   }
 
   async create(data: {
     clientId: string;
-    description?: string;
+    projectName?: string;
     readMe?: string;
     techStack?: string;
     clientRequirement?: string;
@@ -42,9 +37,9 @@ export class ProjectService {
     progressStatus?: string;
   }): Promise<Project> {
     return prisma.project.create({
-      data,
-      include: {
-        requirements: true,
+      data: {
+        id: randomUUID(),
+        ...data,
       },
     });
   }
@@ -53,7 +48,7 @@ export class ProjectService {
     id: string,
     clientId: string,
     data: Partial<{
-      description: string;
+      projectName: string;
       readMe: string;
       techStack: string;
       clientRequirement: string;
@@ -75,9 +70,6 @@ export class ProjectService {
       data: {
         ...data,
         updated_at: new Date(),
-      },
-      include: {
-        requirements: true,
       },
     });
   }

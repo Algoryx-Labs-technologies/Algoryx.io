@@ -16,24 +16,25 @@ import {
   FolderKanban
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { apiClient } from '../../lib/api';
 
 interface Project {
   id: string;
-  projectTitle?: string;
-  description?: string;
+  projectName?: string;
   readMe?: string;
   projectStatus?: string;
   progressStatus?: string;
   priority?: string;
-  projectTimeline?: string;
-  deadline?: string;
-  paymentStatus?: 'paid' | 'pending' | 'overdue';
+  projectTimeline?: any;
+  deadline?: string | null;
+  paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
   agreementStatus?: 'signed' | 'pending' | 'draft';
   techStack?: string;
   projectFeatures?: string;
   clientRequirement?: string;
-  created_at: string;
-  updated_at: string;
+  created_at: string | Date;
+  updated_at: string | Date;
+  Budget?: string;
   requirements?: Array<{
     uid: string;
     projectTitle?: string;
@@ -50,98 +51,27 @@ export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProject = async () => {
       if (!id) return;
       
       try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+        setLoading(true);
+        setError(null);
         
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token'); // Get from your auth system
-        // const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   setProject(data.data);
-        // } else {
-        //   console.error('Error fetching project:', data.message);
-        // }
+        const response = await apiClient.get<Project>(`/projects/${id}`);
         
-        // Mock data for now
-        setProject({
-          id: id,
-          projectTitle: 'E-Commerce Platform',
-          description: 'Full-stack e-commerce solution with payment integration',
-          readMe: `# E-Commerce Platform
-
-## Overview
-A comprehensive e-commerce platform built with modern technologies to provide a seamless shopping experience.
-
-## Features
-- User authentication and authorization
-- Product catalog with search and filters
-- Shopping cart and checkout
-- Payment gateway integration
-- Order management
-- Admin dashboard
-- Inventory management
-
-## Technology Stack
-- Frontend: React with TypeScript
-- Backend: Node.js with Express
-- Database: PostgreSQL
-- Authentication: JWT
-- Payment: Stripe integration
-
-## Project Timeline
-- Phase 1: Setup and Authentication (2 weeks)
-- Phase 2: Product Catalog (3 weeks)
-- Phase 3: Shopping Cart & Checkout (2 weeks)
-- Phase 4: Payment Integration (2 weeks)
-- Phase 5: Admin Dashboard (3 weeks)
-- Phase 6: Testing & Deployment (2 weeks)
-
-Total Duration: 3 months`,
-          projectStatus: 'in_progress',
-          progressStatus: '65',
-          priority: 'high',
-          projectTimeline: '3 months',
-          deadline: '2024-12-31',
-          paymentStatus: 'paid',
-          agreementStatus: 'signed',
-          techStack: 'React, Node.js, PostgreSQL, Express, TypeScript, Stripe',
-          projectFeatures: 'User Authentication, Product Catalog, Shopping Cart, Payment Integration, Order Management, Admin Dashboard',
-          clientRequirement: 'Build a modern e-commerce platform with secure payment processing, user-friendly interface, and comprehensive admin features.',
-          created_at: '2024-09-01',
-          updated_at: '2024-11-15',
-          requirements: [
-            {
-              uid: '1',
-              projectTitle: 'E-Commerce Platform',
-              question: 'What payment methods should be supported?',
-              description: 'Need to integrate multiple payment gateways',
-              priority: 'high',
-              answer: 'Stripe and PayPal integration required',
-            },
-            {
-              uid: '2',
-              projectTitle: 'E-Commerce Platform',
-              question: 'What is the expected user capacity?',
-              description: 'Need to know for scaling infrastructure',
-              priority: 'mid',
-              answer: 'Initially 10,000 concurrent users, scalable to 100,000',
-            },
-          ],
-        });
+        if (response.success && response.data) {
+          setProject(response.data);
+        } else {
+          setError(response.error || 'Failed to fetch project');
+          console.error('Error fetching project:', response.error);
+        }
       } catch (error) {
         console.error('Error fetching project:', error);
+        setError('An unexpected error occurred');
       } finally {
         setLoading(false);
       }
@@ -184,29 +114,44 @@ Total Duration: 3 months`,
         return 'bg-green-500/20 text-green-400';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400';
-      case 'overdue':
+      case 'failed':
+      case 'refunded':
         return 'bg-red-500/20 text-red-400';
       default:
         return 'bg-gray-500/20 text-gray-400';
     }
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string | Date | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
   };
 
-  const getDaysUntilDeadline = (deadline?: string) => {
+  const getDaysUntilDeadline = (deadline?: string | null) => {
     if (!deadline) return null;
     const today = new Date();
     const deadlineDate = new Date(deadline);
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const formatTimeline = (timeline?: any): string => {
+    if (!timeline) return 'N/A';
+    if (typeof timeline === 'string') return timeline;
+    if (typeof timeline === 'object') {
+      // Try to format JSON timeline
+      if (timeline.startDate && timeline.endDate) {
+        return `${new Date(timeline.startDate).toLocaleDateString()} - ${new Date(timeline.endDate).toLocaleDateString()}`;
+      }
+      return JSON.stringify(timeline, null, 2);
+    }
+    return String(timeline);
   };
 
   if (loading) {
@@ -223,7 +168,7 @@ Total Duration: 3 months`,
     );
   }
 
-  if (!project) {
+  if (error || !project) {
     return (
       <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
         <Sidebar />
@@ -235,8 +180,12 @@ Total Duration: 3 months`,
             <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
               <CardContent className="p-12 text-center">
                 <AlertCircle className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold font-hero text-white mb-2">Project Not Found</h3>
-                <p className="text-gray-400 font-footer mb-6">The project you're looking for doesn't exist.</p>
+                <h3 className="text-xl font-semibold font-hero text-white mb-2">
+                  {error ? 'Error Loading Project' : 'Project Not Found'}
+                </h3>
+                <p className="text-gray-400 font-footer mb-6">
+                  {error || "The project you're looking for doesn't exist."}
+                </p>
                 <button
                   onClick={() => navigate('/projects')}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-footer"
@@ -286,11 +235,8 @@ Total Duration: 3 months`,
               <div className="flex items-start justify-between">
                 <div>
                   <h1 className="text-4xl font-bold font-hero text-gray-900 dark:text-white mb-3">
-                    {project.projectTitle || 'Untitled Project'}
+                    {project.projectName || 'Untitled Project'}
                   </h1>
-                  <p className="text-lg text-gray-300 dark:text-gray-300 font-footer">
-                    {project.description || 'No description available'}
-                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={cn(
@@ -447,7 +393,7 @@ Total Duration: 3 months`,
                     {project.projectTimeline && (
                       <div>
                         <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Duration</p>
-                        <p className="text-base text-white font-footer font-semibold">{project.projectTimeline}</p>
+                        <p className="text-base text-white font-footer font-semibold">{formatTimeline(project.projectTimeline)}</p>
                       </div>
                     )}
                     {project.deadline && (
@@ -496,6 +442,12 @@ Total Duration: 3 months`,
                         {project.paymentStatus?.toUpperCase() || 'N/A'}
                       </span>
                     </div>
+                    {project.Budget && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Budget</p>
+                        <p className="text-base text-white font-footer font-semibold">{project.Budget}</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -555,4 +507,3 @@ Total Duration: 3 months`,
     </div>
   );
 }
-

@@ -156,7 +156,6 @@ export class MeetingController {
       location,
       meetingLink,
       projectId,
-      participants,
       googleEventId,
       syncedWithGoogle,
     } = req.body;
@@ -207,7 +206,6 @@ export class MeetingController {
       partnerId: partnerId || undefined,
       adminId: adminId || undefined,
       projectId: projectId || undefined,
-      participants: participants || [],
       googleEventId: googleEventId || undefined,
       syncedWithGoogle: syncedWithGoogle || false,
     };
@@ -306,49 +304,6 @@ export class MeetingController {
     res.json({
       success: true,
       message: 'Meeting deleted successfully',
-    });
-  }
-
-  async addParticipant(req: AuthenticatedRequest, res: Response) {
-    if (!req.supabaseUser) {
-      throw new AppError(401, 'Unauthorized');
-    }
-
-    const { id } = req.params;
-    const meetingId = Array.isArray(id) ? id[0] : id;
-    const { email, name, role } = req.body;
-
-    if (!email) {
-      throw new AppError(400, 'Email is required');
-    }
-
-    const participant = await meetingService.addParticipant(meetingId, {
-      email,
-      name,
-      role: role || 'attendee',
-    });
-
-    res.status(201).json({
-      success: true,
-      data: participant,
-      message: 'Participant added successfully',
-    });
-  }
-
-  async removeParticipant(req: AuthenticatedRequest, res: Response) {
-    if (!req.supabaseUser) {
-      throw new AppError(401, 'Unauthorized');
-    }
-
-    const { id, participantId } = req.params;
-    const meetingId = Array.isArray(id) ? id[0] : id;
-    const participantIdParam = Array.isArray(participantId) ? participantId[0] : participantId;
-
-    await meetingService.removeParticipant(meetingId, participantIdParam);
-
-    res.json({
-      success: true,
-      message: 'Participant removed successfully',
     });
   }
 }

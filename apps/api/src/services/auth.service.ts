@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { supabaseAdmin } from '@/config/supabase';
 import { User, Role } from '@prisma/client';
@@ -70,6 +71,7 @@ export class AuthService {
       if (!existingClient) {
         await prisma.client.create({
           data: {
+            uid: randomUUID(),
             userId: user.id,
           },
         });
@@ -81,6 +83,7 @@ export class AuthService {
       if (!existingAdmin) {
         await prisma.admin.create({
           data: {
+            uid: randomUUID(),
             userId: user.id,
           },
         });
@@ -92,6 +95,7 @@ export class AuthService {
       if (!existingPartner) {
         await prisma.partner.create({
           data: {
+            uid: randomUUID(),
             userId: user.id,
           },
         });

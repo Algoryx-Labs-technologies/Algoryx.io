@@ -55,9 +55,9 @@ export const requireAdmin = async (
 
     req.supabaseUser = supabaseUser;
 
-    // Find user in database
+    // Find user in database using supabaseUserId (which is unique)
     const user = await prisma.user.findUnique({
-      where: { email: supabaseUser.email! },
+      where: { supabaseUserId: supabaseUser.id },
       include: { Admin: true },
     });
 

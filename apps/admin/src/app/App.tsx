@@ -11,11 +11,15 @@ import { CommunityPage } from './community/CommunityPage';
 import { FeedbackPage } from './feedback/FeedbackPage';
 import { RequirementsPage } from './requirements/RequirementsPage';
 import { QnAPage } from './qna/QnAPage';
+import { LandingEnquiryPage } from './landing-enquiry/LandingEnquiryPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/signup" element={<AuthPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/client" element={<ClientPage />} />
@@ -27,7 +31,7 @@ function App() {
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/requirements" element={<RequirementsPage />} />
         <Route path="/qna" element={<QnAPage />} />
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/landing-enquiry" element={<LandingEnquiryPage />} />
       </Routes>
     </BrowserRouter>
   );

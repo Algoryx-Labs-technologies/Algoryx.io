@@ -1,96 +1,75 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Star, Quote, User, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { Star, Quote, User, Heart, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { cn } from '../components/ui/utils';
+import { apiClient } from '@/lib/api';
 
-export interface CustomerTestimonial {
-  id: string;
-  name: string;
-  role: string;
-  company?: string;
-  rating: number;
-  comment: string;
-  date: string;
-  avatar?: string;
+export interface Feedback {
+  uid: string;
+  userName: string | null;
+  email: string | null;
+  overallRating: number;
+  feedback: string | null;
+  created_at: Date | string;
+  User: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+  } | null;
+  Client: {
+    uid: string;
+    User: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+    };
+  } | null;
+  Partner: {
+    uid: string;
+    User: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+    };
+  } | null;
 }
 
-interface FeedbackListProps {
-  testimonials?: CustomerTestimonial[];
-}
-
-const defaultTestimonials: CustomerTestimonial[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    role: 'Product Manager',
-    company: 'TechCorp',
-    rating: 5,
-    comment: 'Algoryx has transformed how we manage our development projects. The platform is intuitive, the team is responsive, and the quality of work is exceptional. Highly recommend!',
-    date: '2024-11-15',
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    role: 'CTO',
-    company: 'StartupXYZ',
-    rating: 5,
-    comment: 'Outstanding service and support. The team went above and beyond to understand our requirements and delivered exactly what we needed. The communication throughout was excellent.',
-    date: '2024-11-10',
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    role: 'Founder',
-    company: 'InnovateLabs',
-    rating: 5,
-    comment: 'Best decision we made for our tech stack. The projects are delivered on time, the code quality is top-notch, and the support team is always available when we need them.',
-    date: '2024-11-05',
-  },
-  {
-    id: '4',
-    name: 'David Thompson',
-    role: 'Engineering Lead',
-    company: 'ScaleUp Inc',
-    rating: 5,
-    comment: 'The platform makes project management seamless. The transparency, regular updates, and attention to detail make Algoryx stand out from the competition.',
-    date: '2024-10-28',
-  },
-  {
-    id: '5',
-    name: 'Lisa Anderson',
-    role: 'Operations Director',
-    company: 'GrowthCo',
-    rating: 5,
-    comment: 'We\'ve been using Algoryx for over a year now, and it keeps getting better. The value for money is incredible, and the team truly cares about our success.',
-    date: '2024-10-20',
-  },
-  {
-    id: '6',
-    name: 'James Wilson',
-    role: 'CEO',
-    company: 'NextGen Solutions',
-    rating: 5,
-    comment: 'Professional, reliable, and results-driven. Algoryx has become an integral part of our development workflow. Couldn\'t be happier with the partnership!',
-    date: '2024-10-15',
-  },
-  {
-    id: '7',
-    name: 'Rachel Martinez',
-    role: 'VP of Engineering',
-    company: 'CloudTech Solutions',
-    rating: 5,
-    comment: 'The level of expertise and attention to detail is unmatched. Every project has exceeded our expectations, and the collaborative approach makes working with Algoryx a true pleasure.',
-    date: '2024-10-10',
-  },
-];
-
-export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackListProps) {
+export function FeedbackList() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 3;
-  const totalPages = Math.ceil(testimonials.length / reviewsPerPage);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  // Fetch top feedback from API
+  useEffect(() => {
+    const fetchTopFeedback = async () => {
+      setLoading(true);
+      try {
+        const response = await apiClient.get<Feedback[]>('/feedback/top');
+        if (response.success && response.data) {
+          setFeedbacks(response.data);
+        } else {
+          console.error('Error fetching top feedback:', response.error);
+          setFeedbacks([]);
+        }
+      } catch (error) {
+        console.error('Error fetching top feedback:', error);
+        setFeedbacks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopFeedback();
+  }, []);
+
+  const totalPages = Math.ceil(feedbacks.length / reviewsPerPage);
+
+  const formatDate = (dateString: Date | string) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -98,9 +77,35 @@ export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackLis
     });
   };
 
+  const getDisplayName = (feedback: Feedback): string => {
+    if (feedback.userName) return feedback.userName;
+    if (feedback.User) {
+      const firstName = feedback.User.firstName || '';
+      const lastName = feedback.User.lastName || '';
+      return `${firstName} ${lastName}`.trim() || 'Anonymous';
+    }
+    if (feedback.Client?.User) {
+      const firstName = feedback.Client.User.firstName || '';
+      const lastName = feedback.Client.User.lastName || '';
+      return `${firstName} ${lastName}`.trim() || 'Anonymous';
+    }
+    if (feedback.Partner?.User) {
+      const firstName = feedback.Partner.User.firstName || '';
+      const lastName = feedback.Partner.User.lastName || '';
+      return `${firstName} ${lastName}`.trim() || 'Anonymous';
+    }
+    return 'Anonymous';
+  };
+
+  const getDisplayRole = (feedback: Feedback): string => {
+    if (feedback.Client) return 'Client';
+    if (feedback.Partner) return 'Partner';
+    return 'User';
+  };
+
   const startIndex = (currentPage - 1) * reviewsPerPage;
   const endIndex = startIndex + reviewsPerPage;
-  const currentTestimonials = testimonials.slice(startIndex, endIndex);
+  const currentFeedbacks = feedbacks.slice(startIndex, endIndex);
 
   const handlePrevious = () => {
     setCurrentPage(prev => Math.max(1, prev - 1));
@@ -119,48 +124,65 @@ export function FeedbackList({ testimonials = defaultTestimonials }: FeedbackLis
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        <div className="space-y-4 flex-1">
-          {currentTestimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className="p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all duration-200"
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold font-hero text-white">
-                      {testimonial.name}
-                    </p>
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-3 w-3 fill-yellow-400 text-yellow-400"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 font-footer">
-                    {testimonial.role}
-                    {testimonial.company && ` at ${testimonial.company}`}
-                  </p>
-                  <p className="text-xs text-gray-500 font-footer mt-1">
-                    {formatDate(testimonial.date)}
-                  </p>
-                </div>
-              </div>
-              <div className="relative">
-                <Quote className="absolute -top-2 -left-1 h-8 w-8 text-blue-500/20" />
-                <p className="text-sm text-gray-300 font-footer leading-relaxed pl-6">
-                  {testimonial.comment}
-                </p>
-              </div>
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-gray-400" />
+              <p className="text-gray-400 font-footer">Loading feedback...</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : feedbacks.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <Heart className="h-8 w-8 mx-auto mb-2 text-gray-500" />
+              <p className="text-gray-400 font-footer">No top feedback available yet</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4 flex-1">
+            {currentFeedbacks.map((feedback) => (
+              <div
+                key={feedback.uid}
+                className="p-4 bg-slate-800/50 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all duration-200"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold font-hero text-white">
+                        {getDisplayName(feedback)}
+                      </p>
+                      <div className="flex items-center gap-0.5">
+                        {[...Array(feedback.overallRating)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 font-footer">
+                      {getDisplayRole(feedback)}
+                    </p>
+                    <p className="text-xs text-gray-500 font-footer mt-1">
+                      {formatDate(feedback.created_at)}
+                    </p>
+                  </div>
+                </div>
+                {feedback.feedback && (
+                  <div className="relative">
+                    <Quote className="absolute -top-2 -left-1 h-8 w-8 text-blue-500/20" />
+                    <p className="text-sm text-gray-300 font-footer leading-relaxed pl-6">
+                      {feedback.feedback}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (

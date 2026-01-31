@@ -1,11 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { FolderKanban, CheckCircle2, ChevronDown, Loader2 } from 'lucide-react';
+import { FolderKanban, CheckCircle2, ChevronDown, Loader2, Rocket, Folder, FileText } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '../../components/ui/utils';
 import { apiClient } from '@/lib/api';
+
+interface Project {
+  id: string;
+  projectName?: string;
+  projectStatus?: string;
+  progressStatus?: string;
+  priority?: string;
+  projectTimeline?: any;
+  deadline?: string | null;
+  paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
+  agreementStatus?: 'signed' | 'pending' | 'draft';
+  created_at: string | Date;
+  updated_at: string | Date;
+  Budget?: string;
+}
 
 export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldShine?: boolean }) {
   const [projectTitle, setProjectTitle] = useState('');
@@ -14,13 +29,74 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
 
-  const projects = [
-    { name: 'Quantum Algorithm Development', status: 'In Progress', icon: '📁' },
-    { name: 'Data Analysis Suite', status: 'In Progress', icon: '👤' },
-    { name: 'AI Model Training', status: 'Deadline: 15 Oct', icon: '🚀' },
-    { name: 'AI Model Training', status: 'Deadline: 10 Oct', icon: '⬇️' },
-  ];
+  // Fetch projects on component mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoadingProjects(true);
+        const response = await apiClient.get<Project[]>('/projects');
+        
+        if (response.success && response.data) {
+          setProjects(response.data || []);
+        } else {
+          console.error('Error fetching projects:', response.error);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  // Get status display text
+  const getStatusText = (project: Project): string => {
+    if (project.projectStatus) {
+      const status = project.projectStatus.toLowerCase();
+      switch (status) {
+        case 'in_progress':
+          return 'In Progress';
+        case 'initiated':
+          return 'Initiated';
+        case 'completed':
+          return 'Completed';
+        case 'delivered':
+          return 'Delivered';
+        case 'not_started':
+          return 'Not Started';
+        default:
+          return project.projectStatus;
+      }
+    }
+    if (project.progressStatus) {
+      return `Progress: ${project.progressStatus}%`;
+    }
+    return 'No Status';
+  };
+
+  // Get status icon
+  const getStatusIcon = (project: Project) => {
+    if (project.projectStatus) {
+      const status = project.projectStatus.toLowerCase();
+      switch (status) {
+        case 'in_progress':
+          return <Rocket className="h-4 w-4 text-blue-400" />;
+        case 'initiated':
+          return <Folder className="h-4 w-4 text-yellow-400" />;
+        case 'completed':
+        case 'delivered':
+          return <CheckCircle2 className="h-4 w-4 text-green-400" />;
+        default:
+          return <FileText className="h-4 w-4 text-gray-400" />;
+      }
+    }
+    return <Folder className="h-4 w-4 text-gray-400" />;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,24 +146,34 @@ export function ProjectsAndRequirementsWidget({ shouldShine = false }: { shouldS
       <CardContent className="px-2 pb-2 flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* LEFT - Projects */}
         <div className="space-y-1.5 overflow-y-auto pr-1">
-          {projects.map((project, index) => (
-            <div
-              key={index}
-              className="p-1.5 rounded-md bg-slate-800/50 border border-white/5 hover:bg-slate-800/70 transition-colors"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-base">{project.icon}</span>
-                <div className="flex-1">
-                  <p className="text-sm text-white font-footer font-medium">
-                    {project.name}
-                  </p>
-                  <p className="text-sm text-gray-400 font-footer mt-0.5">
-                    Status {project.status}
-                  </p>
+          {loadingProjects ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-4 text-gray-400 text-sm font-footer">
+              No projects yet
+            </div>
+          ) : (
+            projects.slice(0, 4).map((project) => (
+              <div
+                key={project.id}
+                className="p-1.5 rounded-md bg-slate-800/50 border border-white/5 hover:bg-slate-800/70 transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  {getStatusIcon(project)}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-footer font-medium truncate">
+                      {project.projectName || 'Untitled Project'}
+                    </p>
+                    <p className="text-sm text-gray-400 font-footer mt-0.5">
+                      {getStatusText(project)}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* RIGHT - Form + Submit at bottom */}

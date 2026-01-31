@@ -20,7 +20,7 @@ export class ProjectController {
 
     // Find user in database
     const user = await prisma.user.findUnique({
-      where: { email: req.supabaseUser.email! },
+      where: { supabaseUserId: req.supabaseUser.id },
     });
 
     if (!user) {
@@ -63,7 +63,7 @@ export class ProjectController {
 
     // Find user in database
     const user = await prisma.user.findUnique({
-      where: { email: req.supabaseUser.email! },
+      where: { supabaseUserId: req.supabaseUser.id },
     });
 
     if (!user) {
@@ -107,7 +107,7 @@ export class ProjectController {
 
     // Find user in database
     const user = await prisma.user.findUnique({
-      where: { email: req.supabaseUser.email! },
+      where: { supabaseUserId: req.supabaseUser.id },
     });
 
     if (!user) {
@@ -142,7 +142,7 @@ export class ProjectController {
 
     // Find user in database
     const user = await prisma.user.findUnique({
-      where: { email: req.supabaseUser.email! },
+      where: { supabaseUserId: req.supabaseUser.id },
     });
 
     if (!user) {
@@ -174,7 +174,7 @@ export class ProjectController {
 
     // Find user in database
     const user = await prisma.user.findUnique({
-      where: { email: req.supabaseUser.email! },
+      where: { supabaseUserId: req.supabaseUser.id },
     });
 
     if (!user) {

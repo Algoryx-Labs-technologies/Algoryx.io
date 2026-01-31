@@ -69,6 +69,61 @@ export class FeedbackController {
       message: 'Feedback submitted successfully',
     });
   }
+
+  async getTopFeedback(req: AuthenticatedRequest, res: Response) {
+    try {
+      const topFeedbacks = await prisma.feedback.findMany({
+        where: {
+          isTopFeedback: true,
+        },
+        include: {
+          User: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          Client: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          Partner: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      });
+
+      res.json({
+        success: true,
+        data: topFeedbacks,
+        count: topFeedbacks.length,
+      });
+    } catch (error: any) {
+      throw new AppError(500, `Failed to fetch top feedback: ${error.message}`);
+    }
+  }
 }
 
 export const feedbackController = new FeedbackController();

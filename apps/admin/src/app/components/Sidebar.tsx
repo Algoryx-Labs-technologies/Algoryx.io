@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users, FolderKanban, Bell, CreditCard, MessageSquare, Users as UsersIcon, Star, FileText, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users, FolderKanban, Bell, CreditCard, MessageSquare, Users as UsersIcon, Star, FileText, HelpCircle, Mail } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -63,6 +63,11 @@ export function Sidebar() {
       icon: HelpCircle,
       label: 'QnA',
       path: '/qna',
+    },
+    {
+      icon: Mail,
+      label: 'Landing Enquiry',
+      path: '/landing-enquiry',
     },
   ];
 

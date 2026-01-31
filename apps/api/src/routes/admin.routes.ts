@@ -4,14 +4,14 @@ import { requireAdmin } from '@/middleware/auth';
 import { validate } from '@/middleware/validate';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // Validation schemas
 const createProjectSchema = {
   body: z.object({
     clientId: z.string().optional(),
     partnerId: z.string().optional(),
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
@@ -29,7 +29,7 @@ const updateProjectSchema = {
   body: z.object({
     clientId: z.string().optional(),
     partnerId: z.string().optional(),
-    description: z.string().optional(),
+    projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
@@ -71,6 +71,16 @@ const replyToTicketSchema = {
   body: z.object({
     reply: z.string().min(1, 'Reply is required'),
     status: z.enum(['pending', 'in_progress', 'resolved', 'closed']).optional(),
+  }),
+};
+
+const updateSupportTicketSchema = {
+  body: z.object({
+    status: z.enum(['pending', 'in_progress', 'resolved', 'closed']).optional(),
+    priority: z.enum(['low', 'mid', 'high']).optional(),
+    issueType: z.string().optional(),
+    description: z.string().optional(),
+    additionalDetails: z.string().optional(),
   }),
 };
 
@@ -159,6 +169,13 @@ router.post(
   adminController.replyToTicket.bind(adminController)
 );
 
+// Support Ticket Update Routes
+router.patch(
+  '/support-tickets/:ticketId',
+  validate(updateSupportTicketSchema),
+  adminController.updateSupportTicket.bind(adminController)
+);
+
 // Community Management Routes
 router.post(
   '/community',
@@ -178,6 +195,10 @@ router.post(
   '/requirements/:requirementId/contacted',
   adminController.markRequirementContacted.bind(adminController)
 );
+router.post(
+  '/requirements/:requirementId/rejected',
+  adminController.markRequirementRejected.bind(adminController)
+);
 
 // QnA Management Routes
 router.post(
@@ -189,6 +210,7 @@ router.post(
 // GET Routes
 router.get('/users', adminController.getAllUsers.bind(adminController));
 router.get('/landing-requirements', adminController.getLandingRequirements.bind(adminController));
+router.get('/landing-enquiries', adminController.getLandingEnquiries.bind(adminController));
 router.get('/requirements', adminController.getClientRequirements.bind(adminController));
 router.get('/support-tickets', adminController.getClientSupportTickets.bind(adminController));
 router.get('/feedback', adminController.getFeedback.bind(adminController));

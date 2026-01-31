@@ -18,11 +18,6 @@ const createMeetingSchema = {
     location: z.string().optional(),
     meetingLink: z.string().url().optional().or(z.literal('')),
     projectId: z.string().optional(),
-    participants: z.array(z.object({
-      email: z.string().email(),
-      name: z.string().optional(),
-      role: z.string().optional(),
-    })).optional(),
     googleEventId: z.string().optional(),
     syncedWithGoogle: z.boolean().optional(),
   }),
@@ -42,14 +37,6 @@ const updateMeetingSchema = {
     projectId: z.string().optional(),
     googleEventId: z.string().optional(),
     syncedWithGoogle: z.boolean().optional(),
-  }),
-};
-
-const addParticipantSchema = {
-  body: z.object({
-    email: z.string().email('Invalid email format'),
-    name: z.string().optional(),
-    role: z.string().optional(),
   }),
 };
 
@@ -103,21 +90,6 @@ router.delete(
   '/:id',
   authenticate,
   meetingController.deleteMeeting.bind(meetingController)
-);
-
-// POST - Add participant to meeting
-router.post(
-  '/:id/participants',
-  authenticate,
-  validate(addParticipantSchema),
-  meetingController.addParticipant.bind(meetingController)
-);
-
-// DELETE - Remove participant from meeting
-router.delete(
-  '/:id/participants/:participantId',
-  authenticate,
-  meetingController.removeParticipant.bind(meetingController)
 );
 
 export default router;
