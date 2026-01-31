@@ -195,6 +195,10 @@ router.post(
   '/requirements/:requirementId/contacted',
   adminController.markRequirementContacted.bind(adminController)
 );
+router.post(
+  '/requirements/:requirementId/rejected',
+  adminController.markRequirementRejected.bind(adminController)
+);
 
 // QnA Management Routes
 router.post(

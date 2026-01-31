@@ -123,6 +123,36 @@ export function RequirementsPage() {
     }
   };
 
+  // Handle mark as rejected
+  const handleMarkAsRejected = async (requirementId: string) => {
+    setLoading(`reject-${requirementId}`);
+    setMessage(null);
+
+    try {
+      const token = await getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/requirements/${requirementId}/rejected`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to update requirement');
+      }
+
+      setMessage({ type: 'success', text: 'Requirement marked as rejected' });
+      fetchRequirements(); // Refresh the list
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to update requirement' });
+    } finally {
+      setLoading(null);
+    }
+  };
+
   // Filter requirements based on search query
   const filteredRequirements = requirements.filter((requirement) => {
     const searchLower = searchQuery.toLowerCase();
@@ -300,21 +330,38 @@ export function RequirementsPage() {
                           </p>
                         </div>
                         {requirement.status === 'Pending' && (
-                          <Button
-                            onClick={() => handleMarkAsContacted(requirement.uid)}
-                            disabled={loading === `mark-${requirement.uid}`}
-                            size="sm"
-                            className="ml-2 bg-green-600 hover:bg-green-700"
-                          >
-                            {loading === `mark-${requirement.uid}` ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-1" />
-                                Mark Contacted
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex gap-2 ml-2">
+                            <Button
+                              onClick={() => handleMarkAsContacted(requirement.uid)}
+                              disabled={loading === `mark-${requirement.uid}` || loading === `reject-${requirement.uid}`}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {loading === `mark-${requirement.uid}` ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                                  Mark Contacted
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => handleMarkAsRejected(requirement.uid)}
+                              disabled={loading === `reject-${requirement.uid}` || loading === `mark-${requirement.uid}`}
+                              size="sm"
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              {loading === `reject-${requirement.uid}` ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         )}
                       </div>
 

@@ -472,6 +472,34 @@ export class AdminController {
     });
   }
 
+  async markRequirementRejected(req: AuthenticatedRequest, res: Response) {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    const { requirementId } = req.params;
+    const requirementUid = Array.isArray(requirementId) ? requirementId[0] : requirementId;
+
+    const requirement = await prisma.requirement.findUnique({
+      where: { uid: requirementUid },
+    });
+
+    if (!requirement) {
+      throw new AppError(404, 'Requirement not found');
+    }
+
+    const updatedRequirement = await prisma.requirement.update({
+      where: { uid: requirementUid },
+      data: { status: 'Rejected' },
+    });
+
+    res.json({
+      success: true,
+      data: updatedRequirement,
+      message: 'Requirement marked as rejected',
+    });
+  }
+
   // ========== QnA MANAGEMENT ==========
   async replyToQnA(req: AuthenticatedRequest, res: Response) {
     if (!req.user) {
