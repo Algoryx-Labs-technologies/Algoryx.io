@@ -139,6 +139,7 @@ export class AdminController {
 
     const project = await prisma.project.create({
       data: {
+        id: randomUUID(),
         adminId,
         clientId,
         partnerId,
@@ -283,6 +284,7 @@ export class AdminController {
 
     const notification = await prisma.notification.create({
       data: {
+        id: randomUUID(),
         title: req.body.title,
         message: req.body.message,
         type: req.body.type || 'info',
@@ -308,6 +310,7 @@ export class AdminController {
 
     const payment = await prisma.payment.create({
       data: {
+        id: randomUUID(),
         userId: req.body.userId || null,
         clientId: req.body.clientId || null,
         projectId: req.body.projectId || null,
@@ -393,6 +396,7 @@ export class AdminController {
 
     const communityPost = await prisma.community.create({
       data: {
+        id: randomUUID(),
         title: req.body.title,
         content: req.body.content,
         authorId: req.user.id,
@@ -487,6 +491,7 @@ export class AdminController {
 
     const answer = await prisma.qnAAnswer.create({
       data: {
+        id: randomUUID(),
         qnaId: qna.id,
         answer: req.body.answer,
         userId: req.user.id,
@@ -975,7 +980,7 @@ export class AdminController {
             lastName: true,
           },
         },
-        answers: {
+        QnAAnswer: {
           include: {
             User: {
               select: {

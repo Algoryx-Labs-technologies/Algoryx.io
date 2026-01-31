@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { Project } from '@prisma/client';
 import { AppError } from '@/types';
@@ -42,7 +43,10 @@ export class ProjectService {
     progressStatus?: string;
   }): Promise<Project> {
     return prisma.project.create({
-      data,
+      data: {
+        id: randomUUID(),
+        ...data,
+      },
       include: {
         requirements: true,
       },
