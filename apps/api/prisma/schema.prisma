@@ -164,7 +164,6 @@ model Project {
   clientId           String?
   adminId            String?
   partnerId          String?
-  projectName        String?
   readMe             String?
   techStack          String?
   clientRequirement  String?
@@ -179,6 +178,7 @@ model Project {
   updated_at         DateTime       @default(now())
   created_at         DateTime       @default(now())
   Budget             String?
+  projectName        String?
   Meeting            Meeting[]
   Payment            Payment[]
   Admin              Admin?         @relation(fields: [adminId], references: [uid])

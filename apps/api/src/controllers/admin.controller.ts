@@ -844,7 +844,7 @@ export class AdminController {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
           },
         },
       },
@@ -895,7 +895,7 @@ export class AdminController {
         Project: {
           select: {
             id: true,
-            description: true,
+            projectName: true,
           },
         },
       },
