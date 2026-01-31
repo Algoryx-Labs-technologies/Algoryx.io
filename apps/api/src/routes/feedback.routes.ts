@@ -30,5 +30,11 @@ router.post(
   feedbackController.createFeedback.bind(feedbackController)
 );
 
+// GET - Get top feedback (public endpoint, no authentication required)
+router.get(
+  '/top',
+  feedbackController.getTopFeedback.bind(feedbackController)
+);
+
 export default router;
 
