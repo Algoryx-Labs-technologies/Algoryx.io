@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import { FolderKanban, CheckCircle2, XCircle, Plus, Edit, Trash2, X, Search } from 'lucide-react';
+import { FolderKanban, CheckCircle2, XCircle, Plus, Trash2, X, Search, Eye } from 'lucide-react';
 import { handleApiRequest, getAuthToken } from '../action-center/utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -87,11 +87,12 @@ export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedDeleteProjectId, setSelectedDeleteProjectId] = useState<string>('');
+  const [selectedViewProject, setSelectedViewProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Project Form State
@@ -249,57 +250,6 @@ export function ProjectsPage() {
     );
   };
 
-  const handleEditProject = async () => {
-    if (!selectedProjectId) {
-      setMessage({ type: 'error', text: 'Please select a project' });
-      return;
-    }
-
-    // Parse JSON fields before sending and clean up empty strings
-    const formData: any = {
-      ...projectForm,
-      // Convert empty strings to null for optional foreign keys
-      clientId: projectForm.clientId && projectForm.clientId.trim() !== '' ? projectForm.clientId : undefined,
-      partnerId: projectForm.partnerId && projectForm.partnerId.trim() !== '' ? projectForm.partnerId : undefined,
-      // Parse JSON fields
-      projectTimeline: projectForm.projectTimeline ? (() => {
-        try {
-          return JSON.parse(projectForm.projectTimeline);
-        } catch {
-          return projectForm.projectTimeline;
-        }
-      })() : undefined,
-      miscellaneousData: projectForm.miscellaneousData ? (() => {
-        try {
-          return JSON.parse(projectForm.miscellaneousData);
-        } catch {
-          return projectForm.miscellaneousData;
-        }
-      })() : undefined,
-    };
-    // Remove undefined values
-    Object.keys(formData).forEach(key => {
-      if (formData[key] === undefined || formData[key] === '') {
-        if (key !== 'clientId' && key !== 'partnerId') {
-          delete formData[key];
-        }
-      }
-    });
-
-    await handleApiRequest(
-      `/projects/${selectedProjectId}`,
-      'PATCH',
-      formData,
-      setLoading,
-      setMessage,
-      'Update Project',
-      () => {
-        setIsEditModalOpen(false);
-        setSelectedProjectId('');
-        fetchProjects();
-      }
-    );
-  };
 
   const handleDeleteProject = async () => {
     if (!selectedDeleteProjectId) {
@@ -322,8 +272,16 @@ export function ProjectsPage() {
     );
   };
 
-  const openEditModal = (project: Project) => {
+
+  const openDeleteModal = (projectId: string) => {
+    setSelectedDeleteProjectId(projectId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const openViewModal = (project: Project) => {
+    setSelectedViewProject(project);
     setSelectedProjectId(project.id);
+    // Populate form with project data for editing
     setProjectForm({
       clientId: project.clientId || '',
       partnerId: project.partnerId || '',
@@ -341,12 +299,7 @@ export function ProjectsPage() {
       Budget: project.Budget || '',
       paymentStatus: project.paymentStatus || '',
     });
-    setIsEditModalOpen(true);
-  };
-
-  const openDeleteModal = (projectId: string) => {
-    setSelectedDeleteProjectId(projectId);
-    setIsDeleteModalOpen(true);
+    setIsViewModalOpen(true);
   };
 
   // Filter projects based on search query
@@ -394,6 +347,7 @@ export function ProjectsPage() {
         return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -553,18 +507,20 @@ export function ProjectsPage() {
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
                                 <Button
-                                  onClick={() => openEditModal(project)}
+                                  onClick={() => openViewModal(project)}
                                   variant="ghost"
                                   size="sm"
-                                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                                  title="View & Edit Details"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   onClick={() => openDeleteModal(project.id)}
                                   variant="ghost"
                                   size="sm"
                                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  title="Delete Project"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -795,24 +751,63 @@ export function ProjectsPage() {
             </div>
           )}
 
-          {/* Edit Project Modal */}
-          {isEditModalOpen && (
+          {/* Delete Confirmation Modal */}
+          {isDeleteModalOpen && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-md w-full">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Trash2 className="h-5 w-5 text-red-400" />
+                    Delete Project
+                  </CardTitle>
+                  <CardDescription>This action cannot be undone</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-300">
+                    Are you sure you want to delete this project? This will permanently remove the project and all associated data.
+                  </p>
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      onClick={handleDeleteProject}
+                      disabled={loading === 'Delete Project'}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      {loading === 'Delete Project' ? 'Deleting...' : 'Delete'}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setIsDeleteModalOpen(false);
+                        setSelectedDeleteProjectId('');
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* View Project Details Modal */}
+          {isViewModalOpen && selectedViewProject && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-5xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <CardHeader className="sticky top-0 bg-slate-900/95 z-10 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-white flex items-center gap-2">
-                        <Edit className="h-5 w-5 text-blue-400" />
-                        Edit Project
+                        <Eye className="h-5 w-5 text-green-400" />
+                        Project Details
                       </CardTitle>
-                      <CardDescription>Update project details</CardDescription>
+                      <CardDescription>View and edit project information</CardDescription>
                     </div>
                     <Button
                       onClick={() => {
-                        setIsEditModalOpen(false);
-                        setSelectedProjectId('');
-                        resetProjectForm();
+                        setIsViewModalOpen(false);
+                        setSelectedViewProject(null);
                       }}
                       variant="ghost"
                       size="sm"
@@ -824,6 +819,15 @@ export function ProjectsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4 mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300">Project Name</Label>
+                      <Input
+                        value={projectForm.projectName}
+                        onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="Enter project name"
+                      />
+                    </div>
                     <div>
                       <Label className="text-gray-300">Client</Label>
                       <select
@@ -905,15 +909,15 @@ export function ProjectsPage() {
                         <option value="refunded">Refunded</option>
                       </select>
                     </div>
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Name</Label>
-                    <Input
-                      value={projectForm.projectName}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="Enter project name"
-                    />
+                    <div>
+                      <Label className="text-gray-300">Progress Status</Label>
+                      <Input
+                        value={projectForm.progressStatus}
+                        onChange={(e) => setProjectForm({ ...projectForm, progressStatus: e.target.value })}
+                        className="bg-slate-800/50 border-white/10 text-white mt-1"
+                        placeholder="e.g., 50%, Phase 2, etc."
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label className="text-gray-300">Tech Stack</Label>
@@ -961,15 +965,6 @@ export function ProjectsPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-gray-300">Progress Status</Label>
-                    <Input
-                      value={projectForm.progressStatus}
-                      onChange={(e) => setProjectForm({ ...projectForm, progressStatus: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="e.g., 50%, Phase 2, etc."
-                    />
-                  </div>
-                  <div>
                     <Label className="text-gray-300">Project Timeline (JSON)</Label>
                     <textarea
                       value={projectForm.projectTimeline}
@@ -987,9 +982,82 @@ export function ProjectsPage() {
                       placeholder='{"key": "value"}'
                     />
                   </div>
-                  <div className="flex gap-3 pt-4">
+
+                  {/* Read-only Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                    <div>
+                      <Label className="text-gray-400 text-sm">Created At</Label>
+                      <p className="text-gray-400 text-sm mt-1">
+                        {selectedViewProject ? new Date(selectedViewProject.created_at).toLocaleString() : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-400 text-sm">Last Updated</Label>
+                      <p className="text-gray-400 text-sm mt-1">
+                        {selectedViewProject ? new Date(selectedViewProject.updated_at).toLocaleString() : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-gray-400 text-sm">Project ID</Label>
+                      <p className="text-gray-500 text-xs font-mono mt-1">{selectedViewProject?.id}</p>
+                    </div>
+                  </div>
+
+                  {/* Update and Close Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-white/10">
                     <Button
-                      onClick={handleEditProject}
+                      onClick={async () => {
+                        if (!selectedProjectId) {
+                          setMessage({ type: 'error', text: 'Project ID is missing' });
+                          return;
+                        }
+
+                        // Parse JSON fields before sending and clean up empty strings
+                        const formData: any = {
+                          ...projectForm,
+                          // Convert empty strings to null for optional foreign keys
+                          clientId: projectForm.clientId && projectForm.clientId.trim() !== '' ? projectForm.clientId : undefined,
+                          partnerId: projectForm.partnerId && projectForm.partnerId.trim() !== '' ? projectForm.partnerId : undefined,
+                          // Parse JSON fields
+                          projectTimeline: projectForm.projectTimeline ? (() => {
+                            try {
+                              return JSON.parse(projectForm.projectTimeline);
+                            } catch {
+                              return projectForm.projectTimeline;
+                            }
+                          })() : undefined,
+                          miscellaneousData: projectForm.miscellaneousData ? (() => {
+                            try {
+                              return JSON.parse(projectForm.miscellaneousData);
+                            } catch {
+                              return projectForm.miscellaneousData;
+                            }
+                          })() : undefined,
+                        };
+                        // Remove undefined values
+                        Object.keys(formData).forEach(key => {
+                          if (formData[key] === undefined || formData[key] === '') {
+                            if (key !== 'clientId' && key !== 'partnerId') {
+                              delete formData[key];
+                            }
+                          }
+                        });
+
+                        await handleApiRequest(
+                          `/projects/${selectedProjectId}`,
+                          'PATCH',
+                          formData,
+                          setLoading,
+                          setMessage,
+                          'Update Project',
+                          () => {
+                            setIsViewModalOpen(false);
+                            setSelectedViewProject(null);
+                            setSelectedProjectId('');
+                            fetchProjects();
+                          }
+                        );
+                      }}
                       disabled={loading === 'Update Project' || !selectedProjectId}
                       className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
                     >
@@ -997,54 +1065,14 @@ export function ProjectsPage() {
                     </Button>
                     <Button
                       onClick={() => {
-                        setIsEditModalOpen(false);
+                        setIsViewModalOpen(false);
+                        setSelectedViewProject(null);
                         setSelectedProjectId('');
-                        resetProjectForm();
                       }}
                       variant="outline"
                       className="flex-1"
                     >
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Delete Confirmation Modal */}
-          {isDeleteModalOpen && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-md w-full">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Trash2 className="h-5 w-5 text-red-400" />
-                    Delete Project
-                  </CardTitle>
-                  <CardDescription>This action cannot be undone</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-300">
-                    Are you sure you want to delete this project? This will permanently remove the project and all associated data.
-                  </p>
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={handleDeleteProject}
-                      disabled={loading === 'Delete Project'}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      {loading === 'Delete Project' ? 'Deleting...' : 'Delete'}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsDeleteModalOpen(false);
-                        setSelectedDeleteProjectId('');
-                      }}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Cancel
+                      Close
                     </Button>
                   </div>
                 </CardContent>
