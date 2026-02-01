@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { FolderKanban, CheckCircle2, XCircle, Plus, Trash2, X, Search, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, Plus } from 'lucide-react';
 import { handleApiRequest, getAuthToken } from '../action-center/utils';
+import { ProjectTable } from './ProjectTable';
+import { ProjectModals } from './ProjectModals';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
@@ -89,6 +88,7 @@ export function ProjectsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedDeleteProjectId, setSelectedDeleteProjectId] = useState<string>('');
@@ -120,24 +120,25 @@ export function ProjectsPage() {
       setLoadingClients(true);
       try {
         const token = await getAuthToken();
-        const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/clients`, {
-          method: 'GET',
+        const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/clients`, {
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         });
 
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || 'Failed to fetch clients');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setClients(result.data);
+          } else {
+            console.error('Failed to fetch clients:', result.message || 'Unknown error');
+          }
+        } else {
+          const error = await response.json();
+          console.error('Failed to fetch clients:', error.message || 'Unknown error');
         }
-
-        if (result.success && result.data) {
-          setClients(result.data);
-        }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching clients:', error);
       } finally {
         setLoadingClients(false);
@@ -147,29 +148,32 @@ export function ProjectsPage() {
     fetchClients();
   }, []);
 
-  // Fetch projects function
+  // Fetch projects on component mount
   const fetchProjects = async () => {
     setLoadingProjects(true);
     try {
       const token = await getAuthToken();
       const response = await fetch(`${API_BASE_URL}/api/${API_VERSION}/admin/projects`, {
-        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to fetch projects');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          setProjects(result.data);
+        } else {
+          console.error('Failed to fetch projects:', result.message || 'Unknown error');
+          setMessage({ type: 'error', text: 'Failed to fetch projects' });
+        }
+      } else {
+        const error = await response.json();
+        console.error('Failed to fetch projects:', error.message || 'Unknown error');
+        setMessage({ type: 'error', text: error.message || 'Failed to fetch projects' });
       }
-
-      if (result.success && result.data) {
-        setProjects(result.data);
-      }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching projects:', error);
       setMessage({ type: 'error', text: 'Failed to fetch projects' });
     } finally {
@@ -177,7 +181,6 @@ export function ProjectsPage() {
     }
   };
 
-  // Fetch projects on component mount
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -281,6 +284,7 @@ export function ProjectsPage() {
   const openViewModal = (project: Project) => {
     setSelectedViewProject(project);
     setSelectedProjectId(project.id);
+    setIsEditMode(false); // Start in view mode
     // Populate form with project data for editing
     setProjectForm({
       clientId: project.clientId || '',
@@ -301,53 +305,6 @@ export function ProjectsPage() {
     });
     setIsViewModalOpen(true);
   };
-
-  // Filter projects based on search query
-  const filteredProjects = projects.filter((project) => {
-    const searchLower = searchQuery.toLowerCase();
-    const clientName = project.Client?.User
-      ? `${project.Client.User.firstName || ''} ${project.Client.User.lastName || ''}`.trim() || project.Client.User.email
-      : 'N/A';
-    const projectName = project.projectName || '';
-    const techStack = project.techStack || '';
-    
-    return (
-      project.id.toLowerCase().includes(searchLower) ||
-      clientName.toLowerCase().includes(searchLower) ||
-      projectName.toLowerCase().includes(searchLower) ||
-      techStack.toLowerCase().includes(searchLower) ||
-      (project.projectStatus || '').toLowerCase().includes(searchLower) ||
-      (project.priority || '').toLowerCase().includes(searchLower)
-    );
-  });
-
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case 'completed':
-      case 'delivered':
-        return 'bg-green-500/20 text-green-400 border-green-500/50';
-      case 'in_progress':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
-      case 'initiated':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
-    }
-  };
-
-  const getPriorityColor = (priority: string | null) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500/20 text-red-400 border-red-500/50';
-      case 'mid':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-      case 'low':
-        return 'bg-green-500/20 text-green-400 border-green-500/50';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
-    }
-  };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -391,740 +348,57 @@ export function ProjectsPage() {
           )}
 
           {/* Projects List */}
-          <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <FolderKanban className="h-5 w-5 text-blue-400" />
-                    All Projects ({filteredProjects.length})
-                  </CardTitle>
-                  <CardDescription>View and manage all projects</CardDescription>
-                </div>
-                <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-slate-800/50 border-white/10 text-white"
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loadingProjects ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-                  <p className="text-gray-400 mt-4">Loading projects...</p>
-                </div>
-              ) : filteredProjects.length === 0 ? (
-                <div className="text-center py-12">
-                  <FolderKanban className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg">
-                    {searchQuery ? 'No projects found matching your search' : 'No projects found'}
-                  </p>
-                  {!searchQuery && (
-                    <Button
-                      onClick={() => setIsCreateModalOpen(true)}
-                      className="mt-4 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Project
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-white/10">
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Project</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Client</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Status</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Priority</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Tech Stack</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Budget</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Created</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProjects.map((project) => {
-                        const clientName = project.Client?.User
-                          ? `${project.Client.User.firstName || ''} ${project.Client.User.lastName || ''}`.trim() || project.Client.User.email
-                          : 'No Client';
-                        return (
-                          <tr key={project.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-4 px-4">
-                              <div className="flex flex-col">
-                                <span className="text-white font-medium">
-                                  {project.projectName ? (project.projectName.length > 40 ? `${project.projectName.substring(0, 40)}...` : project.projectName) : 'Untitled Project'}
-                                </span>
-                                <span className="text-gray-500 text-xs font-mono mt-1">{project.id.substring(0, 8)}...</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex flex-col">
-                                <span className="text-gray-300">{clientName}</span>
-                                {project.Client?.User?.email && (
-                                  <span className="text-gray-500 text-xs">{project.Client.User.email}</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className={cn(
-                                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border",
-                                getStatusColor(project.projectStatus)
-                              )}>
-                                {project.projectStatus?.replace('_', ' ') || 'N/A'}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className={cn(
-                                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border",
-                                getPriorityColor(project.priority)
-                              )}>
-                                {project.priority || 'N/A'}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="text-gray-300 text-sm">
-                                {project.techStack ? (project.techStack.length > 30 ? `${project.techStack.substring(0, 30)}...` : project.techStack) : 'N/A'}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="text-gray-300 text-sm font-medium">
-                                {project.Budget || 'N/A'}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="text-gray-400 text-sm">
-                                {new Date(project.created_at).toLocaleDateString()}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  onClick={() => openViewModal(project)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                                  title="View & Edit Details"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  onClick={() => openDeleteModal(project.id)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                  title="Delete Project"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ProjectTable
+            projects={projects}
+            loadingProjects={loadingProjects}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onViewProject={openViewModal}
+            onDeleteProject={openDeleteModal}
+            onCreateProject={() => {
+              resetProjectForm();
+              setIsCreateModalOpen(true);
+            }}
+          />
 
-          {/* Create Project Modal */}
-          {isCreateModalOpen && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-4xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <CardHeader className="sticky top-0 bg-slate-900/95 z-10 border-b border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Plus className="h-5 w-5 text-blue-400" />
-                        Create New Project
-                      </CardTitle>
-                      <CardDescription>Fill in the details to create a new project</CardDescription>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setIsCreateModalOpen(false);
-                        resetProjectForm();
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-gray-300">Client *</Label>
-                      <select
-                        value={projectForm.clientId}
-                        onChange={(e) => setProjectForm({ ...projectForm, clientId: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                        disabled={loadingClients}
-                      >
-                        <option value="">Select a client</option>
-                        {clients.map((client) => {
-                          const clientName = client.User.firstName || client.User.lastName
-                            ? `${client.User.firstName || ''} ${client.User.lastName || ''}`.trim()
-                            : client.User.email;
-                          return (
-                            <option key={client.uid} value={client.uid}>
-                              {clientName} ({client.User.email})
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Partner ID (Optional)</Label>
-                      <Input
-                        value={projectForm.partnerId}
-                        onChange={(e) => setProjectForm({ ...projectForm, partnerId: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="Enter partner ID"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Priority</Label>
-                      <select
-                        value={projectForm.priority}
-                        onChange={(e) => setProjectForm({ ...projectForm, priority: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select priority</option>
-                        <option value="low">Low</option>
-                        <option value="mid">Mid</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Project Status</Label>
-                      <select
-                        value={projectForm.projectStatus}
-                        onChange={(e) => setProjectForm({ ...projectForm, projectStatus: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select status</option>
-                        <option value="not_started">Not Started</option>
-                        <option value="initiated">Initiated</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Budget</Label>
-                      <Input
-                        value={projectForm.Budget}
-                        onChange={(e) => setProjectForm({ ...projectForm, Budget: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="Enter budget"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Payment Status</Label>
-                      <select
-                        value={projectForm.paymentStatus}
-                        onChange={(e) => setProjectForm({ ...projectForm, paymentStatus: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select payment status</option>
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Name</Label>
-                    <Input
-                      value={projectForm.projectName}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="Enter project name"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Tech Stack</Label>
-                    <Input
-                      value={projectForm.techStack}
-                      onChange={(e) => setProjectForm({ ...projectForm, techStack: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="e.g., React, Node.js, PostgreSQL"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Client Requirement</Label>
-                    <textarea
-                      value={projectForm.clientRequirement}
-                      onChange={(e) => setProjectForm({ ...projectForm, clientRequirement: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Client requirements and specifications"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">ReadMe</Label>
-                    <textarea
-                      value={projectForm.readMe}
-                      onChange={(e) => setProjectForm({ ...projectForm, readMe: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Project README content"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Information</Label>
-                    <textarea
-                      value={projectForm.projectInformation}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectInformation: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Additional project information"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Features</Label>
-                    <textarea
-                      value={projectForm.projectFeatures}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectFeatures: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="List of project features"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Progress Status</Label>
-                    <Input
-                      value={projectForm.progressStatus}
-                      onChange={(e) => setProjectForm({ ...projectForm, progressStatus: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="e.g., 50%, Phase 2, etc."
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Timeline (JSON)</Label>
-                    <textarea
-                      value={projectForm.projectTimeline}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectTimeline: e.target.value })}
-                      className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                      placeholder='{"startDate": "2024-01-01", "endDate": "2024-12-31", "milestones": []}'
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Miscellaneous Data (JSON)</Label>
-                    <textarea
-                      value={projectForm.miscellaneousData}
-                      onChange={(e) => setProjectForm({ ...projectForm, miscellaneousData: e.target.value })}
-                      className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                      placeholder='{"key": "value"}'
-                    />
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={handleCreateProject}
-                      disabled={loading === 'Create Project'}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                    >
-                      {loading === 'Create Project' ? 'Creating...' : 'Create Project'}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsCreateModalOpen(false);
-                        resetProjectForm();
-                      }}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Delete Confirmation Modal */}
-          {isDeleteModalOpen && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-md w-full">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Trash2 className="h-5 w-5 text-red-400" />
-                    Delete Project
-                  </CardTitle>
-                  <CardDescription>This action cannot be undone</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-300">
-                    Are you sure you want to delete this project? This will permanently remove the project and all associated data.
-                  </p>
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={handleDeleteProject}
-                      disabled={loading === 'Delete Project'}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      {loading === 'Delete Project' ? 'Deleting...' : 'Delete'}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsDeleteModalOpen(false);
-                        setSelectedDeleteProjectId('');
-                      }}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* View Project Details Modal */}
-          {isViewModalOpen && selectedViewProject && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 max-w-5xl w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <CardHeader className="sticky top-0 bg-slate-900/95 z-10 border-b border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Eye className="h-5 w-5 text-green-400" />
-                        Project Details
-                      </CardTitle>
-                      <CardDescription>View and edit project information</CardDescription>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setIsViewModalOpen(false);
-                        setSelectedViewProject(null);
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-gray-300">Project Name</Label>
-                      <Input
-                        value={projectForm.projectName}
-                        onChange={(e) => setProjectForm({ ...projectForm, projectName: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="Enter project name"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Client</Label>
-                      <select
-                        value={projectForm.clientId}
-                        onChange={(e) => setProjectForm({ ...projectForm, clientId: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                        disabled={loadingClients}
-                      >
-                        <option value="">No client</option>
-                        {clients.map((client) => {
-                          const clientName = client.User.firstName || client.User.lastName
-                            ? `${client.User.firstName || ''} ${client.User.lastName || ''}`.trim()
-                            : client.User.email;
-                          return (
-                            <option key={client.uid} value={client.uid}>
-                              {clientName} ({client.User.email})
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Partner ID (Optional)</Label>
-                      <Input
-                        value={projectForm.partnerId}
-                        onChange={(e) => setProjectForm({ ...projectForm, partnerId: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="Enter partner ID"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Priority</Label>
-                      <select
-                        value={projectForm.priority}
-                        onChange={(e) => setProjectForm({ ...projectForm, priority: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select priority</option>
-                        <option value="low">Low</option>
-                        <option value="mid">Mid</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Project Status</Label>
-                      <select
-                        value={projectForm.projectStatus}
-                        onChange={(e) => setProjectForm({ ...projectForm, projectStatus: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select status</option>
-                        <option value="not_started">Not Started</option>
-                        <option value="initiated">Initiated</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Budget</Label>
-                      <Input
-                        value={projectForm.Budget}
-                        onChange={(e) => setProjectForm({ ...projectForm, Budget: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="Enter budget"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Payment Status</Label>
-                      <select
-                        value={projectForm.paymentStatus}
-                        onChange={(e) => setProjectForm({ ...projectForm, paymentStatus: e.target.value })}
-                        className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      >
-                        <option value="">Select payment status</option>
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label className="text-gray-300">Progress Status</Label>
-                      <Input
-                        value={projectForm.progressStatus}
-                        onChange={(e) => setProjectForm({ ...projectForm, progressStatus: e.target.value })}
-                        className="bg-slate-800/50 border-white/10 text-white mt-1"
-                        placeholder="e.g., 50%, Phase 2, etc."
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Tech Stack</Label>
-                    <Input
-                      value={projectForm.techStack}
-                      onChange={(e) => setProjectForm({ ...projectForm, techStack: e.target.value })}
-                      className="bg-slate-800/50 border-white/10 text-white mt-1"
-                      placeholder="e.g., React, Node.js, PostgreSQL"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Client Requirement</Label>
-                    <textarea
-                      value={projectForm.clientRequirement}
-                      onChange={(e) => setProjectForm({ ...projectForm, clientRequirement: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Client requirements and specifications"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">ReadMe</Label>
-                    <textarea
-                      value={projectForm.readMe}
-                      onChange={(e) => setProjectForm({ ...projectForm, readMe: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Project README content"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Information</Label>
-                    <textarea
-                      value={projectForm.projectInformation}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectInformation: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="Additional project information"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Features</Label>
-                    <textarea
-                      value={projectForm.projectFeatures}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectFeatures: e.target.value })}
-                      className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                      placeholder="List of project features"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Project Timeline (JSON)</Label>
-                    <textarea
-                      value={projectForm.projectTimeline}
-                      onChange={(e) => setProjectForm({ ...projectForm, projectTimeline: e.target.value })}
-                      className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                      placeholder='{"startDate": "2024-01-01", "endDate": "2024-12-31", "milestones": []}'
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-300">Miscellaneous Data (JSON)</Label>
-                    <textarea
-                      value={projectForm.miscellaneousData}
-                      onChange={(e) => setProjectForm({ ...projectForm, miscellaneousData: e.target.value })}
-                      className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                      placeholder='{"key": "value"}'
-                    />
-                  </div>
-
-                  {/* Read-only Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                    <div>
-                      <Label className="text-gray-400 text-sm">Created At</Label>
-                      <p className="text-gray-400 text-sm mt-1">
-                        {selectedViewProject ? new Date(selectedViewProject.created_at).toLocaleString() : 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-400 text-sm">Last Updated</Label>
-                      <p className="text-gray-400 text-sm mt-1">
-                        {selectedViewProject ? new Date(selectedViewProject.updated_at).toLocaleString() : 'N/A'}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label className="text-gray-400 text-sm">Project ID</Label>
-                      <p className="text-gray-500 text-xs font-mono mt-1">{selectedViewProject?.id}</p>
-                    </div>
-                  </div>
-
-                  {/* Update and Close Buttons */}
-                  <div className="flex gap-3 pt-4 border-t border-white/10">
-                    <Button
-                      onClick={async () => {
-                        if (!selectedProjectId) {
-                          setMessage({ type: 'error', text: 'Project ID is missing' });
-                          return;
-                        }
-
-                        // Parse JSON fields before sending and clean up empty strings
-                        const formData: any = {
-                          ...projectForm,
-                          // Convert empty strings to null for optional foreign keys
-                          clientId: projectForm.clientId && projectForm.clientId.trim() !== '' ? projectForm.clientId : undefined,
-                          partnerId: projectForm.partnerId && projectForm.partnerId.trim() !== '' ? projectForm.partnerId : undefined,
-                          // Parse JSON fields
-                          projectTimeline: projectForm.projectTimeline ? (() => {
-                            try {
-                              return JSON.parse(projectForm.projectTimeline);
-                            } catch {
-                              return projectForm.projectTimeline;
-                            }
-                          })() : undefined,
-                          miscellaneousData: projectForm.miscellaneousData ? (() => {
-                            try {
-                              return JSON.parse(projectForm.miscellaneousData);
-                            } catch {
-                              return projectForm.miscellaneousData;
-                            }
-                          })() : undefined,
-                        };
-                        // Remove undefined values
-                        Object.keys(formData).forEach(key => {
-                          if (formData[key] === undefined || formData[key] === '') {
-                            if (key !== 'clientId' && key !== 'partnerId') {
-                              delete formData[key];
-                            }
-                          }
-                        });
-
-                        await handleApiRequest(
-                          `/projects/${selectedProjectId}`,
-                          'PATCH',
-                          formData,
-                          setLoading,
-                          setMessage,
-                          'Update Project',
-                          () => {
-                            setIsViewModalOpen(false);
-                            setSelectedViewProject(null);
-                            setSelectedProjectId('');
-                            fetchProjects();
-                          }
-                        );
-                      }}
-                      disabled={loading === 'Update Project' || !selectedProjectId}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                    >
-                      {loading === 'Update Project' ? 'Updating...' : 'Update Project'}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsViewModalOpen(false);
-                        setSelectedViewProject(null);
-                        setSelectedProjectId('');
-                      }}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Success Dialog */}
-          {isSuccessDialogOpen && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-green-500/50 max-w-md w-full">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-400" />
-                        Success!
-                      </CardTitle>
-                      <CardDescription>Project created successfully</CardDescription>
-                    </div>
-                    <Button
-                      onClick={() => setIsSuccessDialogOpen(false)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <CheckCircle2 className="h-6 w-6 text-green-400" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">Project Created Successfully!</p>
-                      <p className="text-gray-400 text-sm">Your project has been created and is now available in the projects list.</p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => setIsSuccessDialogOpen(false)}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600"
-                  >
-                    Got it
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          {/* Modals */}
+          <ProjectModals
+            isCreateModalOpen={isCreateModalOpen}
+            isDeleteModalOpen={isDeleteModalOpen}
+            isViewModalOpen={isViewModalOpen}
+            isEditMode={isEditMode}
+            isSuccessDialogOpen={isSuccessDialogOpen}
+            clients={clients}
+            loadingClients={loadingClients}
+            selectedViewProject={selectedViewProject}
+            selectedProjectId={selectedProjectId}
+            selectedDeleteProjectId={selectedDeleteProjectId}
+            projectForm={projectForm}
+            loading={loading}
+            onCloseCreateModal={() => {
+              setIsCreateModalOpen(false);
+              resetProjectForm();
+            }}
+            onCloseDeleteModal={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedDeleteProjectId('');
+            }}
+            onCloseViewModal={() => {
+              setIsViewModalOpen(false);
+              setSelectedViewProject(null);
+              setIsEditMode(false);
+              setSelectedProjectId('');
+            }}
+            onCloseSuccessDialog={() => setIsSuccessDialogOpen(false)}
+            onCreateProject={handleCreateProject}
+            onDeleteProject={handleDeleteProject}
+            onSetEditMode={setIsEditMode}
+            onProjectFormChange={setProjectForm}
+            onResetForm={resetProjectForm}
+            onSetMessage={setMessage}
+            onSetLoading={setLoading}
+            onRefreshProjects={fetchProjects}
+          />
         </div>
       </div>
     </div>
