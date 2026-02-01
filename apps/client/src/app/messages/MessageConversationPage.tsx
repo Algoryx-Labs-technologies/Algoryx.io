@@ -77,6 +77,7 @@ export function MessageConversationPage() {
           ws.on('message:received', (message: Message) => {
             if (id && id === message.conversationId) {
               setMessages(prev => {
+                // Check if message already exists (avoid duplicates)
                 if (prev.some(m => m.id === message.id)) return prev;
                 return [...prev, message];
               });
@@ -94,8 +95,11 @@ export function MessageConversationPage() {
               navigate(`/messages/${message.conversationId}`, { replace: true });
             } else if (id && id === message.conversationId) {
               setMessages(prev => {
-                if (prev.some(m => m.id === message.id)) return prev;
-                return [...prev, message];
+                // Remove any temporary optimistic messages and add the real one
+                const filtered = prev.filter(m => !m.id.startsWith('temp_'));
+                // Check if message already exists (avoid duplicates)
+                if (filtered.some(m => m.id === message.id)) return filtered;
+                return [...filtered, message];
               });
               setTimeout(() => scrollToBottom(), 100);
             }
@@ -233,20 +237,54 @@ export function MessageConversationPage() {
     const recipientId = id === 'new' ? selectedAdminId : conversation?.otherUserId;
     if (!recipientId) return;
 
-    setSending(true);
-    try {
-      const conversationId = id && id !== 'new' ? id : undefined;
+    const messageContent = newMessage.trim();
+    const conversationId = id && id !== 'new' ? id : undefined;
 
+    setSending(true);
+    
+    // Create optimistic message (temporary ID, will be replaced by server response)
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      conversationId: conversationId || 'temp',
+      senderId: 'current-user', // Will be replaced by actual sender ID from server
+      recipientId,
+      content: messageContent,
+      status: 'delivered',
+      readAt: null,
+      created_at: new Date().toISOString(),
+      SenderUser: {
+        id: 'current-user',
+        email: '',
+        firstName: null,
+        lastName: null,
+        role: 'client',
+      },
+      RecipientUser: {
+        id: recipientId,
+        email: '',
+        firstName: null,
+        lastName: null,
+        role: 'admin',
+      },
+    };
+
+    // Optimistically add message to UI immediately
+    setMessages(prev => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setTimeout(() => scrollToBottom(), 100);
+
+    try {
       // Try WebSocket first, fallback to HTTP
       if (socket?.connected) {
         socket.emit('message:send', {
           recipientId,
-          content: newMessage,
+          content: messageContent,
           conversationId,
         });
         
         // WebSocket will handle the response via 'message:sent' event
-        setNewMessage('');
+        // The optimistic message will be replaced by the real one
         setSending(false);
         
         // If new conversation, wait for response to get conversationId
@@ -257,25 +295,35 @@ export function MessageConversationPage() {
         // Fallback to HTTP API
         const response = await apiClient.post<Message>('/messages', {
           recipientId,
-          content: newMessage,
+          content: messageContent,
           conversationId,
         });
 
         if (response.success && response.data) {
+          // Replace optimistic message with real one
+          setMessages(prev => {
+            const filtered = prev.filter(m => m.id !== tempId);
+            return [...filtered, response.data!];
+          });
+          
           if (id === 'new' && response.data.conversationId) {
             // New conversation created, navigate to it
             navigate(`/messages/${response.data.conversationId}`, { replace: true });
           } else {
-            // Add message to current conversation
-            setMessages(prev => [...prev, response.data!]);
-            setNewMessage('');
             setTimeout(() => scrollToBottom(), 100);
           }
+        } else {
+          // If API call failed, remove optimistic message
+          setMessages(prev => prev.filter(m => m.id !== tempId));
+          setNewMessage(messageContent); // Restore message content
         }
         setSending(false);
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setNewMessage(messageContent); // Restore message content
       setSending(false);
     }
   };
