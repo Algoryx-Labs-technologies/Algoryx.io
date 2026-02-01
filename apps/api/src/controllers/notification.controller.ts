@@ -49,7 +49,8 @@ export class NotificationController {
 
   /**
    * Get all notifications
-   * - Returns universal notifications (userId is null) and user-specific notifications
+   * - For admins: Returns ALL notifications (universal + all user-specific)
+   * - For regular users: Returns universal notifications + their own user-specific notifications
    * - If userId query param is provided, filters to show only that user's notifications + universal ones
    */
   async getNotifications(req: AuthenticatedRequest, res: Response) {
@@ -57,10 +58,16 @@ export class NotificationController {
       throw new AppError(401, 'Unauthorized');
     }
 
-    // Get the user from database to check their userId
+    // Get the user from database to check their role and userId
     const user = await prisma.user.findUnique({
       where: { supabaseUserId: req.supabaseUser.id },
-      select: { id: true },
+      select: { 
+        id: true,
+        role: true,
+        Admin: {
+          select: { uid: true }
+        }
+      },
     });
 
     if (!user) {
@@ -72,14 +79,20 @@ export class NotificationController {
     // Build where clause
     const where: any = {};
     
+    // Check if user is admin - admins should see ALL notifications
+    const isAdmin = user.role === 'admin' && user.Admin !== null;
+    
     if (userId && typeof userId === 'string') {
-      // Get universal notifications (userId is null) OR notifications for specific user
+      // If userId query param is provided, filter to that user's notifications + universal
       where.OR = [
         { userId: null }, // Universal notifications
-        { userId: userId }, // User-specific notifications
+        { userId: userId }, // User-specific notifications for the specified user
       ];
+    } else if (isAdmin) {
+      // Admin users see ALL notifications (no filter)
+      // Don't set where clause, so it returns everything
     } else {
-      // If no userId filter, get universal notifications + notifications for current user
+      // Regular users see universal notifications + their own user-specific notifications
       where.OR = [
         { userId: null }, // Universal notifications
         { userId: user.id }, // Notifications for current user

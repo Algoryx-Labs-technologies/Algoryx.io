@@ -28,7 +28,7 @@ interface Client {
 interface PublishNotificationFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (message: string) => void;
 }
 
 export function PublishNotificationForm({ isOpen, onClose, onSuccess }: PublishNotificationFormProps) {
@@ -147,18 +147,20 @@ export function PublishNotificationForm({ isOpen, onClose, onSuccess }: PublishN
         throw new Error(result.message || 'Failed to create notification');
       }
 
+      const successMessage = notificationForm.userId
+        ? 'User-specific notification created successfully!'
+        : 'Universal notification created successfully!';
+
       setMessage({
         type: 'success',
-        text: notificationForm.userId
-          ? 'User-specific notification created successfully!'
-          : 'Universal notification created successfully!',
+        text: successMessage,
       });
 
       resetForm();
       
-      // Call onSuccess callback after a short delay
+      // Call onSuccess callback with message, then close modal after a short delay
       setTimeout(() => {
-        onSuccess();
+        onSuccess(successMessage);
         onClose();
       }, 1500);
     } catch (error: any) {

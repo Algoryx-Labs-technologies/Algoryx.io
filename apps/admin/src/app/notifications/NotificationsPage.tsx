@@ -3,7 +3,7 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Button } from '../components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle2, X } from 'lucide-react';
 import { NotificationsList } from './NotificationsList';
 import { PublishNotificationForm } from './PublishNotificationForm';
 
@@ -11,10 +11,17 @@ export function NotificationsPage() {
   const { isCollapsed } = useSidebar();
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handlePublishSuccess = () => {
+  const handlePublishSuccess = (message: string) => {
+    // Show success message
+    setSuccessMessage(message);
     // Trigger refresh of notifications list
     setRefreshTrigger((prev) => prev + 1);
+    // Auto-hide success message after 5 seconds
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
   };
 
   return (
@@ -41,6 +48,22 @@ export function NotificationsPage() {
               Publish Notification
             </Button>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="bg-green-500/20 border border-green-500/50 text-green-400 p-4 rounded-lg flex items-center justify-between gap-2 animate-in slide-in-from-top">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>{successMessage}</span>
+              </div>
+              <button
+                onClick={() => setSuccessMessage(null)}
+                className="text-green-400 hover:text-green-300 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
 
           {/* Notifications List */}
           <NotificationsList refreshTrigger={refreshTrigger} />
