@@ -73,6 +73,12 @@ export function MessagesPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const selectedConversationRef = useRef<string | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -86,26 +92,50 @@ export function MessagesPage() {
 
           // Listen for new messages
           ws.on('message:received', (message: Message) => {
-            if (selectedConversation === message.conversationId) {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            // Update messages immediately if this is the selected conversation (priority update)
+            if (currentSelected === message.conversationId) {
               setMessages(prev => {
                 if (prev.some(m => m.id === message.id)) return prev;
                 return [...prev, message];
               });
-              setTimeout(() => scrollToBottom(), 100);
+              // Scroll after message is added
+              requestAnimationFrame(() => {
+                setTimeout(() => scrollToBottom(), 50);
+              });
             }
-            loadConversations();
+            // Update conversation list in next frame (non-blocking, lower priority)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
           });
 
           // Listen for sent message confirmation
           ws.on('message:sent', (message: Message) => {
-            if (selectedConversation === message.conversationId) {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            // If this is a new conversation, set the conversation ID
+            if (!currentSelected || currentSelected.startsWith('temp_')) {
+              setSelectedConversation(message.conversationId);
+              setPendingRecipientId(null);
+              // Load messages for the new conversation
+              loadMessages(message.conversationId);
+            } else if (currentSelected === message.conversationId) {
+              // Update messages immediately if this is the selected conversation (priority update)
               setMessages(prev => {
                 if (prev.some(m => m.id === message.id)) return prev;
                 return [...prev, message];
               });
-              setTimeout(() => scrollToBottom(), 100);
+              // Scroll after message is added
+              requestAnimationFrame(() => {
+                setTimeout(() => scrollToBottom(), 50);
+              });
             }
-            loadConversations();
+            // Update conversation list in next frame (non-blocking, lower priority)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
           });
 
           // Listen for unread count updates
@@ -115,12 +145,17 @@ export function MessagesPage() {
 
           // Listen for conversation updates
           ws.on('conversation:updated', () => {
-            loadConversations();
+            // Update conversation list asynchronously (non-blocking)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
           });
 
           // Listen for message seen status
           ws.on('message:seen', (data: { conversationId: string }) => {
-            if (selectedConversation === data.conversationId) {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            if (currentSelected === data.conversationId) {
               setMessages(prev => prev.map(msg => 
                 msg.conversationId === data.conversationId && msg.recipientId !== msg.senderId
                   ? { ...msg, status: 'seen' as const }
