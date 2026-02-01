@@ -67,6 +67,9 @@ export function MessageConversationPage() {
     } else if (id === 'new') {
       loadAdmins();
       setLoading(false);
+    } else {
+      // No ID provided - load first conversation or show empty state
+      loadFirstConversation();
     }
   }, [id]);
 
@@ -125,6 +128,30 @@ export function MessageConversationPage() {
       }
     } catch (error) {
       console.error('Error loading admins:', error);
+    }
+  };
+
+  const loadFirstConversation = async () => {
+    try {
+      const response = await apiClient.get<Conversation[]>('/messages/conversations');
+      if (response.success && response.data && response.data.length > 0) {
+        // Load the first conversation
+        const firstConv = response.data[0];
+        setConversation({
+          conversationId: firstConv.conversationId,
+          otherUserId: firstConv.otherUserId,
+          otherUser: firstConv.otherUser,
+        });
+        await loadMessages(firstConv.conversationId);
+        // Update URL without navigation
+        window.history.replaceState(null, '', `/messages/${firstConv.conversationId}`);
+      } else {
+        // No conversations, show empty state
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error loading first conversation:', error);
+      setLoading(false);
     }
   };
 
@@ -308,15 +335,47 @@ export function MessageConversationPage() {
     );
   }
 
-  if (!conversation) {
+  if (!conversation && !loading) {
     return (
       <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
         <Sidebar />
         <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
           isCollapsed ? "ml-20" : "ml-80"
         )}>
-          <div className="text-gray-500 font-footer text-lg">Conversation not found</div>
+          <div className="h-full flex flex-col relative z-10">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
+                  <User className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold font-hero text-white">
+                    Admin
+                  </h1>
+                  <p className="text-gray-300 font-footer text-base mt-1">
+                    Technical Analyst • admin@algoryx.io
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Empty State */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-900/50 flex items-center justify-center">
+              <div className="text-center">
+                <MessageSquare className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold font-hero text-white mb-2">No Messages Yet</h3>
+                <p className="text-gray-400 font-footer mb-6">Start a conversation with an admin</p>
+                <button
+                  onClick={() => navigate('/messages/new')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-footer"
+                >
+                  Send First Message
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -340,21 +399,23 @@ export function MessageConversationPage() {
           {/* Header */}
           <div className="p-6 border-b border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/messages')}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5 text-white" />
-              </button>
+              {id && id !== 'new' && (
+                <button
+                  onClick={() => navigate('/messages')}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+              )}
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
                 <User className="h-7 w-7 text-white" />
               </div>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold font-hero text-white">
-                  {getRecipientName(conversation.otherUser)}
+                  Admin
                 </h1>
                 <p className="text-gray-300 font-footer text-base mt-1">
-                  Technical Analyst • {conversation.otherUser.email}
+                  Technical Analyst • admin@algoryx.io
                 </p>
               </div>
             </div>
@@ -398,7 +459,7 @@ export function MessageConversationPage() {
                             "text-base font-footer font-semibold",
                             isMine ? "text-white" : "text-white"
                           )}>
-                            {isMine ? 'You' : getRecipientName(message.SenderUser)}
+                            {isMine ? 'You' : 'Admin'}
                           </span>
                           <span className="text-sm text-gray-400 font-footer">
                             <Clock className="h-4 w-4 inline mr-1" />
