@@ -391,12 +391,18 @@ export function ProjectModals({
               </div>
               <div>
                 <Label className="text-gray-300">Progress Status</Label>
-                <Input
+                <select
                   value={projectForm.progressStatus}
                   onChange={(e) => onProjectFormChange({ ...projectForm, progressStatus: e.target.value })}
-                  className="bg-slate-800/50 border-white/10 text-white mt-1"
-                  placeholder="e.g., 50%, Phase 2, etc."
-                />
+                  className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
+                >
+                  <option value="">Select progress</option>
+                  {[10, 25, 40, 50, 75, 90, 100].map((percent) => (
+                    <option key={percent} value={`${percent}%`}>
+                      {percent}%
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <Label className="text-gray-300">Project Timeline (JSON)</Label>
@@ -603,13 +609,19 @@ export function ProjectModals({
                 </div>
                 <div>
                   <Label className="text-gray-300">Progress Status</Label>
-                  <Input
+                  <select
                     value={projectForm.progressStatus}
                     onChange={(e) => onProjectFormChange({ ...projectForm, progressStatus: e.target.value })}
                     disabled={!isEditMode}
-                    className="bg-slate-800/50 border-white/10 text-white mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="e.g., 50%, Phase 2, etc."
-                  />
+                    className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select progress</option>
+                    {[10, 25, 40, 50, 75, 90, 100].map((percent) => (
+                      <option key={percent} value={`${percent}%`}>
+                        {percent}%
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div>
