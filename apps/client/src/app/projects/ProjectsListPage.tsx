@@ -3,7 +3,7 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { FolderKanban, Calendar, DollarSign, FileText, ArrowRight } from 'lucide-react';
+import { FolderKanban, ArrowRight, Clock, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
 
@@ -83,20 +83,6 @@ export function ProjectsListPage() {
     }
   };
 
-  const getPaymentStatusColor = (status?: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-500/20 text-green-400';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400';
-      case 'failed':
-      case 'refunded':
-        return 'bg-red-500/20 text-red-400';
-      default:
-        return 'bg-gray-500/20 text-gray-400';
-    }
-  };
-
   const formatDate = (dateString?: string | Date | null) => {
     if (!dateString) return 'N/A';
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -107,14 +93,6 @@ export function ProjectsListPage() {
     });
   };
 
-  const getDaysUntilDeadline = (deadline?: string | null) => {
-    if (!deadline) return null;
-    const today = new Date();
-    const deadlineDate = new Date(deadline);
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
 
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
@@ -171,8 +149,11 @@ export function ProjectsListPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => {
-                  const daysUntilDeadline = getDaysUntilDeadline(project.deadline);
-                  const progress = parseInt(project.progressStatus || '0');
+                  // Handle progress status as percentage string (e.g., "10%", "25%", etc.)
+                  const progressStatusStr = project.progressStatus || '0';
+                  const progress = progressStatusStr.includes('%') 
+                    ? parseInt(progressStatusStr.replace('%', '')) 
+                    : parseInt(progressStatusStr);
 
                   return (
                     <Card
@@ -180,103 +161,75 @@ export function ProjectsListPage() {
                       className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden cursor-pointer"
                       onClick={() => navigate(`/projects/${project.id}`)}
                     >
-                      <CardHeader className="px-6 pt-6 pb-4">
-                        <div className="flex items-start justify-between mb-3">
+                      <CardHeader className="px-6 pt-6 pb-6">
+                        <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
-                            <CardTitle className="text-xl font-semibold font-hero text-white mb-2 line-clamp-1">
+                            <CardTitle className="text-xl font-semibold font-hero text-white mb-4 line-clamp-2 group-hover:text-blue-300 transition-colors">
                               {project.projectName || 'Untitled Project'}
                             </CardTitle>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={cn(
-                            "text-sm font-footer px-3 py-1.5 rounded border",
-                            getStatusColor(project.projectStatus)
-                          )}>
-                            {project.projectStatus?.replace('_', ' ') || 'Not Started'}
-                          </span>
-                          <span className={cn(
-                            "text-sm font-footer px-3 py-1.5 rounded",
-                            getPriorityColor(project.priority)
-                          )}>
-                            {project.priority || 'N/A'} Priority
-                          </span>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="px-6 pb-6 space-y-4">
-                        {/* Progress Bar */}
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-base text-gray-300 font-footer font-medium">Progress</span>
-                            <span className="text-base text-white font-footer font-semibold">{progress}%</span>
+                        
+                        {/* Grid Layout for Status, Priority, Created Date, and Progress */}
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          {/* Project Status */}
+                          <div>
+                            <p className="text-xs text-gray-400 font-footer font-medium mb-2 uppercase tracking-wider">Status</p>
+                            <span className={cn(
+                              "inline-flex items-center text-sm font-hero font-semibold px-3 py-2 rounded-lg border-2 transition-all w-full justify-center",
+                              getStatusColor(project.projectStatus)
+                            )}>
+                              {project.projectStatus?.replace('_', ' ') || 'Not Started'}
+                            </span>
                           </div>
-                          <div className="w-full bg-slate-700/50 rounded-full h-3">
+                          
+                          {/* Priority */}
+                          <div>
+                            <p className="text-xs text-gray-400 font-footer font-medium mb-2 uppercase tracking-wider">Priority</p>
+                            <span className={cn(
+                              "inline-flex items-center text-sm font-hero font-semibold px-3 py-2 rounded-lg transition-all w-full justify-center",
+                              getPriorityColor(project.priority)
+                            )}>
+                              {project.priority ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1) : 'N/A'}
+                            </span>
+                          </div>
+
+                          {/* Created Date */}
+                          <div>
+                            <p className="text-xs text-gray-400 font-footer font-medium mb-2 uppercase tracking-wider">Created</p>
+                            <div className="flex items-center gap-2 text-sm text-white font-footer font-semibold px-3 py-2 bg-slate-800/30 rounded-lg border border-white/5">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span>{formatDate(project.created_at)}</span>
+                            </div>
+                          </div>
+
+                          {/* Progress */}
+                          <div>
+                            <p className="text-xs text-gray-400 font-footer font-medium mb-2 uppercase tracking-wider">Progress</p>
+                            <div className="flex items-center gap-2 text-sm text-white font-hero font-bold px-3 py-2 bg-slate-800/30 rounded-lg border border-white/5">
+                              <TrendingUp className="h-4 w-4 text-blue-400" />
+                              <span>{progress}%</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar - Full Width */}
+                        <div className="bg-slate-800/30 rounded-lg p-3 border border-white/5">
+                          <div className="w-full bg-slate-700/50 rounded-full h-2.5 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300"
-                              style={{ width: `${progress}%` }}
+                              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                              style={{ width: `${Math.min(progress, 100)}%` }}
                             />
                           </div>
                         </div>
-
-                        {/* Deadline */}
-                        {project.deadline && (
-                          <div className="flex items-center gap-3 text-base">
-                            <Calendar className="h-5 w-5 text-gray-400" />
-                            <span className="text-gray-300 font-footer font-medium">Deadline:</span>
-                            <span className="text-white font-footer font-semibold">
-                              {formatDate(project.deadline)}
-                            </span>
-                            {daysUntilDeadline !== null && (
-                              <span className={cn(
-                                "text-sm font-footer px-3 py-1 rounded ml-auto",
-                                daysUntilDeadline < 0
-                                  ? "bg-red-500/20 text-red-400"
-                                  : daysUntilDeadline <= 7
-                                  ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-green-500/20 text-green-400"
-                              )}>
-                                {daysUntilDeadline < 0
-                                  ? `${Math.abs(daysUntilDeadline)} days overdue`
-                                  : `${daysUntilDeadline} days left`}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Payment Status */}
-                        <div className="flex items-center gap-3 text-base">
-                          <DollarSign className="h-5 w-5 text-gray-400" />
-                          <span className="text-gray-300 font-footer font-medium">Payment:</span>
-                          <span className={cn(
-                            "text-sm font-footer px-3 py-1.5 rounded",
-                            getPaymentStatusColor(project.paymentStatus)
-                          )}>
-                            {project.paymentStatus || 'N/A'}
-                          </span>
-                        </div>
-
-                        {/* Agreement Status */}
-                        <div className="flex items-center gap-3 text-base">
-                          <FileText className="h-5 w-5 text-gray-400" />
-                          <span className="text-gray-300 font-footer font-medium">Agreement:</span>
-                          <span className={cn(
-                            "text-sm font-footer px-3 py-1.5 rounded",
-                            project.agreementStatus === 'signed'
-                              ? "bg-green-500/20 text-green-400"
-                              : project.agreementStatus === 'pending'
-                              ? "bg-yellow-500/20 text-yellow-400"
-                              : "bg-gray-500/20 text-gray-400"
-                          )}>
-                            {project.agreementStatus || 'N/A'}
-                          </span>
-                        </div>
-
+                      </CardHeader>
+                      
+                      <CardContent className="px-6 pb-6">
                         {/* View Details Button */}
-                        <div className="pt-3 border-t border-white/10">
-                          <div className="flex items-center justify-between text-base text-blue-400 font-footer font-semibold group-hover:text-blue-300 transition-colors">
+                        <div className="pt-4 border-t border-white/10">
+                          <div className="flex items-center justify-between text-sm text-blue-400 font-hero font-semibold group-hover:text-blue-300 transition-colors">
                             <span>View Details</span>
-                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
                       </CardContent>

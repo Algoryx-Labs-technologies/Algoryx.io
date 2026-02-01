@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '@/types';
 import { AppError } from '@/types';
 import { prisma } from '@/config/database';
 import { projectService } from '@/services/project.service';
+import { clientService } from '@/services/client.service';
 
 export class AdminController {
   async getAdminId(userId: string): Promise<string | null> {
@@ -570,6 +571,21 @@ export class AdminController {
       success: true,
       data: users,
       count: users.length,
+    });
+  }
+
+  // ========== GET ALL CLIENTS ==========
+  async getAllClients(req: AuthenticatedRequest, res: Response) {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    const clients = await clientService.findAll();
+
+    res.json({
+      success: true,
+      data: clients,
+      count: clients.length,
     });
   }
 

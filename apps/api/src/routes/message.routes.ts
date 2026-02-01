@@ -10,16 +10,12 @@ const router = Router();
 const createMessageSchema = z.object({
   body: z.object({
     recipientId: z.string().min(1, 'Recipient ID is required'),
-    recipientRole: z.enum(['admin', 'partner'], {
-      errorMap: () => ({ message: 'Recipient role must be admin or partner' }),
-    }),
-    conversationId: z.string().optional(),
-    subject: z.string().optional(),
     content: z.string().min(1, 'Message content is required'),
+    conversationId: z.string().optional(),
   }),
 });
 
-// Routes
+// Routes - accessible by both admin and client
 router.get(
   '/conversations',
   authenticate,
@@ -38,6 +34,12 @@ router.get(
   messageController.getConversationMessages.bind(messageController)
 );
 
+router.get(
+  '/conversations/:id/unread-count',
+  authenticate,
+  messageController.getConversationUnreadCount.bind(messageController)
+);
+
 router.post(
   '/',
   authenticate,
@@ -51,11 +53,30 @@ router.patch(
   messageController.markConversationAsRead.bind(messageController)
 );
 
+router.patch(
+  '/messages/:id/read',
+  authenticate,
+  messageController.markMessageAsSeen.bind(messageController)
+);
+
 router.get(
   '/unread-count',
   authenticate,
   messageController.getUnreadCount.bind(messageController)
 );
 
-export default router;
+// Admin-only routes
+router.get(
+  '/clients',
+  authenticate,
+  messageController.getClients.bind(messageController)
+);
 
+// Client-only routes
+router.get(
+  '/admins',
+  authenticate,
+  messageController.getAdmins.bind(messageController)
+);
+
+export default router;

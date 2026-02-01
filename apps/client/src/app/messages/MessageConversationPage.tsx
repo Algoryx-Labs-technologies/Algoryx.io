@@ -8,199 +8,180 @@ import {
   User, 
   Clock,
   MessageSquare,
-  Paperclip
+  Paperclip,
+  Loader2,
+  Check,
+  CheckCheck,
+  ArrowLeft
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { apiClient } from '../../lib/api';
+import { format } from 'date-fns';
+
+interface User {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+}
 
 interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  senderName: string;
-  senderRole: 'client' | 'admin' | 'partner';
   recipientId: string;
-  recipientName: string;
-  recipientRole: 'client' | 'admin' | 'partner';
   content: string;
-  subject?: string;
-  isRead: boolean;
+  status: 'delivered' | 'seen';
+  readAt: string | null;
   created_at: string;
+  SenderUser: User;
+  RecipientUser: User;
 }
 
 interface Conversation {
-  id: string;
-  recipientId: string;
-  recipientName: string;
-  recipientRole: 'admin' | 'partner';
-  recipientEmail?: string;
-  subject?: string;
-  created_at: string;
-  updated_at: string;
+  conversationId: string;
+  otherUserId: string;
+  otherUser: User;
 }
 
 export function MessageConversationPage() {
   const { isCollapsed } = useSidebar();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [admins, setAdmins] = useState<User[]>([]);
+  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchConversation = async () => {
-      try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
-        
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token');
-        // Fetch the single conversation for the user (1-to-1 chat)
-        // const [convResponse, messagesResponse] = await Promise.all([
-        //   fetch(`${API_BASE_URL}/messages/conversation`, {
-        //     headers: {
-        //       'Authorization': `Bearer ${token}`,
-        //       'Content-Type': 'application/json',
-        //     },
-        //   }),
-        //   fetch(`${API_BASE_URL}/messages/conversation/messages`, {
-        //     headers: {
-        //       'Authorization': `Bearer ${token}`,
-        //       'Content-Type': 'application/json',
-        //     },
-        //   }),
-        // ]);
-        // const convData = await convResponse.json();
-        // const messagesData = await messagesResponse.json();
-        // if (convData.success) setConversation(convData.data);
-        // if (messagesData.success) setMessages(messagesData.data || []);
-        
-        // Mock data for now - single 1-to-1 conversation
-        setConversation({
-          id: '1',
-          recipientId: 'admin1',
-          recipientName: 'Technical Support Team',
-          recipientRole: 'admin',
-          recipientEmail: 'support@algoryx.com',
-          subject: 'Project Support',
-          created_at: '2024-11-15T09:00:00Z',
-          updated_at: '2024-11-20T10:30:00Z',
-        });
+    if (id && id !== 'new') {
+      loadConversation(id);
+      loadMessages(id);
+    } else if (id === 'new') {
+      loadAdmins();
+      setLoading(false);
+    } else {
+      // No ID provided - load first conversation or show empty state
+      loadFirstConversation();
+    }
+  }, [id]);
 
-          setMessages([
-            {
-              id: '1',
-              conversationId: '1',
-              senderId: 'client1',
-              senderName: 'You',
-              senderRole: 'client',
-              recipientId: 'admin1',
-              recipientName: 'Technical Support Team',
-              recipientRole: 'admin',
-              content: 'Hi, I have some questions about the technical approach for my e-commerce project. Can we discuss the architecture?',
-              subject: 'Project Technical Review',
-              isRead: true,
-              created_at: '2024-11-15T09:00:00Z',
-            },
-            {
-              id: '2',
-              conversationId: '1',
-              senderId: 'admin1',
-              senderName: 'Technical Support Team',
-              senderRole: 'admin',
-              recipientId: 'client1',
-              recipientName: 'You',
-              recipientRole: 'client',
-              content: 'Hello! I\'d be happy to help. Let me review your project requirements first, and then we can schedule a call to discuss the technical approach in detail.',
-              isRead: true,
-              created_at: '2024-11-15T14:30:00Z',
-            },
-            {
-              id: '3',
-              conversationId: '1',
-              senderId: 'client1',
-              senderName: 'You',
-              senderRole: 'client',
-              recipientId: 'admin1',
-              recipientName: 'Technical Support Team',
-              recipientRole: 'admin',
-              content: 'That sounds great! I\'ve attached the requirements document. Please let me know when you\'ve reviewed it.',
-              isRead: true,
-              created_at: '2024-11-16T10:15:00Z',
-            },
-            {
-              id: '4',
-              conversationId: '1',
-              senderId: 'admin1',
-              senderName: 'Technical Support Team',
-              senderRole: 'admin',
-              recipientId: 'client1',
-              recipientName: 'You',
-              recipientRole: 'client',
-              content: 'I\'ve reviewed your project requirements. The architecture looks solid. Let\'s schedule a call to discuss the technical approach and answer any questions you have.',
-              isRead: false,
-              created_at: '2024-11-20T10:30:00Z',
-            },
-          ]);
-      } catch (error) {
-        console.error('Error fetching conversation:', error);
-      } finally {
+  useEffect(() => {
+    if (id && id !== 'new') {
+      // Poll for new messages every 30 seconds
+      const interval = setInterval(() => {
+        if (!document.hidden && id) {
+          loadMessages(id);
+        }
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const loadConversation = async (conversationId: string) => {
+    try {
+      const response = await apiClient.get<Conversation>(`/messages/conversations/${conversationId}`);
+      if (response.success && response.data) {
+        setConversation(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+    }
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    try {
+      const response = await apiClient.get<Message[]>(`/messages/conversations/${conversationId}/messages`);
+      if (response.success && response.data) {
+        setMessages(response.data);
+        // Mark messages as seen
+        await apiClient.patch(`/messages/conversations/${conversationId}/read`, {});
+        setTimeout(() => scrollToBottom(), 100);
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAdmins = async () => {
+    try {
+      const response = await apiClient.get<User[]>('/messages/admins');
+      if (response.success && response.data) {
+        setAdmins(response.data);
+        if (response.data.length > 0) {
+          setSelectedAdminId(response.data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading admins:', error);
+    }
+  };
+
+  const loadFirstConversation = async () => {
+    try {
+      const response = await apiClient.get<Conversation[]>('/messages/conversations');
+      if (response.success && response.data && response.data.length > 0) {
+        // Load the first conversation
+        const firstConv = response.data[0];
+        setConversation({
+          conversationId: firstConv.conversationId,
+          otherUserId: firstConv.otherUserId,
+          otherUser: firstConv.otherUser,
+        });
+        await loadMessages(firstConv.conversationId);
+        // Update URL without navigation
+        window.history.replaceState(null, '', `/messages/${firstConv.conversationId}`);
+      } else {
+        // No conversations, show empty state
         setLoading(false);
       }
-    };
-
-    fetchConversation();
-  }, []);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    } catch (error) {
+      console.error('Error loading first conversation:', error);
+      setLoading(false);
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
 
+    const recipientId = id === 'new' ? selectedAdminId : conversation?.otherUserId;
+    if (!recipientId) return;
+
     setSending(true);
     try {
-      // TODO: Replace with actual API call
-      // const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
-      // const token = localStorage.getItem('auth_token');
-      // const response = await fetch(`${API_BASE_URL}/messages`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     conversationId: id === 'new' ? null : id,
-      //     recipientId: conversation?.recipientId,
-      //     content: newMessage,
-      //     subject: conversation?.subject,
-      //   }),
-      // });
-      // const data = await response.json();
-      // if (data.success) {
-      //   setMessages([...messages, data.data]);
-      //   setNewMessage('');
-      // }
-
-      // Mock: Add message to list
-      const tempMessage: Message = {
-        id: Date.now().toString(),
-        conversationId: conversation?.id || '1',
-        senderId: 'client1',
-        senderName: 'You',
-        senderRole: 'client',
-        recipientId: conversation?.recipientId || 'admin1',
-        recipientName: conversation?.recipientName || 'Technical Support Team',
-        recipientRole: conversation?.recipientRole || 'admin',
+      const conversationId = id && id !== 'new' ? id : undefined;
+      const response = await apiClient.post<Message>('/messages', {
+        recipientId,
         content: newMessage,
-        subject: conversation?.subject,
-        isRead: true,
-        created_at: new Date().toISOString(),
-      };
-      setMessages([...messages, tempMessage]);
-      setNewMessage('');
+        conversationId,
+      });
+
+      if (response.success && response.data) {
+        if (id === 'new' && response.data.conversationId) {
+          // New conversation created, navigate to it
+          navigate(`/messages/${response.data.conversationId}`, { replace: true });
+        } else {
+          // Add message to current conversation
+          setMessages(prev => [...prev, response.data!]);
+          setNewMessage('');
+          setTimeout(() => scrollToBottom(), 100);
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -208,21 +189,30 @@ export function MessageConversationPage() {
     }
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    return format(date, 'h:mm a');
   };
 
   const isMyMessage = (message: Message) => {
-    return message.senderRole === 'client';
+    // For client, check if sender is the current user
+    // We'll determine this by checking if sender role is 'client'
+    // In a real app, you'd compare with current user ID
+    return message.SenderUser.role === 'client';
   };
 
-  if (loading) {
+  const getRecipientName = (user: User) => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user.email;
+  };
+
+  if (loading && id !== 'new') {
     return (
       <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
         <Sidebar />
@@ -230,21 +220,162 @@ export function MessageConversationPage() {
           "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
           isCollapsed ? "ml-20" : "ml-80"
         )}>
+          <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
           <div className="text-gray-500 font-footer">Loading conversation...</div>
         </div>
       </div>
     );
   }
 
-  if (!conversation) {
+  // New conversation - show admin selection
+  if (id === 'new') {
+    return (
+      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
+        <Sidebar />
+        
+        <div className={cn(
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
+          isCollapsed ? "ml-20" : "ml-80"
+        )}>
+          <div className="h-full flex flex-col relative z-10">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate('/messages')}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold font-hero text-white">
+                    New Message
+                  </h1>
+                  <p className="text-gray-300 font-footer text-base mt-1">
+                    Select an admin to message
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Selection */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-900/50">
+              <div className="max-w-4xl mx-auto">
+                {admins.length === 0 ? (
+                  <div className="text-center py-12">
+                    <User className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                    <p className="text-gray-400 font-footer">No admins available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {admins.map((admin) => (
+                      <button
+                        key={admin.id}
+                        onClick={() => setSelectedAdminId(admin.id)}
+                        className={cn(
+                          "w-full p-4 rounded-lg text-left transition-all",
+                          selectedAdminId === admin.id
+                            ? "bg-blue-600/20 border-2 border-blue-500"
+                            : "bg-slate-800/50 border border-white/10 hover:border-blue-500/30"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
+                            <User className="h-6 w-6 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-white font-semibold font-footer">
+                              {getRecipientName(admin)}
+                            </p>
+                            <p className="text-gray-400 text-sm font-footer">
+                              {admin.email}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Message Input */}
+            {selectedAdminId && (
+              <div className="p-6 border-t border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
+                <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Type your message..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      className="flex-1 bg-slate-800/50 border-white/10 text-white placeholder:text-gray-500"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={!newMessage.trim() || sending}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {sending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4 mr-2" />
+                          <span className="font-footer">Send</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!conversation && !loading) {
     return (
       <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
         <Sidebar />
         <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
           isCollapsed ? "ml-20" : "ml-80"
         )}>
-          <div className="text-gray-500 font-footer text-lg">Loading messages...</div>
+          <div className="h-full flex flex-col relative z-10">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
+                  <User className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold font-hero text-white">
+                    Admin
+                  </h1>
+                  <p className="text-gray-300 font-footer text-base mt-1">
+                    Technical Analyst • admin@algoryx.io
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Empty State */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-900/50 flex items-center justify-center">
+              <div className="text-center">
+                <MessageSquare className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold font-hero text-white mb-2">No Messages Yet</h3>
+                <p className="text-gray-400 font-footer mb-6">Start a conversation with an admin</p>
+                <button
+                  onClick={() => navigate('/messages/new')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-footer"
+                >
+                  Send First Message
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -258,41 +389,43 @@ export function MessageConversationPage() {
         "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
         isCollapsed ? "ml-20" : "ml-80"
       )}>
-        {/* Background gradient effects - matching dashboard theme */}
+        {/* Background gradient effects */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
           <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/5 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-500/10 dark:bg-blue-700/15 rounded-full blur-3xl"></div>
         </div>
-
-        {/* Animated grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-20 dark:opacity-10"></div>
 
         <div className="h-full flex flex-col relative z-10">
           {/* Header */}
           <div className="p-6 border-b border-white/10 bg-gradient-to-br from-slate-900/70 to-slate-800/50">
             <div className="flex items-center gap-4">
+              {id && id !== 'new' && (
+                <button
+                  onClick={() => navigate('/messages')}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+              )}
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
                 <User className="h-7 w-7 text-white" />
               </div>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold font-hero text-white">
-                  {conversation.recipientName}
+                  Admin
                 </h1>
                 <p className="text-gray-300 font-footer text-base mt-1">
-                  {conversation.recipientRole === 'admin' ? 'Technical Analyst' : 'Advisor'} • {conversation.recipientEmail}
+                  Technical Analyst • admin@algoryx.io
                 </p>
-                {conversation.subject && (
-                  <p className="text-gray-400 font-footer text-sm mt-2">
-                    Subject: {conversation.subject}
-                  </p>
-                )}
               </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 bg-slate-900/50">
+          <div 
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-6 bg-slate-900/50"
+          >
             <div className="max-w-4xl mx-auto space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center py-12">
@@ -318,15 +451,15 @@ export function MessageConversationPage() {
                       <div className={cn(
                         "max-w-[70%] rounded-2xl p-5",
                         isMine
-                          ? "bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30"
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
                           : "bg-gradient-to-br from-slate-800/70 to-slate-800/50 border border-white/10"
                       )}>
                         <div className="flex items-center gap-3 mb-3">
                           <span className={cn(
                             "text-base font-footer font-semibold",
-                            isMine ? "text-blue-400" : "text-white"
+                            isMine ? "text-white" : "text-white"
                           )}>
-                            {message.senderName}
+                            {isMine ? 'You' : 'Admin'}
                           </span>
                           <span className="text-sm text-gray-400 font-footer">
                             <Clock className="h-4 w-4 inline mr-1" />
@@ -336,6 +469,15 @@ export function MessageConversationPage() {
                         <p className="text-base text-gray-100 font-footer whitespace-pre-wrap leading-relaxed">
                           {message.content}
                         </p>
+                        {isMine && (
+                          <div className="flex items-center justify-end gap-2 mt-2">
+                            {message.status === 'seen' ? (
+                              <CheckCheck className="h-4 w-4 text-white" />
+                            ) : (
+                              <Check className="h-4 w-4 text-white" />
+                            )}
+                          </div>
+                        )}
                       </div>
                       {isMine && (
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
@@ -374,7 +516,7 @@ export function MessageConversationPage() {
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {sending ? (
-                    <span className="font-footer">Sending...</span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
@@ -390,4 +532,3 @@ export function MessageConversationPage() {
     </div>
   );
 }
-

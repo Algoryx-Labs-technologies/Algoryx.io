@@ -1,4 +1,4 @@
-import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users, FolderKanban, Bell, CreditCard, MessageSquare, Users as UsersIcon, Star, FileText, HelpCircle, Mail } from 'lucide-react';
+import { LayoutDashboard, ChevronLeft, ChevronRight, BookOpen, Users, FolderKanban, Bell, CreditCard, MessageSquare, Users as UsersIcon, Star, FileText, HelpCircle, Mail, Inbox } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -43,6 +43,11 @@ export function Sidebar() {
       icon: MessageSquare,
       label: 'Support Tickets',
       path: '/support-tickets',
+    },
+    {
+      icon: Inbox,
+      label: 'Messages',
+      path: '/messages',
     },
     {
       icon: UsersIcon,

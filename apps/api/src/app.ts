@@ -47,11 +47,12 @@ export const createApp = (): Express => {
         
         // Allow localhost on any port in development
         if (isLocalhost || isAllowed) {
+          logger.debug(`CORS allowed - Origin: ${normalizedOrigin}`);
           return callback(null, true);
         }
         
         logger.warn(`CORS blocked - Origin: ${normalizedOrigin} not in allowed list: [${allowedOrigins.join(', ')}]`);
-        return callback(null, false);
+        return callback(new Error(`CORS: Origin ${normalizedOrigin} not allowed`), false);
       }
       
       // Production: strict matching

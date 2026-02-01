@@ -2,22 +2,31 @@ import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { MessageSquare, Plus, User, Clock, Send } from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { MessageSquare, Plus, User, Clock, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { apiClient } from '../../lib/api';
+import { format } from 'date-fns';
+
+interface User {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+}
 
 interface Conversation {
-  id: string;
-  recipientId: string;
-  recipientName: string;
-  recipientRole: 'admin' | 'partner';
-  recipientEmail?: string;
-  lastMessage?: string;
-  lastMessageTime?: string;
+  conversationId: string;
+  otherUserId: string;
+  otherUser: User;
+  lastMessage: {
+    id: string;
+    content: string;
+    status: 'delivered' | 'seen';
+    created_at: string;
+  };
   unreadCount: number;
-  subject?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export function MessagesListPage() {
@@ -25,95 +34,58 @@ export function MessagesListPage() {
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        // TODO: Replace with actual API endpoint when backend is ready
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
-        
-        // Uncomment when API is ready:
-        // const token = localStorage.getItem('auth_token'); // Get from your auth system
-        // const response = await fetch(`${API_BASE_URL}/messages/conversations`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //   setConversations(data.data || []);
-        // } else {
-        //   console.error('Error fetching conversations:', data.message);
-        // }
-        
-        // Mock data for now
-        setConversations([
-          {
-            id: '1',
-            recipientId: 'admin1',
-            recipientName: 'John Smith',
-            recipientRole: 'admin',
-            recipientEmail: 'john.smith@algoryx.com',
-            lastMessage: 'I\'ve reviewed your project requirements. Let\'s schedule a call to discuss the technical approach.',
-            lastMessageTime: '2024-11-20T10:30:00Z',
-            unreadCount: 2,
-            subject: 'Project Technical Review',
-            created_at: '2024-11-15T09:00:00Z',
-            updated_at: '2024-11-20T10:30:00Z',
-          },
-          {
-            id: '2',
-            recipientId: 'partner1',
-            recipientName: 'Sarah Johnson',
-            recipientRole: 'partner',
-            recipientEmail: 'sarah.j@techpartners.com',
-            lastMessage: 'The API integration is complete. You can test it now.',
-            lastMessageTime: '2024-11-19T14:20:00Z',
-            unreadCount: 0,
-            subject: 'API Integration Update',
-            created_at: '2024-11-10T08:00:00Z',
-            updated_at: '2024-11-19T14:20:00Z',
-          },
-          {
-            id: '3',
-            recipientId: 'admin2',
-            recipientName: 'Michael Chen',
-            recipientRole: 'admin',
-            recipientEmail: 'michael.chen@algoryx.com',
-            lastMessage: 'Thanks for the clarification. I\'ll update the documentation accordingly.',
-            lastMessageTime: '2024-11-18T16:45:00Z',
-            unreadCount: 0,
-            subject: 'Documentation Update',
-            created_at: '2024-11-12T11:00:00Z',
-            updated_at: '2024-11-18T16:45:00Z',
-          },
-          {
-            id: '4',
-            recipientId: 'partner2',
-            recipientName: 'David Wilson',
-            recipientRole: 'partner',
-            recipientEmail: 'david.w@devteam.com',
-            lastMessage: 'When can we schedule the next review meeting?',
-            lastMessageTime: '2024-11-17T09:15:00Z',
-            unreadCount: 1,
-            subject: 'Meeting Schedule',
-            created_at: '2024-11-05T10:00:00Z',
-            updated_at: '2024-11-17T09:15:00Z',
-          },
-        ]);
-      } catch (error) {
-        console.error('Error fetching conversations:', error);
-      } finally {
-        setLoading(false);
+    loadData();
+    // Poll for new conversations every 30 seconds
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        loadConversations();
+        loadUnreadCount();
       }
-    };
+    }, 30000);
 
-    fetchConversations();
+    return () => clearInterval(interval);
   }, []);
 
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return 'N/A';
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadConversations(),
+        loadUnreadCount(),
+      ]);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadConversations = async () => {
+    try {
+      const response = await apiClient.get<Conversation[]>('/messages/conversations');
+      if (response.success && response.data) {
+        setConversations(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    }
+  };
+
+  const loadUnreadCount = async () => {
+    try {
+      const response = await apiClient.get<{ unreadCount: number }>('/messages/unread-count');
+      if (response.success && response.data) {
+        setUnreadCount(response.data.unreadCount);
+      }
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+    }
+  };
+
+  const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -125,13 +97,14 @@ export function MessagesListPage() {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return format(date, 'MMM d, yyyy');
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    return role === 'admin'
-      ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-      : 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+  const getRecipientName = (user: User) => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user.email;
   };
 
   return (
@@ -153,6 +126,11 @@ export function MessagesListPage() {
                 <p className="text-gray-600 dark:text-gray-400 font-footer">
                   Communicate with technical analysts and advisors
                 </p>
+                {unreadCount > 0 && (
+                  <p className="text-blue-600 dark:text-blue-400 font-footer text-sm mt-2">
+                    {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => navigate('/messages/new')}
@@ -166,6 +144,7 @@ export function MessagesListPage() {
             {/* Conversations List */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
                 <div className="text-gray-500 font-footer">Loading conversations...</div>
               </div>
             ) : conversations.length === 0 ? (
@@ -186,14 +165,14 @@ export function MessagesListPage() {
               <div className="space-y-4">
                 {conversations.map((conversation) => (
                   <Card
-                    key={conversation.id}
+                    key={conversation.conversationId}
                     className={cn(
                       "group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden cursor-pointer",
                       conversation.unreadCount > 0
                         ? "border-blue-500/30"
                         : "border-white/10"
                     )}
-                    onClick={() => navigate(`/messages/${conversation.id}`)}
+                    onClick={() => navigate(`/messages/${conversation.conversationId}`)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
@@ -208,39 +187,31 @@ export function MessagesListPage() {
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
                                 <h3 className="text-xl font-semibold font-hero text-white">
-                                  {conversation.recipientName}
+                                  {getRecipientName(conversation.otherUser)}
                                 </h3>
-                                <span className={cn(
-                                  "text-sm font-footer px-3 py-1 rounded border",
-                                  getRoleBadgeColor(conversation.recipientRole)
-                                )}>
-                                  {conversation.recipientRole === 'admin' ? 'Technical Analyst' : 'Advisor'}
+                                <span className="text-sm font-footer px-3 py-1 rounded border bg-blue-500/20 text-blue-400 border-blue-500/30">
+                                  {conversation.otherUser.role === 'admin' ? 'Technical Analyst' : 'Advisor'}
                                 </span>
                                 {conversation.unreadCount > 0 && (
                                   <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                                 )}
                               </div>
-                              {conversation.subject && (
-                                <p className="text-base text-gray-300 font-footer mb-2">
-                                  {conversation.subject}
-                                </p>
-                              )}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-400 font-footer flex-shrink-0 ml-4">
                               <Clock className="h-4 w-4" />
-                              <span>{formatTime(conversation.lastMessageTime)}</span>
+                              <span>{formatTime(conversation.lastMessage.created_at)}</span>
                             </div>
                           </div>
 
                           {conversation.lastMessage && (
                             <p className="text-base text-gray-200 font-footer line-clamp-2 mb-3 leading-relaxed">
-                              {conversation.lastMessage}
+                              {conversation.lastMessage.content}
                             </p>
                           )}
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm text-gray-400 font-footer">
-                              <span>{conversation.recipientEmail}</span>
+                              <span>{conversation.otherUser.email}</span>
                             </div>
                             {conversation.unreadCount > 0 && (
                               <span className="bg-blue-500 text-white text-sm font-footer px-3 py-1.5 rounded-full">
@@ -261,4 +232,3 @@ export function MessagesListPage() {
     </div>
   );
 }
-

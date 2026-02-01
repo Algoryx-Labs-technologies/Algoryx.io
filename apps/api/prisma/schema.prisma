@@ -116,7 +116,6 @@ model Notification {
   message    String
   type       NotificationType @default(info)
   userId     String?
-  isRead     Boolean          @default(false)
   created_at DateTime         @default(now())
   updated_at DateTime         @default(now())
   User       User?            @relation(fields: [userId], references: [id])
@@ -263,6 +262,25 @@ model TicketReply {
   SupportTicket SupportTicket @relation(fields: [ticketId], references: [uid], onDelete: Cascade)
 }
 
+model Message {
+  id              String        @id @default(cuid())
+  conversationId  String        // Unique ID for the conversation between two users
+  senderId        String        // User ID of sender
+  recipientId     String        // User ID of recipient
+  content         String
+  status          MessageStatus @default(delivered)
+  readAt          DateTime?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @default(now())
+  SenderUser      User          @relation("UserSentMessages", fields: [senderId], references: [id])
+  RecipientUser   User          @relation("UserReceivedMessages", fields: [recipientId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([created_at])
+}
+
 model User {
   id             String          @id
   supabaseUserId String          @unique
@@ -285,6 +303,8 @@ model User {
   QnAAnswer      QnAAnswer[]
   Requirement    Requirement[]
   SupportTicket  SupportTicket[]
+  SentMessages   Message[]       @relation("UserSentMessages")
+  ReceivedMessages Message[]      @relation("UserReceivedMessages")
 }
 
 enum MeetingStatus {
@@ -346,4 +366,9 @@ enum TicketStatus {
   in_progress
   resolved
   closed
+}
+
+enum MessageStatus {
+  delivered
+  seen
 }
