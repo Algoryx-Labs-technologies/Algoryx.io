@@ -4,6 +4,7 @@ import { DashboardPage } from './dashboard/DashboardPage';
 import { ProjectsListPage } from './projects/ProjectsListPage';
 import { ProjectDetailPage } from './projects/ProjectDetailPage';
 import { MessageConversationPage } from './messages/MessageConversationPage';
+import { MessagesListPage } from './messages/MessagesListPage';
 import { RequirementsListPage } from './requirements/RequirementsListPage';
 import { CommunityPage } from './community/CommunityPage';
 import { PaymentsPage } from './payments/PaymentsPage';
@@ -69,6 +70,14 @@ function App() {
         />
         <Route 
           path="/messages" 
+          element={
+            <ProtectedRoute>
+              <MessagesListPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/messages/:id" 
           element={
             <ProtectedRoute>
               <MessageConversationPage />
