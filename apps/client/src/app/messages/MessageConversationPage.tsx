@@ -17,6 +17,8 @@ import {
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '../../lib/api';
+import { wsClient } from '../../lib/websocket';
+import { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
 
 interface User {
@@ -57,13 +59,95 @@ export function MessageConversationPage() {
   const [sending, setSending] = useState(false);
   const [admins, setAdmins] = useState<User[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    let mounted = true;
+
+    const initWebSocket = async () => {
+      try {
+        const ws = await wsClient.connect();
+        if (mounted) {
+          setSocket(ws);
+
+          // Listen for new messages
+          ws.on('message:received', (message: Message) => {
+            if (id && id === message.conversationId) {
+              setMessages(prev => {
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+              setTimeout(() => scrollToBottom(), 100);
+            }
+            if (id && id === message.conversationId) {
+              loadConversation(id);
+            }
+          });
+
+          // Listen for sent message confirmation
+          ws.on('message:sent', (message: Message) => {
+            // If this is a new conversation, navigate to it
+            if (id === 'new' && message.conversationId) {
+              navigate(`/messages/${message.conversationId}`, { replace: true });
+            } else if (id && id === message.conversationId) {
+              setMessages(prev => {
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+              setTimeout(() => scrollToBottom(), 100);
+            }
+            if (id && id === message.conversationId) {
+              loadConversation(id);
+            }
+          });
+
+          // Listen for message seen status
+          ws.on('message:seen', (data: { conversationId: string }) => {
+            if (id && id === data.conversationId) {
+              setMessages(prev => prev.map(msg => 
+                msg.conversationId === data.conversationId && msg.recipientId !== msg.senderId
+                  ? { ...msg, status: 'seen' as const }
+                  : msg
+              ));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+        // Fallback: use polling if WebSocket fails
+        if (id && id !== 'new') {
+          const interval = setInterval(() => {
+            if (!document.hidden && id) {
+              loadMessages(id);
+            }
+          }, 30000);
+          return () => clearInterval(interval);
+        }
+      }
+    };
+
+    initWebSocket();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (id && id !== 'new') {
       loadConversation(id);
       loadMessages(id);
+      
+      // Mark as seen via WebSocket if connected
+      if (socket?.connected) {
+        socket.emit('message:mark_seen', { conversationId: id });
+      } else {
+        // Fallback to HTTP API
+        apiClient.patch(`/messages/conversations/${id}/read`, {}).catch(console.error);
+      }
     } else if (id === 'new') {
       loadAdmins();
       setLoading(false);
@@ -71,20 +155,7 @@ export function MessageConversationPage() {
       // No ID provided - load first conversation or show empty state
       loadFirstConversation();
     }
-  }, [id]);
-
-  useEffect(() => {
-    if (id && id !== 'new') {
-      // Poll for new messages every 30 seconds
-      const interval = setInterval(() => {
-        if (!document.hidden && id) {
-          loadMessages(id);
-        }
-      }, 30000);
-
-      return () => clearInterval(interval);
-    }
-  }, [id]);
+  }, [id, socket]);
 
   useEffect(() => {
     scrollToBottom();
@@ -165,26 +236,46 @@ export function MessageConversationPage() {
     setSending(true);
     try {
       const conversationId = id && id !== 'new' ? id : undefined;
-      const response = await apiClient.post<Message>('/messages', {
-        recipientId,
-        content: newMessage,
-        conversationId,
-      });
 
-      if (response.success && response.data) {
-        if (id === 'new' && response.data.conversationId) {
-          // New conversation created, navigate to it
-          navigate(`/messages/${response.data.conversationId}`, { replace: true });
-        } else {
-          // Add message to current conversation
-          setMessages(prev => [...prev, response.data!]);
-          setNewMessage('');
-          setTimeout(() => scrollToBottom(), 100);
+      // Try WebSocket first, fallback to HTTP
+      if (socket?.connected) {
+        socket.emit('message:send', {
+          recipientId,
+          content: newMessage,
+          conversationId,
+        });
+        
+        // WebSocket will handle the response via 'message:sent' event
+        setNewMessage('');
+        setSending(false);
+        
+        // If new conversation, wait for response to get conversationId
+        if (id === 'new') {
+          // Will be handled by message:sent event
         }
+      } else {
+        // Fallback to HTTP API
+        const response = await apiClient.post<Message>('/messages', {
+          recipientId,
+          content: newMessage,
+          conversationId,
+        });
+
+        if (response.success && response.data) {
+          if (id === 'new' && response.data.conversationId) {
+            // New conversation created, navigate to it
+            navigate(`/messages/${response.data.conversationId}`, { replace: true });
+          } else {
+            // Add message to current conversation
+            setMessages(prev => [...prev, response.data!]);
+            setNewMessage('');
+            setTimeout(() => scrollToBottom(), 100);
+          }
+        }
+        setSending(false);
       }
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
       setSending(false);
     }
   };
