@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Plus, Trash2, Eye, X, CheckCircle2, Edit } from 'lucide-react';
 import { handleApiRequest } from '../action-center/utils';
+import { TimelineManager } from './TimelineManager';
 
 interface Client {
   uid: string;
@@ -119,6 +120,7 @@ interface ProjectModalsProps {
   onSetMessage: (message: { type: 'success' | 'error'; text: string } | null) => void;
   onSetLoading: (loading: string | null) => void;
   onRefreshProjects: () => void;
+  onRefreshSelectedProject: (projectId: string) => Promise<void>;
 }
 
 export function ProjectModals({
@@ -146,6 +148,7 @@ export function ProjectModals({
   onSetMessage,
   onSetLoading,
   onRefreshProjects,
+  onRefreshSelectedProject,
 }: ProjectModalsProps) {
   const handleUpdateProject = async () => {
     if (!selectedProjectId) {
@@ -191,9 +194,14 @@ export function ProjectModals({
       onSetLoading,
       onSetMessage,
       'Update Project',
-      () => {
-        onCloseViewModal();
+      async () => {
+        // Refresh the selected project (this will also refresh the projects list)
+        await onRefreshSelectedProject(selectedProjectId);
+        // Exit edit mode but keep modal open
         onSetEditMode(false);
+        // Show success message
+        onSetMessage({ type: 'success', text: 'Project updated successfully!' });
+        // Also refresh the projects list in the background
         onRefreshProjects();
       }
     );
@@ -405,12 +413,10 @@ export function ProjectModals({
                 </select>
               </div>
               <div>
-                <Label className="text-gray-300">Project Timeline (JSON)</Label>
-                <textarea
+                <TimelineManager
                   value={projectForm.projectTimeline}
-                  onChange={(e) => onProjectFormChange({ ...projectForm, projectTimeline: e.target.value })}
-                  className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                  placeholder='{"startDate": "2024-01-01", "endDate": "2024-12-31", "milestones": []}'
+                  onChange={(value) => onProjectFormChange({ ...projectForm, projectTimeline: value })}
+                  disabled={false}
                 />
               </div>
               <div>
@@ -675,13 +681,10 @@ export function ProjectModals({
                 />
               </div>
               <div>
-                <Label className="text-gray-300">Project Timeline (JSON)</Label>
-                <textarea
+                <TimelineManager
                   value={projectForm.projectTimeline}
-                  onChange={(e) => onProjectFormChange({ ...projectForm, projectTimeline: e.target.value })}
+                  onChange={(value) => onProjectFormChange({ ...projectForm, projectTimeline: value })}
                   disabled={!isEditMode}
-                  className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder='{"startDate": "2024-01-01", "endDate": "2024-12-31", "milestones": []}'
                 />
               </div>
               <div>

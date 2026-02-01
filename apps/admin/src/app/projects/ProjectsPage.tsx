@@ -149,7 +149,7 @@ export function ProjectsPage() {
   }, []);
 
   // Fetch projects on component mount
-  const fetchProjects = async () => {
+  const fetchProjects = async (): Promise<Project[]> => {
     setLoadingProjects(true);
     try {
       const token = await getAuthToken();
@@ -164,18 +164,22 @@ export function ProjectsPage() {
         const result = await response.json();
         if (result.success && result.data) {
           setProjects(result.data);
+          return result.data;
         } else {
           console.error('Failed to fetch projects:', result.message || 'Unknown error');
           setMessage({ type: 'error', text: 'Failed to fetch projects' });
+          return [];
         }
       } else {
         const error = await response.json();
         console.error('Failed to fetch projects:', error.message || 'Unknown error');
         setMessage({ type: 'error', text: error.message || 'Failed to fetch projects' });
+        return [];
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
       setMessage({ type: 'error', text: 'Failed to fetch projects' });
+      return [];
     } finally {
       setLoadingProjects(false);
     }
@@ -306,6 +310,33 @@ export function ProjectsPage() {
     setIsViewModalOpen(true);
   };
 
+  const refreshSelectedProject = async (projectId: string) => {
+    // Fetch fresh projects list and find the updated project
+    const freshProjects = await fetchProjects();
+    const updatedProject = freshProjects.find((p) => p.id === projectId);
+    if (updatedProject) {
+      setSelectedViewProject(updatedProject);
+      // Update form with refreshed project data
+      setProjectForm({
+        clientId: updatedProject.clientId || '',
+        partnerId: updatedProject.partnerId || '',
+        projectName: updatedProject.projectName || '',
+        readMe: updatedProject.readMe || '',
+        techStack: updatedProject.techStack || '',
+        clientRequirement: updatedProject.clientRequirement || '',
+        projectInformation: updatedProject.projectInformation || '',
+        projectTimeline: updatedProject.projectTimeline ? JSON.stringify(updatedProject.projectTimeline, null, 2) : '',
+        projectStatus: updatedProject.projectStatus || '',
+        projectFeatures: updatedProject.projectFeatures || '',
+        priority: updatedProject.priority || '',
+        progressStatus: updatedProject.progressStatus || '',
+        miscellaneousData: updatedProject.miscellaneousData ? JSON.stringify(updatedProject.miscellaneousData, null, 2) : '',
+        Budget: updatedProject.Budget || '',
+        paymentStatus: updatedProject.paymentStatus || '',
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <Sidebar />
@@ -398,6 +429,7 @@ export function ProjectsPage() {
             onSetMessage={setMessage}
             onSetLoading={setLoading}
             onRefreshProjects={fetchProjects}
+            onRefreshSelectedProject={refreshSelectedProject}
           />
         </div>
       </div>
