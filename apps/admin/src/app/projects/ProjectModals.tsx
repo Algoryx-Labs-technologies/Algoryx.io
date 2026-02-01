@@ -5,6 +5,7 @@ import { Label } from '../components/ui/label';
 import { Plus, Trash2, Eye, X, CheckCircle2, Edit } from 'lucide-react';
 import { handleApiRequest } from '../action-center/utils';
 import { TimelineManager } from './TimelineManager';
+import { MiscellaneousDataManager } from './MiscellaneousDataManager';
 
 interface Client {
   uid: string;
@@ -420,12 +421,10 @@ export function ProjectModals({
                 />
               </div>
               <div>
-                <Label className="text-gray-300">Miscellaneous Data (JSON)</Label>
-                <textarea
+                <MiscellaneousDataManager
                   value={projectForm.miscellaneousData}
-                  onChange={(e) => onProjectFormChange({ ...projectForm, miscellaneousData: e.target.value })}
-                  className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm"
-                  placeholder='{"key": "value"}'
+                  onChange={(value) => onProjectFormChange({ ...projectForm, miscellaneousData: value })}
+                  disabled={false}
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -688,13 +687,10 @@ export function ProjectModals({
                 />
               </div>
               <div>
-                <Label className="text-gray-300">Miscellaneous Data (JSON)</Label>
-                <textarea
+                <MiscellaneousDataManager
                   value={projectForm.miscellaneousData}
-                  onChange={(e) => onProjectFormChange({ ...projectForm, miscellaneousData: e.target.value })}
+                  onChange={(value) => onProjectFormChange({ ...projectForm, miscellaneousData: value })}
                   disabled={!isEditMode}
-                  className="w-full min-h-[80px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1 font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder='{"key": "value"}'
                 />
               </div>
 
