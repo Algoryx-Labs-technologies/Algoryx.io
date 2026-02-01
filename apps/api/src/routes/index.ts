@@ -11,6 +11,7 @@ import webhookRoutes from './webhook.routes';
 import landingEnquiryRoutes from './landing-enquiry.routes';
 import adminRoutes from './admin.routes';
 import clientRoutes from './client.routes';
+import notificationRoutes from './notification.routes';
 import { env } from '@/config/env';
 import { prisma } from '@/config/database';
 
@@ -56,6 +57,7 @@ router.use('/feedback', feedbackRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/landing-enquiries', landingEnquiryRoutes);
 router.use('/admin', adminRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;
 

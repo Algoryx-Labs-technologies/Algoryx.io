@@ -2,118 +2,55 @@ import { useState } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { Bell, CheckCircle2, XCircle } from 'lucide-react';
-import { handleApiRequest } from '../action-center/utils';
+import { Plus } from 'lucide-react';
+import { NotificationsList } from './NotificationsList';
+import { PublishNotificationForm } from './PublishNotificationForm';
 
 export function NotificationsPage() {
   const { isCollapsed } = useSidebar();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const [notificationForm, setNotificationForm] = useState({
-    title: '',
-    message: '',
-    type: 'info',
-    userId: '',
-  });
-
-  const resetForm = () => {
-    setNotificationForm({ title: '', message: '', type: 'info', userId: '' });
+  const handlePublishSuccess = () => {
+    // Trigger refresh of notifications list
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <Sidebar />
-      <div className={cn(
-        "transition-all duration-300 min-h-screen",
-        isCollapsed ? "md:ml-20" : "md:ml-80"
-      )}>
+      <div
+        className={cn(
+          'transition-all duration-300 min-h-screen',
+          isCollapsed ? 'md:ml-20' : 'md:ml-80'
+        )}
+      >
         <div className="p-6 space-y-6">
+          {/* Header with Publish Button */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white font-hero">Notifications</h1>
-              <p className="text-gray-400 mt-1 font-footer">Post notifications to users</p>
+              <p className="text-gray-400 mt-1 font-footer">Manage and publish notifications to users</p>
             </div>
+            <Button
+              onClick={() => setIsPublishModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Publish Notification
+            </Button>
           </div>
 
-          {message && (
-            <div className={cn(
-              "p-4 rounded-lg flex items-center gap-2",
-              message.type === 'success' ? 'bg-green-500/20 border border-green-500/50 text-green-400' : 'bg-red-500/20 border border-red-500/50 text-red-400'
-            )}>
-              {message.type === 'success' ? (
-                <CheckCircle2 className="h-5 w-5" />
-              ) : (
-                <XCircle className="h-5 w-5" />
-              )}
-              <span>{message.text}</span>
-            </div>
-          )}
+          {/* Notifications List */}
+          <NotificationsList refreshTrigger={refreshTrigger} />
 
-          <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 max-w-2xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Bell className="h-5 w-5 text-blue-400" />
-                Post Notification
-              </CardTitle>
-              <CardDescription>Create a new notification</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-gray-300">Title *</Label>
-                <Input
-                  value={notificationForm.title}
-                  onChange={(e) => setNotificationForm({ ...notificationForm, title: e.target.value })}
-                  className="bg-slate-800/50 border-white/10 text-white mt-1"
-                  placeholder="Notification title"
-                />
-              </div>
-              <div>
-                <Label className="text-gray-300">Message *</Label>
-                <textarea
-                  value={notificationForm.message}
-                  onChange={(e) => setNotificationForm({ ...notificationForm, message: e.target.value })}
-                  className="w-full min-h-[100px] rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                  placeholder="Notification message"
-                />
-              </div>
-              <div>
-                <Label className="text-gray-300">Type</Label>
-                <select
-                  value={notificationForm.type}
-                  onChange={(e) => setNotificationForm({ ...notificationForm, type: e.target.value })}
-                  className="w-full rounded-md border border-white/10 bg-slate-800/50 text-white px-3 py-2 mt-1"
-                >
-                  <option value="info">Info</option>
-                  <option value="success">Success</option>
-                  <option value="warning">Warning</option>
-                  <option value="error">Error</option>
-                  <option value="reminder">Reminder</option>
-                  <option value="update">Update</option>
-                </select>
-              </div>
-              <div>
-                <Label className="text-gray-300">User ID (Optional - leave empty for all users)</Label>
-                <Input
-                  value={notificationForm.userId}
-                  onChange={(e) => setNotificationForm({ ...notificationForm, userId: e.target.value })}
-                  className="bg-slate-800/50 border-white/10 text-white mt-1"
-                  placeholder="Enter user ID"
-                />
-              </div>
-              <Button
-                onClick={() => handleApiRequest('/notifications', 'POST', notificationForm, setLoading, setMessage, 'Create Notification', resetForm)}
-                disabled={loading === 'Create Notification' || !notificationForm.title || !notificationForm.message}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-              >
-                {loading === 'Create Notification' ? 'Creating...' : 'Post Notification'}
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Publish Notification Modal */}
+          <PublishNotificationForm
+            isOpen={isPublishModalOpen}
+            onClose={() => setIsPublishModalOpen(false)}
+            onSuccess={handlePublishSuccess}
+          />
         </div>
       </div>
     </div>
