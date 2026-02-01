@@ -3,6 +3,7 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Card, CardContent } from '../components/ui/card';
 import { 
   Send, 
   User, 
@@ -12,7 +13,8 @@ import {
   Loader2,
   Check,
   CheckCheck,
-  ArrowLeft
+  ArrowLeft,
+  Lock
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -48,6 +50,11 @@ interface Conversation {
   otherUser: User;
 }
 
+interface Project {
+  id: string;
+  projectName?: string;
+}
+
 export function MessageConversationPage() {
   const { isCollapsed } = useSidebar();
   const navigate = useNavigate();
@@ -62,9 +69,34 @@ export function MessageConversationPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [hasProjects, setHasProjects] = useState<boolean | null>(null);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  // Check if client has projects
+  useEffect(() => {
+    const checkProjects = async () => {
+      try {
+        setLoadingProjects(true);
+        const response = await apiClient.get<Project[]>('/projects');
+        if (response.success && response.data) {
+          setHasProjects(response.data.length > 0);
+        } else {
+          setHasProjects(false);
+        }
+      } catch (error) {
+        console.error('Error checking projects:', error);
+        setHasProjects(false);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    checkProjects();
+  }, []);
 
   // Initialize WebSocket connection
   useEffect(() => {
+    if (hasProjects === false) return; // Don't initialize if no projects
+    
     let mounted = true;
 
     const initWebSocket = async () => {
@@ -138,9 +170,14 @@ export function MessageConversationPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [hasProjects]);
 
   useEffect(() => {
+    if (hasProjects === false) {
+      setLoading(false);
+      return;
+    }
+    
     if (id && id !== 'new') {
       loadConversation(id);
       loadMessages(id);
@@ -159,7 +196,7 @@ export function MessageConversationPage() {
       // No ID provided - load first conversation or show empty state
       loadFirstConversation();
     }
-  }, [id, socket]);
+  }, [id, socket, hasProjects]);
 
   useEffect(() => {
     scrollToBottom();
@@ -350,6 +387,58 @@ export function MessageConversationPage() {
     }
     return user.email;
   };
+
+  // Lock Screen - No Projects
+  if (loadingProjects) {
+    return (
+      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
+        <Sidebar />
+        <div className={cn(
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
+          isCollapsed ? "ml-20" : "ml-80"
+        )}>
+          <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
+          <div className="text-gray-500 font-footer">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasProjects === false) {
+    return (
+      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
+        <Sidebar />
+        <div className={cn(
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
+          isCollapsed ? "ml-20" : "ml-80"
+        )}>
+          <div className="h-full flex items-center justify-center p-8">
+            <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 max-w-2xl w-full">
+              <CardContent className="p-16 text-center">
+                <div className="mb-8">
+                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-4 border-gray-600/50 mb-6">
+                    <Lock className="h-16 w-16 text-gray-400" />
+                  </div>
+                </div>
+                <h2 className="text-4xl font-bold font-hero text-white mb-4">
+                  Messages Locked
+                </h2>
+                <p className="text-xl text-gray-300 font-footer mb-8 leading-relaxed">
+                  Get a project started to unlock messaging with technical analysts and advisors
+                </p>
+                <button
+                  onClick={() => navigate('/projects')}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all font-footer font-semibold text-lg shadow-lg hover:shadow-xl"
+                >
+                  Go to Projects
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading && id !== 'new') {
     return (

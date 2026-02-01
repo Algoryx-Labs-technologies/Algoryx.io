@@ -53,6 +53,7 @@ export class AuthService {
 
     user = await prisma.user.create({
       data: {
+        id: randomUUID(),
         supabaseUserId,
         email,
         role: metadata?.role || Role.client,
