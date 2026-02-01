@@ -10,13 +10,13 @@ import {
   FileText, 
   Code, 
   Clock, 
-  CheckCircle2,
   AlertCircle,
   TrendingUp,
   FolderKanban
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
+import { TimelineViewer } from './TimelineViewer';
 
 interface Project {
   id: string;
@@ -142,16 +142,45 @@ export function ProjectDetailPage() {
   };
 
   const formatTimeline = (timeline?: any): string => {
-    if (!timeline) return 'N/A';
-    if (typeof timeline === 'string') return timeline;
-    if (typeof timeline === 'object') {
-      // Try to format JSON timeline
-      if (timeline.startDate && timeline.endDate) {
-        return `${new Date(timeline.startDate).toLocaleDateString()} - ${new Date(timeline.endDate).toLocaleDateString()}`;
+    try {
+      if (!timeline) return 'N/A';
+      if (typeof timeline === 'string') {
+        try {
+          const parsed = JSON.parse(timeline);
+          if (parsed && typeof parsed === 'object' && parsed.mvps && Array.isArray(parsed.mvps)) {
+            // New timeline format with MVPs - return empty string as TimelineViewer will handle it
+            return '';
+          }
+          return timeline;
+        } catch {
+          return timeline;
+        }
       }
-      return JSON.stringify(timeline, null, 2);
+      if (typeof timeline === 'object' && timeline !== null) {
+        // Check if it's the new MVP format
+        if (timeline.mvps && Array.isArray(timeline.mvps)) {
+          // New timeline format - return empty string as TimelineViewer will handle it
+          return '';
+        }
+        // Try to format old JSON timeline
+        if (timeline.startDate && timeline.endDate) {
+          try {
+            return `${new Date(timeline.startDate).toLocaleDateString()} - ${new Date(timeline.endDate).toLocaleDateString()}`;
+          } catch {
+            return `${timeline.startDate} - ${timeline.endDate}`;
+          }
+        }
+        try {
+          return JSON.stringify(timeline, null, 2);
+        } catch {
+          return String(timeline);
+        }
+      }
+      return String(timeline);
+    } catch (error) {
+      console.error('Error formatting timeline:', error);
+      return 'N/A';
     }
-    return String(timeline);
   };
 
   if (loading) {
@@ -200,8 +229,34 @@ export function ProjectDetailPage() {
     );
   }
 
-  const progress = parseInt(project.progressStatus || '0');
+  // Handle progress status as percentage string (e.g., "10%", "25%", etc.)
+  const progressStatusStr = project.progressStatus || '0';
+  let progress = 0;
+  try {
+    if (typeof progressStatusStr === 'string' && progressStatusStr.includes('%')) {
+      progress = parseInt(progressStatusStr.replace('%', ''), 10) || 0;
+    } else {
+      progress = parseInt(String(progressStatusStr), 10) || 0;
+    }
+  } catch {
+    progress = 0;
+  }
   const daysUntilDeadline = getDaysUntilDeadline(project.deadline);
+  
+  // Check if timeline uses new MVP format
+  let timelineStr = '';
+  let hasMVPFormat = false;
+  try {
+    timelineStr = formatTimeline(project.projectTimeline);
+    hasMVPFormat = project.projectTimeline && (
+      (typeof project.projectTimeline === 'object' && project.projectTimeline !== null && project.projectTimeline.mvps) ||
+      (typeof project.projectTimeline === 'string' && project.projectTimeline.includes('"mvps"'))
+    );
+  } catch (error) {
+    console.error('Error processing timeline:', error);
+    timelineStr = 'N/A';
+    hasMVPFormat = false;
+  }
 
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
@@ -390,14 +445,18 @@ export function ProjectDetailPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {project.projectTimeline && (
+                    {hasMVPFormat ? (
+                      <div>
+                        <TimelineViewer timeline={project.projectTimeline} />
+                      </div>
+                    ) : project.projectTimeline && timelineStr ? (
                       <div>
                         <p className="text-sm text-gray-400 font-footer mb-2 font-medium">Duration</p>
-                        <p className="text-base text-white font-footer font-semibold">{formatTimeline(project.projectTimeline)}</p>
+                        <p className="text-base text-white font-footer font-semibold">{timelineStr}</p>
                       </div>
-                    )}
+                    ) : null}
                     {project.deadline && (
-                      <div>
+                      <div className={hasMVPFormat ? "pt-4 border-t border-white/10" : ""}>
                         <div className="flex items-center gap-2 mb-3">
                           <Calendar className="h-5 w-5 text-gray-400" />
                           <p className="text-sm text-gray-400 font-footer font-medium">Deadline</p>

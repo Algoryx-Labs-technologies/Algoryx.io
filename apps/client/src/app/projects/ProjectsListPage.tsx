@@ -172,7 +172,11 @@ export function ProjectsListPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => {
                   const daysUntilDeadline = getDaysUntilDeadline(project.deadline);
-                  const progress = parseInt(project.progressStatus || '0');
+                  // Handle progress status as percentage string (e.g., "10%", "25%", etc.)
+                  const progressStatusStr = project.progressStatus || '0';
+                  const progress = progressStatusStr.includes('%') 
+                    ? parseInt(progressStatusStr.replace('%', '')) 
+                    : parseInt(progressStatusStr);
 
                   return (
                     <Card
