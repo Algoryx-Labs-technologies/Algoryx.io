@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { FlaskConical, ArrowRight, Lock } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { motion } from 'motion/react';
+import { WorldMap } from './WorldMap';
 
 function BloombergTerminal() {
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -204,6 +205,15 @@ export function Labs() {
           
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"></div>
+          
+          {/* World Map Background */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-15">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full max-w-5xl h-full max-h-[700px]">
+                <WorldMap className="w-full h-full" />
+              </div>
+            </div>
+          </div>
           
           <div className="relative z-10 grid lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
             {/* Left content */}
