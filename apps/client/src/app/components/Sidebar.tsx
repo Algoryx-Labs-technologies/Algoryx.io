@@ -61,6 +61,8 @@ export function Sidebar() {
     if (location.pathname === path) return true;
     // For projects, also match project detail pages (e.g., /projects/:id)
     if (path === '/projects' && location.pathname.startsWith('/projects/')) return true;
+    // For messages, also match message conversation pages (e.g., /messages/:id, /messages/new)
+    if (path === '/messages' && location.pathname.startsWith('/messages')) return true;
     return false;
   };
 
