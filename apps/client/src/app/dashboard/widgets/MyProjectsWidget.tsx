@@ -10,7 +10,7 @@ export function MyProjectsWidget() {
   ];
 
   return (
-    <Card className="group relative bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/90 hover:to-slate-800/70 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full">
+    <Card className="group relative bg-gradient-to-br from-slate-900/50 to-slate-800/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg hover:border-blue-500/50 hover:bg-gradient-to-br hover:from-slate-900/60 hover:to-slate-800/50 hover:shadow-[0_0_8px_rgba(59,130,246,0.08)] transition-all duration-300 overflow-hidden h-full">
       <CardHeader className="px-6 pt-6">
         <CardTitle className="text-xl font-semibold font-hero text-white flex items-center gap-2">
           <FolderKanban className="h-5 w-5 text-blue-400" />
