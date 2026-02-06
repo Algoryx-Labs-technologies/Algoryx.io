@@ -185,7 +185,7 @@ export function ProjectDetailPage() {
   };
 
   if (loading) {
-    return <LoadingPage message="Loading project details..." withSidebar sidebarCollapsed={isCollapsed} />;
+    return <LoadingPage message="Loading project details..." withSidebar />;
   }
 
   if (error || !project) {

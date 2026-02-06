@@ -21,7 +21,7 @@ import { apiClient } from '../../lib/api';
 import { wsClient } from '../../lib/websocket';
 import { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
-import { LoadingPage, LoadingInline, LoadingSpinner } from '../components/Loading';
+import { LoadingPage, LoadingSpinner } from '../components/Loading';
 
 interface User {
   id: string;
@@ -390,7 +390,7 @@ export function MessageConversationPage() {
 
   // Lock Screen - No Projects
   if (loadingProjects) {
-    return <LoadingPage message="Loading..." withSidebar sidebarCollapsed={isCollapsed} />;
+    return <LoadingPage message="Loading..." withSidebar />;
   }
 
   if (hasProjects === false) {
@@ -430,7 +430,7 @@ export function MessageConversationPage() {
   }
 
   if (loading && id !== 'new') {
-    return <LoadingPage message="Loading conversation..." withSidebar sidebarCollapsed={isCollapsed} />;
+    return <LoadingPage message="Loading conversation..." withSidebar />;
   }
 
   // New conversation - show admin selection
@@ -722,7 +722,7 @@ export function MessageConversationPage() {
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {sending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <LoadingSpinner size="sm" />
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
