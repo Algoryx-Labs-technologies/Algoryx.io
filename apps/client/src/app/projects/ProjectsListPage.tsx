@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { FolderKanban, ArrowRight, Clock, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
+import { LoadingInline } from '../components/Loading';
 
 interface Project {
   id: string;
@@ -136,7 +137,7 @@ export function ProjectsListPage() {
             {/* Projects Grid */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="text-gray-500 font-footer">Loading projects...</div>
+                <LoadingInline message="Loading projects..." size="lg" />
               </div>
             ) : projects.length === 0 ? (
               <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">

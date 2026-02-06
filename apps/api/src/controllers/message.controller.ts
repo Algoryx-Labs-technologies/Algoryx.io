@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '@/types';
 import { messageService } from '@/services/message.service';
 import { AppError } from '@/types';
 import { prisma } from '@/config/database';
+import { getWebSocketService } from '@/services/websocket-instance';
 
 export class MessageController {
   /**
@@ -48,10 +49,14 @@ export class MessageController {
    */
   async getConversationById(req: AuthenticatedRequest, res: Response) {
     const user = await this.getCurrentUser(req);
-    const { id: conversationId } = req.params;
+    const conversationId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (user.role !== 'admin' && user.role !== 'client') {
       throw new AppError(403, 'Only admins and clients can access conversations');
+    }
+
+    if (!conversationId) {
+      throw new AppError(400, 'Conversation ID is required');
     }
 
     const conversation = await messageService.getConversationById(conversationId, user.id);
@@ -71,10 +76,14 @@ export class MessageController {
    */
   async getConversationMessages(req: AuthenticatedRequest, res: Response) {
     const user = await this.getCurrentUser(req);
-    const { id: conversationId } = req.params;
+    const conversationId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (user.role !== 'admin' && user.role !== 'client') {
       throw new AppError(403, 'Only admins and clients can access messages');
+    }
+
+    if (!conversationId) {
+      throw new AppError(400, 'Conversation ID is required');
     }
 
     const messages = await messageService.getConversationMessages(conversationId, user.id);
@@ -128,6 +137,33 @@ export class MessageController {
       conversationId,
     });
 
+    // Emit WebSocket events for real-time updates
+    try {
+      const wsService = getWebSocketService();
+      if (wsService) {
+        // Emit to recipient (new message)
+        wsService.emitToUser(recipientId, 'message:received', message);
+        
+        // Update unread counts via WebSocket
+        const senderUnread = await messageService.getUnreadCount(user.id);
+        const recipientUnread = await messageService.getUnreadCount(recipientId);
+        
+        wsService.emitToUser(user.id, 'unread_count', { count: senderUnread });
+        wsService.emitToUser(recipientId, 'unread_count', { count: recipientUnread });
+        
+        // Notify both users about conversation update
+        wsService.emitToUser(user.id, 'conversation:updated', {
+          conversationId: message.conversationId,
+        });
+        wsService.emitToUser(recipientId, 'conversation:updated', {
+          conversationId: message.conversationId,
+        });
+      }
+    } catch (wsError) {
+      // WebSocket error shouldn't fail the HTTP request
+      console.error('WebSocket emit error:', wsError);
+    }
+
     res.status(201).json({
       success: true,
       data: message,
@@ -140,13 +176,33 @@ export class MessageController {
    */
   async markConversationAsRead(req: AuthenticatedRequest, res: Response) {
     const user = await this.getCurrentUser(req);
-    const { id: conversationId } = req.params;
+    const conversationId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (user.role !== 'admin' && user.role !== 'client') {
       throw new AppError(403, 'Only admins and clients can mark conversations as read');
     }
 
+    if (!conversationId) {
+      throw new AppError(400, 'Conversation ID is required');
+    }
+
     await messageService.markAsSeen(conversationId, user.id);
+
+    // Notify other user via WebSocket that messages were seen
+    try {
+      const wsService = getWebSocketService();
+      if (wsService) {
+        const conversation = await messageService.getConversationById(conversationId, user.id);
+        if (conversation) {
+          wsService.emitToUser(conversation.otherUserId, 'message:seen', {
+            conversationId,
+            seenBy: user.id,
+          });
+        }
+      }
+    } catch (wsError) {
+      console.error('WebSocket emit error:', wsError);
+    }
 
     res.json({
       success: true,
@@ -159,10 +215,14 @@ export class MessageController {
    */
   async markMessageAsSeen(req: AuthenticatedRequest, res: Response) {
     const user = await this.getCurrentUser(req);
-    const { id: messageId } = req.params;
+    const messageId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (user.role !== 'admin' && user.role !== 'client') {
       throw new AppError(403, 'Only admins and clients can mark messages as seen');
+    }
+
+    if (!messageId) {
+      throw new AppError(400, 'Message ID is required');
     }
 
     await messageService.markMessageAsSeen(messageId, user.id);
@@ -196,10 +256,14 @@ export class MessageController {
    */
   async getConversationUnreadCount(req: AuthenticatedRequest, res: Response) {
     const user = await this.getCurrentUser(req);
-    const { id: conversationId } = req.params;
+    const conversationId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (user.role !== 'admin' && user.role !== 'client') {
       throw new AppError(403, 'Only admins and clients can get unread count');
+    }
+
+    if (!conversationId) {
+      throw new AppError(400, 'Conversation ID is required');
     }
 
     const count = await messageService.getConversationUnreadCount(conversationId, user.id);

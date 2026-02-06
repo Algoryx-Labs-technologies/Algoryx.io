@@ -24,8 +24,9 @@ export class LandingEnquiryController {
 
   async getEnquiryById(req: Request, res: Response) {
     const { id } = req.params;
+    const enquiryId = Array.isArray(id) ? id[0] : id;
 
-    const enquiry = await landingEnquiryService.findById(id);
+    const enquiry = await landingEnquiryService.findById(enquiryId);
 
     if (!enquiry) {
       throw new AppError(404, 'Enquiry not found');

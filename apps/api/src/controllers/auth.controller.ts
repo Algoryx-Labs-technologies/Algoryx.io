@@ -158,12 +158,28 @@ export class AuthController {
 
     if (!user) {
       // User exists in Supabase Auth but not in database - create it
+      // Handle Google OAuth metadata (full_name or name) vs regular metadata (firstName, lastName)
+      let firstName = req.supabaseUser.user_metadata?.firstName;
+      let lastName = req.supabaseUser.user_metadata?.lastName;
+
+      // If firstName/lastName not available, try to extract from Google OAuth metadata
+      if (!firstName && !lastName) {
+        const fullName = req.supabaseUser.user_metadata?.full_name || 
+                        req.supabaseUser.user_metadata?.name || 
+                        '';
+        if (fullName) {
+          const nameParts = fullName.trim().split(/\s+/);
+          firstName = nameParts[0] || '';
+          lastName = nameParts.slice(1).join(' ') || '';
+        }
+      }
+
       user = await authService.createOrFindUser(
         req.supabaseUser.id,
         req.supabaseUser.email!,
         {
-          firstName: req.supabaseUser.user_metadata?.firstName,
-          lastName: req.supabaseUser.user_metadata?.lastName,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
           phoneNumber: req.supabaseUser.user_metadata?.phoneNumber,
           country: req.supabaseUser.user_metadata?.country,
           state: req.supabaseUser.user_metadata?.state,

@@ -7,12 +7,15 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schemas
-const updateProfileSchema = z.object({
+const updateProfileSchema = {
   body: z.object({
-    name: z.string().min(1).max(100).optional(),
-    avatarUrl: z.string().url().optional(),
+    firstName: z.string().min(1).max(100).optional(),
+    lastName: z.string().min(1).max(100).optional(),
+    phoneNumber: z.string().optional(),
+    country: z.string().optional(),
+    state: z.string().optional(),
   }),
-});
+};
 
 // Routes
 router.get('/profile', authenticate, userController.getProfile.bind(userController));

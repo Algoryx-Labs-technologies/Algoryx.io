@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { Meeting, MeetingType, MeetingStatus } from '@prisma/client';
 import { AppError } from '@/types';
@@ -182,7 +183,10 @@ export class MeetingService {
   }): Promise<Meeting> {
     try {
       const meeting = await prisma.meeting.create({
-        data,
+        data: {
+          id: randomUUID(),
+          ...data,
+        },
         include: {
         User: {
           select: {

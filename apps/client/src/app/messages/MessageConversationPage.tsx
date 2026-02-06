@@ -3,21 +3,25 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Card, CardContent } from '../components/ui/card';
 import { 
   Send, 
   User, 
   Clock,
   MessageSquare,
   Paperclip,
-  Loader2,
   Check,
   CheckCheck,
-  ArrowLeft
+  ArrowLeft,
+  Lock
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '../../lib/api';
+import { wsClient } from '../../lib/websocket';
+import { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
+import { LoadingPage, LoadingSpinner } from '../components/Loading';
 
 interface User {
   id: string;
@@ -46,6 +50,11 @@ interface Conversation {
   otherUser: User;
 }
 
+interface Project {
+  id: string;
+  projectName?: string;
+}
+
 export function MessageConversationPage() {
   const { isCollapsed } = useSidebar();
   const navigate = useNavigate();
@@ -57,13 +66,129 @@ export function MessageConversationPage() {
   const [sending, setSending] = useState(false);
   const [admins, setAdmins] = useState<User[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [hasProjects, setHasProjects] = useState<boolean | null>(null);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  // Check if client has projects
+  useEffect(() => {
+    const checkProjects = async () => {
+      try {
+        setLoadingProjects(true);
+        const response = await apiClient.get<Project[]>('/projects');
+        if (response.success && response.data) {
+          setHasProjects(response.data.length > 0);
+        } else {
+          setHasProjects(false);
+        }
+      } catch (error) {
+        console.error('Error checking projects:', error);
+        setHasProjects(false);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    checkProjects();
+  }, []);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (hasProjects === false) return; // Don't initialize if no projects
+    
+    let mounted = true;
+
+    const initWebSocket = async () => {
+      try {
+        const ws = await wsClient.connect();
+        if (mounted) {
+          setSocket(ws);
+
+          // Listen for new messages
+          ws.on('message:received', (message: Message) => {
+            if (id && id === message.conversationId) {
+              setMessages(prev => {
+                // Check if message already exists (avoid duplicates)
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+              setTimeout(() => scrollToBottom(), 100);
+            }
+            if (id && id === message.conversationId) {
+              loadConversation(id);
+            }
+          });
+
+          // Listen for sent message confirmation
+          ws.on('message:sent', (message: Message) => {
+            // If this is a new conversation, navigate to it
+            if (id === 'new' && message.conversationId) {
+              navigate(`/messages/${message.conversationId}`, { replace: true });
+            } else if (id && id === message.conversationId) {
+              setMessages(prev => {
+                // Remove any temporary optimistic messages and add the real one
+                const filtered = prev.filter(m => !m.id.startsWith('temp_'));
+                // Check if message already exists (avoid duplicates)
+                if (filtered.some(m => m.id === message.id)) return filtered;
+                return [...filtered, message];
+              });
+              setTimeout(() => scrollToBottom(), 100);
+            }
+            if (id && id === message.conversationId) {
+              loadConversation(id);
+            }
+          });
+
+          // Listen for message seen status
+          ws.on('message:seen', (data: { conversationId: string }) => {
+            if (id && id === data.conversationId) {
+              setMessages(prev => prev.map(msg => 
+                msg.conversationId === data.conversationId && msg.recipientId !== msg.senderId
+                  ? { ...msg, status: 'seen' as const }
+                  : msg
+              ));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+        // Fallback: use polling if WebSocket fails
+        if (id && id !== 'new') {
+          const interval = setInterval(() => {
+            if (!document.hidden && id) {
+              loadMessages(id);
+            }
+          }, 30000);
+          return () => clearInterval(interval);
+        }
+      }
+    };
+
+    initWebSocket();
+
+    return () => {
+      mounted = false;
+    };
+  }, [hasProjects]);
 
   useEffect(() => {
+    if (hasProjects === false) {
+      setLoading(false);
+      return;
+    }
+    
     if (id && id !== 'new') {
       loadConversation(id);
       loadMessages(id);
+      
+      // Mark as seen via WebSocket if connected
+      if (socket?.connected) {
+        socket.emit('message:mark_seen', { conversationId: id });
+      } else {
+        // Fallback to HTTP API
+        apiClient.patch(`/messages/conversations/${id}/read`, {}).catch(console.error);
+      }
     } else if (id === 'new') {
       loadAdmins();
       setLoading(false);
@@ -71,20 +196,7 @@ export function MessageConversationPage() {
       // No ID provided - load first conversation or show empty state
       loadFirstConversation();
     }
-  }, [id]);
-
-  useEffect(() => {
-    if (id && id !== 'new') {
-      // Poll for new messages every 30 seconds
-      const interval = setInterval(() => {
-        if (!document.hidden && id) {
-          loadMessages(id);
-        }
-      }, 30000);
-
-      return () => clearInterval(interval);
-    }
-  }, [id]);
+  }, [id, socket, hasProjects]);
 
   useEffect(() => {
     scrollToBottom();
@@ -162,29 +274,93 @@ export function MessageConversationPage() {
     const recipientId = id === 'new' ? selectedAdminId : conversation?.otherUserId;
     if (!recipientId) return;
 
-    setSending(true);
-    try {
-      const conversationId = id && id !== 'new' ? id : undefined;
-      const response = await apiClient.post<Message>('/messages', {
-        recipientId,
-        content: newMessage,
-        conversationId,
-      });
+    const messageContent = newMessage.trim();
+    const conversationId = id && id !== 'new' ? id : undefined;
 
-      if (response.success && response.data) {
-        if (id === 'new' && response.data.conversationId) {
-          // New conversation created, navigate to it
-          navigate(`/messages/${response.data.conversationId}`, { replace: true });
-        } else {
-          // Add message to current conversation
-          setMessages(prev => [...prev, response.data!]);
-          setNewMessage('');
-          setTimeout(() => scrollToBottom(), 100);
+    setSending(true);
+    
+    // Create optimistic message (temporary ID, will be replaced by server response)
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      conversationId: conversationId || 'temp',
+      senderId: 'current-user', // Will be replaced by actual sender ID from server
+      recipientId,
+      content: messageContent,
+      status: 'delivered',
+      readAt: null,
+      created_at: new Date().toISOString(),
+      SenderUser: {
+        id: 'current-user',
+        email: '',
+        firstName: null,
+        lastName: null,
+        role: 'client',
+      },
+      RecipientUser: {
+        id: recipientId,
+        email: '',
+        firstName: null,
+        lastName: null,
+        role: 'admin',
+      },
+    };
+
+    // Optimistically add message to UI immediately
+    setMessages(prev => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setTimeout(() => scrollToBottom(), 100);
+
+    try {
+      // Try WebSocket first, fallback to HTTP
+      if (socket?.connected) {
+        socket.emit('message:send', {
+          recipientId,
+          content: messageContent,
+          conversationId,
+        });
+        
+        // WebSocket will handle the response via 'message:sent' event
+        // The optimistic message will be replaced by the real one
+        setSending(false);
+        
+        // If new conversation, wait for response to get conversationId
+        if (id === 'new') {
+          // Will be handled by message:sent event
         }
+      } else {
+        // Fallback to HTTP API
+        const response = await apiClient.post<Message>('/messages', {
+          recipientId,
+          content: messageContent,
+          conversationId,
+        });
+
+        if (response.success && response.data) {
+          // Replace optimistic message with real one
+          setMessages(prev => {
+            const filtered = prev.filter(m => m.id !== tempId);
+            return [...filtered, response.data!];
+          });
+          
+          if (id === 'new' && response.data.conversationId) {
+            // New conversation created, navigate to it
+            navigate(`/messages/${response.data.conversationId}`, { replace: true });
+          } else {
+            setTimeout(() => scrollToBottom(), 100);
+          }
+        } else {
+          // If API call failed, remove optimistic message
+          setMessages(prev => prev.filter(m => m.id !== tempId));
+          setNewMessage(messageContent); // Restore message content
+        }
+        setSending(false);
       }
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setNewMessage(messageContent); // Restore message content
       setSending(false);
     }
   };
@@ -212,19 +388,49 @@ export function MessageConversationPage() {
     return user.email;
   };
 
-  if (loading && id !== 'new') {
+  // Lock Screen - No Projects
+  if (loadingProjects) {
+    return <LoadingPage message="Loading..." withSidebar />;
+  }
+
+  if (hasProjects === false) {
     return (
       <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
         <Sidebar />
         <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
+          "flex-1 relative transition-all duration-300 h-screen overflow-hidden",
           isCollapsed ? "ml-20" : "ml-80"
         )}>
-          <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
-          <div className="text-gray-500 font-footer">Loading conversation...</div>
+          <div className="h-full flex items-center justify-center p-8">
+            <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 max-w-2xl w-full">
+              <CardContent className="p-16 text-center">
+                <div className="mb-8">
+                  <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-4 border-gray-600/50 mb-6">
+                    <Lock className="h-16 w-16 text-gray-400" />
+                  </div>
+                </div>
+                <h2 className="text-4xl font-bold font-hero text-white mb-4">
+                  Messages Locked
+                </h2>
+                <p className="text-xl text-gray-300 font-footer mb-8 leading-relaxed">
+                  Get a project started to unlock messaging with technical analysts and advisors
+                </p>
+                <button
+                  onClick={() => navigate('/projects')}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all font-footer font-semibold text-lg shadow-lg hover:shadow-xl"
+                >
+                  Go to Projects
+                </button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
+  }
+
+  if (loading && id !== 'new') {
+    return <LoadingPage message="Loading conversation..." withSidebar />;
   }
 
   // New conversation - show admin selection
@@ -317,7 +523,7 @@ export function MessageConversationPage() {
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       {sending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <LoadingSpinner size="sm" />
                       ) : (
                         <>
                           <Send className="h-4 w-4 mr-2" />
@@ -516,7 +722,7 @@ export function MessageConversationPage() {
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {sending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <LoadingSpinner size="sm" />
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />

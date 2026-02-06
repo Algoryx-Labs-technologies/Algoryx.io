@@ -24,8 +24,9 @@ export class ClientController {
     }
 
     const { id } = req.params;
+    const clientId = Array.isArray(id) ? id[0] : id;
 
-    const client = await clientService.findById(id);
+    const client = await clientService.findById(clientId);
 
     if (!client) {
       throw new AppError(404, 'Client not found');

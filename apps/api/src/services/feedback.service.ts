@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { Feedback } from '@prisma/client';
 
@@ -19,7 +20,10 @@ export class FeedbackService {
     email?: string;
   }): Promise<Feedback> {
     return prisma.feedback.create({
-      data,
+      data: {
+        uid: randomUUID(),
+        ...data,
+      },
       include: {
         User: {
           select: {

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { apiClient } from '../../lib/api';
+import { wsClient } from '../../lib/websocket';
+import { Socket } from 'socket.io-client';
 import { 
   MessageSquare, 
   Send, 
@@ -68,40 +70,125 @@ export function MessagesPage() {
   const [showClientModal, setShowClientModal] = useState(false);
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [pendingRecipientId, setPendingRecipientId] = useState<string | null>(null); // For new conversations
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const selectedConversationRef = useRef<string | null>(null);
 
-  // Load conversations and clients
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    let mounted = true;
+
+    const initWebSocket = async () => {
+      try {
+        const ws = await wsClient.connect();
+        if (mounted) {
+          setSocket(ws);
+
+          // Listen for new messages
+          ws.on('message:received', (message: Message) => {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            // Update messages immediately if this is the selected conversation (priority update)
+            if (currentSelected === message.conversationId) {
+              setMessages(prev => {
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+              // Scroll after message is added
+              requestAnimationFrame(() => {
+                setTimeout(() => scrollToBottom(), 50);
+              });
+            }
+            // Update conversation list in next frame (non-blocking, lower priority)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
+          });
+
+          // Listen for sent message confirmation
+          ws.on('message:sent', (message: Message) => {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            // If this is a new conversation, set the conversation ID
+            if (!currentSelected || currentSelected.startsWith('temp_')) {
+              setSelectedConversation(message.conversationId);
+              setPendingRecipientId(null);
+              // Load messages for the new conversation
+              loadMessages(message.conversationId);
+            } else if (currentSelected === message.conversationId) {
+              // Update messages immediately if this is the selected conversation (priority update)
+              setMessages(prev => {
+                if (prev.some(m => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+              // Scroll after message is added
+              requestAnimationFrame(() => {
+                setTimeout(() => scrollToBottom(), 50);
+              });
+            }
+            // Update conversation list in next frame (non-blocking, lower priority)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
+          });
+
+          // Listen for unread count updates
+          ws.on('unread_count', (data: { count: number }) => {
+            setUnreadCount(data.count);
+          });
+
+          // Listen for conversation updates
+          ws.on('conversation:updated', () => {
+            // Update conversation list asynchronously (non-blocking)
+            requestAnimationFrame(() => {
+              loadConversations();
+            });
+          });
+
+          // Listen for message seen status
+          ws.on('message:seen', (data: { conversationId: string }) => {
+            // Use ref to get current selectedConversation value (avoids closure issue)
+            const currentSelected = selectedConversationRef.current;
+            if (currentSelected === data.conversationId) {
+              setMessages(prev => prev.map(msg => 
+                msg.conversationId === data.conversationId && msg.recipientId !== msg.senderId
+                  ? { ...msg, status: 'seen' as const }
+                  : msg
+              ));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+        // Fallback: use polling if WebSocket fails
+        const interval = setInterval(() => {
+          if (!document.hidden) {
+            if (selectedConversation) loadMessages(selectedConversation);
+            loadConversations();
+            loadUnreadCount();
+          }
+        }, 30000);
+        return () => clearInterval(interval);
+      }
+    };
+
+    initWebSocket();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Load conversations and clients on mount
   useEffect(() => {
     loadData();
   }, []);
-
-  // Poll for new messages only when tab is visible and less frequently
-  useEffect(() => {
-    // Only poll if tab is visible
-    const handleVisibilityChange = () => {
-      if (document.hidden) return;
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Poll every 30 seconds instead of 5 seconds
-    const interval = setInterval(() => {
-      // Only poll if tab is visible
-      if (document.hidden) return;
-
-      if (selectedConversation) {
-        loadMessages(selectedConversation);
-      }
-      loadConversations();
-      loadUnreadCount();
-    }, 30000); // 30 seconds instead of 5
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [selectedConversation]);
 
   const loadData = async () => {
     setLoading(true);
@@ -169,6 +256,14 @@ export function MessagesPage() {
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversation(conversationId);
     loadMessages(conversationId);
+    
+    // Mark as seen via WebSocket if connected
+    if (socket?.connected) {
+      socket.emit('message:mark_seen', { conversationId });
+    } else {
+      // Fallback to HTTP API
+      apiClient.patch(`/messages/conversations/${conversationId}/read`, {}).catch(console.error);
+    }
   };
 
   const handleStartNewConversation = async (clientId: string) => {
@@ -201,30 +296,50 @@ export function MessagesPage() {
     try {
       // Only use conversationId if it's a real conversation (not temp)
       const conversationId = selectedConversation && !selectedConversation.startsWith('temp_') ? selectedConversation : undefined;
-      const response = await apiClient.post<Message>('/messages', {
-        recipientId: recipient,
-        content: messageText,
-        conversationId,
-      });
 
-      if (response.success && response.data) {
-        if (!selectedConversation || selectedConversation.startsWith('temp_')) {
-          // New conversation created
-          setSelectedConversation(response.data.conversationId);
-          setPendingRecipientId(null); // Clear pending recipient
-          await loadConversations();
-          await loadMessages(response.data.conversationId);
-        } else {
-          // Add message to current conversation
-          setMessages(prev => [...prev, response.data!]);
-          await loadConversations();
-        }
+      // Try WebSocket first, fallback to HTTP
+      if (socket?.connected) {
+        socket.emit('message:send', {
+          recipientId: recipient,
+          content: messageText,
+          conversationId,
+        });
+        
+        // WebSocket will handle the response via 'message:sent' event
         setMessageContent('');
-        setTimeout(() => scrollToBottom(), 100);
+        setSending(false);
+        
+        // If new conversation, wait for response to get conversationId
+        if (!selectedConversation || selectedConversation.startsWith('temp_')) {
+          // Will be handled by message:sent event
+        }
+      } else {
+        // Fallback to HTTP API
+        const response = await apiClient.post<Message>('/messages', {
+          recipientId: recipient,
+          content: messageText,
+          conversationId,
+        });
+
+        if (response.success && response.data) {
+          if (!selectedConversation || selectedConversation.startsWith('temp_')) {
+            // New conversation created
+            setSelectedConversation(response.data.conversationId);
+            setPendingRecipientId(null);
+            await loadConversations();
+            await loadMessages(response.data.conversationId);
+          } else {
+            // Add message to current conversation
+            setMessages(prev => [...prev, response.data!]);
+            await loadConversations();
+          }
+          setMessageContent('');
+          setTimeout(() => scrollToBottom(), 100);
+        }
+        setSending(false);
       }
     } catch (error) {
       console.error('Error sending message:', error);
-    } finally {
       setSending(false);
     }
   };

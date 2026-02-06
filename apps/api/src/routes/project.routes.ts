@@ -7,33 +7,33 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schemas
-const createProjectSchema = z.object({
+const createProjectSchema = {
   body: z.object({
     projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
     projectTimeline: z.string().optional(),
-    projectStatus: z.string().optional(),
+    projectStatus: z.enum(['not_started', 'initiated', 'in_progress', 'completed', 'delivered']).optional(),
     projectFeatures: z.string().optional(),
     priority: z.string().optional(),
     progressStatus: z.string().optional(),
   }),
-});
+};
 
-const updateProjectSchema = z.object({
+const updateProjectSchema = {
   body: z.object({
     projectName: z.string().optional(),
     readMe: z.string().optional(),
     techStack: z.string().optional(),
     clientRequirement: z.string().optional(),
     projectTimeline: z.string().optional(),
-    projectStatus: z.string().optional(),
+    projectStatus: z.enum(['not_started', 'initiated', 'in_progress', 'completed', 'delivered']).optional(),
     projectFeatures: z.string().optional(),
     priority: z.string().optional(),
     progressStatus: z.string().optional(),
   }),
-});
+};
 
 // Routes
 router.get(

@@ -1,11 +1,25 @@
 import 'dotenv/config';
+import { createServer } from 'http';
 import { createApp } from './app';
 import { env } from './config/env';
 import { logger } from './utils/logger';
 import { prisma } from './config/database';
+import WebSocketService from './services/websocket.service';
+import { setWebSocketService } from './services/websocket-instance';
 
 const app = createApp();
+const httpServer = createServer(app);
 const PORT = parseInt(env.PORT);
+
+// Initialize WebSocket service
+const corsOrigins = env.CORS_ORIGIN === '*' 
+  ? ['*'] 
+  : env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean);
+
+const wsService = new WebSocketService(httpServer, corsOrigins);
+
+// Export wsService instance for use in other modules
+setWebSocketService(wsService);
 
 // Test database connection
 const testDatabaseConnection = async (): Promise<boolean> => {
@@ -39,7 +53,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Handle unhandled promise rejections
-let server: ReturnType<typeof app.listen> | null = null;
+let server: ReturnType<typeof httpServer.listen> | null = null;
 
 process.on('unhandledRejection', (error: Error) => {
   logger.error('Unhandled Promise Rejection:', error);
@@ -69,12 +83,13 @@ const startServer = async () => {
     process.exit(1);
   }
   
-  // Start server
-  server = app.listen(PORT, () => {
+  // Start HTTP server (which also handles WebSocket)
+  server = httpServer.listen(PORT, () => {
     logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     logger.info(` Server running on port ${PORT}`);
     logger.info(` Environment: ${env.NODE_ENV}`);
     logger.info(` API: http://localhost:${PORT}/api/${env.API_VERSION}`);
+    logger.info(` WebSocket: ws://localhost:${PORT}`);
     logger.info(` Database: Connected`);
     logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   });

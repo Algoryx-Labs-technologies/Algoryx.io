@@ -1,5 +1,6 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
-import { Requirement } from '@prisma/client';
+import { Requirement, RequirementStatus } from '@prisma/client';
 import { AppError } from '@/types';
 
 export class RequirementService {
@@ -115,7 +116,10 @@ export class RequirementService {
     email?: string;
   }): Promise<Requirement> {
     return prisma.requirement.create({
-      data,
+      data: {
+        uid: randomUUID(),
+        ...data,
+      },
       include: {
         User: {
           select: {
@@ -150,7 +154,7 @@ export class RequirementService {
       priority: string;
       answer: string;
       Budget: string;
-      status: string;
+      status: RequirementStatus;
     }>
   ): Promise<Requirement> {
     // Verify the requirement belongs to the user

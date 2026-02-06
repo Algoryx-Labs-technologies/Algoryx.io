@@ -7,13 +7,13 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schemas
-const createMessageSchema = z.object({
+const createMessageSchema = {
   body: z.object({
     recipientId: z.string().min(1, 'Recipient ID is required'),
     content: z.string().min(1, 'Message content is required'),
     conversationId: z.string().optional(),
   }),
-});
+};
 
 // Routes - accessible by both admin and client
 router.get(

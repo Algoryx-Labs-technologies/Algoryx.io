@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
 import { TimelineViewer } from './TimelineViewer';
+import { LoadingPage } from '../components/Loading';
 
 interface Project {
   id: string;
@@ -184,17 +185,7 @@ export function ProjectDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
-        <Sidebar />
-        <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
-          isCollapsed ? "ml-20" : "ml-80"
-        )}>
-          <div className="text-gray-500 font-footer">Loading project details...</div>
-        </div>
-      </div>
-    );
+    return <LoadingPage message="Loading project details..." withSidebar />;
   }
 
   if (error || !project) {

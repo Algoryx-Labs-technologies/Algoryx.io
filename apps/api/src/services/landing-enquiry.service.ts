@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { LandingEnquiry } from '@prisma/client';
 import { AppError } from '@/types';
@@ -13,6 +14,7 @@ export class LandingEnquiryService {
   }): Promise<LandingEnquiry> {
     return prisma.landingEnquiry.create({
       data: {
+        uid: randomUUID(),
         fullName: data.fullName,
         email: data.email,
         phone: data.phone,
