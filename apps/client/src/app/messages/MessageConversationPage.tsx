@@ -10,7 +10,6 @@ import {
   Clock,
   MessageSquare,
   Paperclip,
-  Loader2,
   Check,
   CheckCheck,
   ArrowLeft,
@@ -22,6 +21,7 @@ import { apiClient } from '../../lib/api';
 import { wsClient } from '../../lib/websocket';
 import { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
+import { LoadingPage, LoadingInline, LoadingSpinner } from '../components/Loading';
 
 interface User {
   id: string;
@@ -390,18 +390,7 @@ export function MessageConversationPage() {
 
   // Lock Screen - No Projects
   if (loadingProjects) {
-    return (
-      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
-        <Sidebar />
-        <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
-          isCollapsed ? "ml-20" : "ml-80"
-        )}>
-          <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
-          <div className="text-gray-500 font-footer">Loading...</div>
-        </div>
-      </div>
-    );
+    return <LoadingPage message="Loading..." withSidebar sidebarCollapsed={isCollapsed} />;
   }
 
   if (hasProjects === false) {
@@ -441,18 +430,7 @@ export function MessageConversationPage() {
   }
 
   if (loading && id !== 'new') {
-    return (
-      <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
-        <Sidebar />
-        <div className={cn(
-          "flex-1 relative transition-all duration-300 h-screen overflow-hidden flex items-center justify-center",
-          isCollapsed ? "ml-20" : "ml-80"
-        )}>
-          <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
-          <div className="text-gray-500 font-footer">Loading conversation...</div>
-        </div>
-      </div>
-    );
+    return <LoadingPage message="Loading conversation..." withSidebar sidebarCollapsed={isCollapsed} />;
   }
 
   // New conversation - show admin selection
@@ -545,7 +523,7 @@ export function MessageConversationPage() {
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       {sending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <LoadingSpinner size="sm" />
                       ) : (
                         <>
                           <Send className="h-4 w-4 mr-2" />

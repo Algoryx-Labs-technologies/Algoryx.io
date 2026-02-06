@@ -11,16 +11,13 @@ import { PaymentsPage } from './payments/PaymentsPage';
 import { FeedbackPage } from './feedback/FeedbackPage';
 import { MeetingsPage } from './meetings/MeetingsPage';
 import { useAuth } from './contexts/AuthContext';
+import { LoadingPage } from './components/Loading';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
-        <div className="text-gray-900 dark:text-white">Loading...</div>
-      </div>
-    );
+    return <LoadingPage message="Authenticating..." />;
   }
 
   if (!user) {
@@ -34,11 +31,7 @@ function App() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
-        <div className="text-gray-900 dark:text-white">Loading...</div>
-      </div>
-    );
+    return <LoadingPage message="Initializing..." />;
   }
 
   return (

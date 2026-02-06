@@ -3,10 +3,11 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
-import { MessageSquare, User, Clock, Loader2, Lock } from 'lucide-react';
+import { MessageSquare, User, Clock, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
 import { format } from 'date-fns';
+import { LoadingInline } from '../components/Loading';
 
 interface User {
   id: string;
@@ -165,8 +166,7 @@ export function MessagesListPage() {
             {/* Lock Screen - No Projects */}
             {loadingProjects ? (
               <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
-                <div className="text-gray-500 font-footer">Loading...</div>
+                <LoadingInline message="Loading..." size="lg" />
               </div>
             ) : hasProjects === false ? (
               <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
@@ -212,8 +212,7 @@ export function MessagesListPage() {
                 {/* Conversations List */}
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
-                    <div className="text-gray-500 font-footer">Loading conversations...</div>
+                    <LoadingInline message="Loading conversations..." size="lg" />
                   </div>
                 ) : conversations.length === 0 ? (
                   <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
