@@ -5,6 +5,7 @@ import { User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../../components/ui/utils';
 import { apiClient } from '@/lib/api';
+import countriesData from '../../../countries.json';
 
 interface UserData {
   id: string;
@@ -13,6 +14,12 @@ interface UserData {
   email: string;
   phoneNumber?: string | null;
   country?: string | null;
+}
+
+interface Country {
+  flag: string;
+  country: string;
+  code: string;
 }
 
 function ClockDisplay() {
@@ -307,6 +314,13 @@ export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }
     return user.country || 'N/A';
   };
 
+  // Helper function to get country flag
+  const getCountryFlag = () => {
+    if (loading || !user || !user.country) return null;
+    const country = (countriesData as Country[]).find(c => c.country === user.country);
+    return country?.flag || null;
+  };
+
   // Helper function to get display phone number
   const getDisplayPhone = () => {
     if (loading) return '...';
@@ -343,7 +357,16 @@ export function ProfileWidget({ shouldShine = false }: { shouldShine?: boolean }
           <div className="space-y-1 pt-1.5 border-t border-white/10">
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-400 font-footer">Country</span>
-              <span className="text-xs text-white font-footer">{getDisplayCountry()}</span>
+              <div className="flex items-center gap-1.5">
+                {getCountryFlag() && (
+                  <img 
+                    src={getCountryFlag() || ''} 
+                    alt={user?.country || ''} 
+                    className="w-4 h-4 flex-shrink-0"
+                  />
+                )}
+                <span className="text-xs text-white font-footer">{getDisplayCountry()}</span>
+              </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-400 font-footer">Phone</span>
