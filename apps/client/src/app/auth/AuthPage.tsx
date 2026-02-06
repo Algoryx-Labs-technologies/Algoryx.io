@@ -4,12 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin, FlaskConical, Sparkles, TrendingUp, Shield } from 'lucide-react';
+import countriesData from '../../countries.json';
 import { ForgotPassword } from './ForgotPassword';
 import { useAuth } from '../contexts/AuthContext';
 import { WorldMap } from '../components/WorldMap';
 
 type AuthMode = 'signin' | 'signup';
+
+interface Country {
+  flag: string;
+  country: string;
+  code: string;
+}
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -23,6 +31,10 @@ export function AuthPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shine, setShine] = useState(false);
+  const [countries] = useState<Country[]>(() => {
+    // Sort countries alphabetically by name
+    return (countriesData as Country[]).sort((a, b) => a.country.localeCompare(b.country));
+  });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -313,15 +325,39 @@ export function AuthPage() {
                     <div className="space-y-1.5">
                       <Label htmlFor="country" className="font-footer text-gray-300 text-xs">Country</Label>
                       <div className="relative">
-                        <Input
-                          id="country"
-                          type="text"
-                          placeholder="United States"
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
+                        <Select
                           value={formData.country}
-                          onChange={(e) => handleInputChange('country', e.target.value)}
-                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                        />
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          onValueChange={(value) => handleInputChange('country', value)}
+                        >
+                          <SelectTrigger className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50">
+                            {formData.country && (() => {
+                              const selectedCountry = countries.find(c => c.country === formData.country);
+                              return selectedCountry ? (
+                                <img 
+                                  src={selectedCountry.flag} 
+                                  alt={selectedCountry.country} 
+                                  className="absolute left-10 w-4 h-4 flex-shrink-0 pointer-events-none"
+                                />
+                              ) : null;
+                            })()}
+                            <SelectValue placeholder="Select a country" className={formData.country ? "pl-6" : ""} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800/95 border-white/10 text-white max-h-[300px]">
+                            {countries.map((country) => (
+                              <SelectItem
+                                key={country.code}
+                                value={country.country}
+                                className="text-sm font-footer text-white hover:bg-slate-700/50 focus:bg-slate-700/50"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <img src={country.flag} alt={country.country} className="w-4 h-4 flex-shrink-0" />
+                                  <span>{country.country}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
