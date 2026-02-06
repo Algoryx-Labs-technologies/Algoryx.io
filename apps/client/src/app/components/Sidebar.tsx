@@ -143,7 +143,7 @@ export function Sidebar() {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "w-full flex items-center gap-5 px-6 py-5 rounded-lg transition-all duration-200 font-footer text-lg",
+                  "w-full flex items-center gap-5 px-6 py-3 rounded-lg transition-all duration-200 font-footer text-lg",
                   active
                     ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-white shadow-[0_0_8px_rgba(59,130,246,0.15)]"
                     : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent",
@@ -168,7 +168,7 @@ export function Sidebar() {
           <button
             onClick={() => setShowLogoutDialog(true)}
             className={cn(
-              "w-full flex items-center gap-5 px-6 py-5 rounded-lg transition-all duration-200 font-footer text-lg text-gray-400 hover:text-white hover:bg-red-500/10 border border-transparent hover:border-red-500/30",
+              "w-full flex items-center gap-5 px-6 py-3 rounded-lg transition-all duration-200 font-footer text-lg text-gray-400 hover:text-white hover:bg-red-500/10 border border-transparent hover:border-red-500/30",
               isCollapsed && "justify-center px-4"
             )}
             title={isCollapsed ? "Logout" : undefined}
