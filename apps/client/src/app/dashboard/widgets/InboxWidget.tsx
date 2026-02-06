@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Mail } from 'lucide-react';
 import { cn } from '../../components/ui/utils';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../lib/api';
 import { LoadingSpinner } from '../../components/Loading';
 
@@ -55,6 +56,7 @@ const formatTime = (date: Date): string => {
 };
 
 export function InboxWidget({ shouldShine = false }: { shouldShine?: boolean }) {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -139,6 +141,7 @@ export function InboxWidget({ shouldShine = false }: { shouldShine?: boolean }) 
             {messages.map((message, index) => (
               <div
                 key={index}
+                onClick={() => navigate(`/messages/${message.conversationId}`)}
                 className={`flex items-start gap-1.5 p-1.5 rounded-md border border-white/5 hover:bg-slate-800/70 transition-colors cursor-pointer ${
                   message.unread ? 'bg-slate-800/70' : 'bg-slate-800/50'
                 }`}
