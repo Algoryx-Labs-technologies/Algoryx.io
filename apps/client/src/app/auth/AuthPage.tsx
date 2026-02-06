@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin, FlaskConical, Sparkles, TrendingUp, Shield } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin, FlaskConical, Sparkles, TrendingUp, Shield, ArrowLeft, ArrowRight } from 'lucide-react';
 import countriesData from '../../countries.json';
 import { ForgotPassword } from './ForgotPassword';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +24,7 @@ export function AuthPage() {
   const [searchParams] = useSearchParams();
   const { signIn, signUp, signInWithGoogle, signUpWithGoogle } = useAuth();
   const [mode, setMode] = useState<AuthMode>('signin');
+  const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -87,6 +88,32 @@ export function AuthPage() {
     return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
   }
 
+  const handleNextStep = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Validate step 1 fields
+    if (!formData.firstName.trim()) {
+      setError('First name is required');
+      return;
+    }
+    if (!formData.lastName.trim()) {
+      setError('Last name is required');
+      return;
+    }
+    if (!formData.country) {
+      setError('Country is required');
+      return;
+    }
+
+    setSignupStep(2);
+  };
+
+  const handleBackStep = () => {
+    setSignupStep(1);
+    setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -94,6 +121,25 @@ export function AuthPage() {
 
     try {
       if (mode === 'signup') {
+        // If on step 1, go to step 2
+        if (signupStep === 1) {
+          handleNextStep(e);
+          setLoading(false);
+          return;
+        }
+
+        // Step 2 validation
+        if (!formData.email.trim()) {
+          setError('Email is required');
+          setLoading(false);
+          return;
+        }
+        if (!formData.password) {
+          setError('Password is required');
+          setLoading(false);
+          return;
+        }
+
         // Validate password match
         if (formData.password !== formData.confirmPassword) {
           setError('Passwords do not match');
@@ -129,6 +175,7 @@ export function AuthPage() {
         // Show success message or redirect
         alert('Account created! Please check your email to verify your account.');
         setMode('signin');
+        setSignupStep(1);
         setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '', phoneNumber: '', country: '', state: '' });
       } else {
         const { error: signInError } = await signIn(formData.email, formData.password);
@@ -252,18 +299,35 @@ export function AuthPage() {
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-full blur-xl group-hover:scale-[1.5] group-hover:from-blue-500/20 group-hover:to-cyan-500/20 group-hover:blur-2xl transition-all duration-500"></div>
           
           <CardHeader className="space-y-2 text-center px-6 pt-6 pb-4 relative z-10">
+            {mode === 'signup' && signupStep === 2 && (
+              <div className="absolute top-6 left-6">
+                <Button
+                  type="button"
+                  onClick={handleBackStep}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs font-footer border-white/10 hover:border-white/20 hover:bg-white/10 bg-slate-800/80 text-gray-300 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ArrowLeft className="h-3 w-3 mr-1" />
+                  Back
+                </Button>
+              </div>
+            )}
             <div className="flex justify-center mb-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-blue-500/40 group-hover:to-cyan-500/40 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300">
                 <User className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
             </div>
             <CardTitle className="text-2xl font-semibold font-hero text-white">
-              {mode === 'signin' ? 'Welcome back to Algoryx Labs' : 'Register to get started'}
+              {mode === 'signin' ? 'Welcome back to Algoryx Labs' : `Register to get started ${signupStep === 2 ? '(Step 2/2)' : '(Step 1/2)'}`}
             </CardTitle>
             <CardDescription className="text-sm font-footer text-gray-400">
               {mode === 'signin'
                 ? 'Enter your credentials to access your account'
-                : 'Enter your information to get started'}
+                : signupStep === 1
+                ? 'Enter your personal information'
+                : 'Enter your account credentials'}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6 relative z-10">
@@ -275,7 +339,8 @@ export function AuthPage() {
                 </div>
               )}
 
-              {mode === 'signup' && (
+              {/* Signup Step 1: First Name, Last Name, Country, State */}
+              {mode === 'signup' && signupStep === 1 && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
@@ -287,6 +352,7 @@ export function AuthPage() {
                           placeholder="John"
                           value={formData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          required
                           className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                         />
                         <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -301,64 +367,50 @@ export function AuthPage() {
                           placeholder="Doe"
                           value={formData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          required
                           className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                         />
                         <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="phoneNumber" className="font-footer text-gray-300 text-xs">Phone Number</Label>
-                      <div className="relative">
-                        <Input
-                          id="phoneNumber"
-                          type="tel"
-                          placeholder="+1 (555) 123-4567"
-                          value={formData.phoneNumber}
-                          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                          className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                        />
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="country" className="font-footer text-gray-300 text-xs">Country</Label>
-                      <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
-                        <Select
-                          value={formData.country}
-                          onValueChange={(value) => handleInputChange('country', value)}
-                        >
-                          <SelectTrigger className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50">
-                            {formData.country && (() => {
-                              const selectedCountry = countries.find(c => c.country === formData.country);
-                              return selectedCountry ? (
-                                <img 
-                                  src={selectedCountry.flag} 
-                                  alt={selectedCountry.country} 
-                                  className="absolute left-10 w-4 h-4 flex-shrink-0 pointer-events-none"
-                                />
-                              ) : null;
-                            })()}
-                            <SelectValue placeholder="Select a country" className={formData.country ? "pl-6" : ""} />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800/95 border-white/10 text-white max-h-[300px]">
-                            {countries.map((country) => (
-                              <SelectItem
-                                key={country.code}
-                                value={country.country}
-                                className="text-sm font-footer text-white hover:bg-slate-700/50 focus:bg-slate-700/50"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <img src={country.flag} alt={country.country} className="w-4 h-4 flex-shrink-0" />
-                                  <span>{country.country}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="country" className="font-footer text-gray-300 text-xs">Country</Label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
+                      <Select
+                        value={formData.country}
+                        onValueChange={(value) => handleInputChange('country', value)}
+                        required
+                      >
+                        <SelectTrigger className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50">
+                          {formData.country && (() => {
+                            const selectedCountry = countries.find(c => c.country === formData.country);
+                            return selectedCountry ? (
+                              <img 
+                                src={selectedCountry.flag} 
+                                alt={selectedCountry.country} 
+                                className="absolute left-10 w-4 h-4 flex-shrink-0 pointer-events-none"
+                              />
+                            ) : null;
+                          })()}
+                          <SelectValue placeholder="Select a country" className={formData.country ? "pl-6" : ""} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800/95 border-white/10 text-white max-h-[300px]">
+                          {countries.map((country) => (
+                            <SelectItem
+                              key={country.code}
+                              value={country.country}
+                              className="text-sm font-footer text-white hover:bg-slate-700/50 focus:bg-slate-700/50"
+                            >
+                              <div className="flex items-center gap-2">
+                                <img src={country.flag} alt={country.country} className="w-4 h-4 flex-shrink-0" />
+                                <span>{country.country}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -378,76 +430,138 @@ export function AuthPage() {
                 </>
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="font-footer text-gray-300 text-xs">Email</Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
-                    className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                  />
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="font-footer text-gray-300 text-xs">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    required
-                    className="pl-10 pr-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                  />
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {mode === 'signup' && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="font-footer text-gray-300 text-xs">Confirm Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      required={mode === 'signup'}
-                      className="pl-10 pr-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
-                    />
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+              {/* Signup Step 2: Phone, Email, Password, Confirm Password */}
+              {mode === 'signup' && signupStep === 2 && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phoneNumber" className="font-footer text-gray-300 text-xs">Phone Number</Label>
+                    <div className="relative">
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        placeholder="+1 (555) 123-4567"
+                        value={formData.phoneNumber}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
-                </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="font-footer text-gray-300 text-xs">Email</Label>
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        required
+                        className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="font-footer text-gray-300 text-xs">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        required
+                        className="pl-10 pr-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirmPassword" className="font-footer text-gray-300 text-xs">Confirm Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                        required
+                        className="pl-10 pr-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Signin: Email and Password */}
+              {mode === 'signin' && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="font-footer text-gray-300 text-xs">Email</Label>
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        required
+                        className="pl-10 h-9 text-sm font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="font-footer text-gray-300 text-xs">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        required
+                        className="pl-10 pr-10 h-11 text-base font-footer bg-slate-800/80 border-white/5 text-white placeholder:text-gray-500 focus:border-blue-500/50"
+                      />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
 
               {mode === 'signin' && (
@@ -462,26 +576,33 @@ export function AuthPage() {
                 </div>
               )}
 
-              <Button 
-                type="submit" 
-                disabled={loading}
-                className="w-full h-9 text-sm font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed" 
-                size="lg"
-              >
-                {loading ? (
-                  'Loading...'
-                ) : mode === 'signin' ? (
-                  <>
-                    <LogIn className="h-3.5 w-3.5" />
-                    Sign In
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="h-3.5 w-3.5" />
-                    Sign Up
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full h-9 text-sm font-footer bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  size="lg"
+                >
+                  {loading ? (
+                    'Loading...'
+                  ) : mode === 'signin' ? (
+                    <>
+                      <LogIn className="h-3.5 w-3.5" />
+                      Sign In
+                    </>
+                  ) : signupStep === 1 ? (
+                    <>
+                      Next
+                      <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Sign Up
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
 
               <div className="mt-8">
@@ -494,6 +615,7 @@ export function AuthPage() {
                 </div>
               </div>
 
+              {/* Show Google auth on signin or any signup step */}
               <div className="mt-5">
                 <Button 
                   variant="outline" 
@@ -526,6 +648,7 @@ export function AuthPage() {
                 type="button"
                 onClick={() => {
                   setMode(mode === 'signin' ? 'signup' : 'signin');
+                  setSignupStep(1);
                   setFormData({ email: '', password: '', confirmPassword: '', firstName: '', lastName: '', phoneNumber: '', country: '', state: '' });
                   setError(null);
                 }}
