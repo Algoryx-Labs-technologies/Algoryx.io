@@ -3,7 +3,7 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from '../components/ui/utils';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
-import { MessageSquare, Plus, User, Clock, Loader2, Lock } from 'lucide-react';
+import { MessageSquare, User, Clock, Loader2, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api';
 import { format } from 'date-fns';
@@ -97,7 +97,22 @@ export function MessagesListPage() {
     try {
       const response = await apiClient.get<Conversation[]>('/messages/conversations');
       if (response.success && response.data) {
-        setConversations(response.data);
+        // Sort conversations: admin conversations first, then by last message time
+        const sortedConversations = response.data.sort((a, b) => {
+          // Prioritize admin conversations
+          const aIsAdmin = a.otherUser.role === 'admin';
+          const bIsAdmin = b.otherUser.role === 'admin';
+          
+          if (aIsAdmin && !bIsAdmin) return -1;
+          if (!aIsAdmin && bIsAdmin) return 1;
+          
+          // If both are same type, sort by last message time (most recent first)
+          const aTime = new Date(a.lastMessage.created_at).getTime();
+          const bTime = new Date(b.lastMessage.created_at).getTime();
+          return bTime - aTime;
+        });
+        
+        setConversations(sortedConversations);
       }
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -180,27 +195,18 @@ export function MessagesListPage() {
             ) : (
               <>
                 {/* Header */}
-                <div className="mb-8 flex items-center justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold font-hero text-gray-900 dark:text-white mb-2">
-                      Messages
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 font-footer">
-                      Communicate with technical analysts and advisors
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold font-hero text-gray-900 dark:text-white mb-2">
+                    Messages
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400 font-footer">
+                    Communicate with technical analysts and advisors
+                  </p>
+                  {unreadCount > 0 && (
+                    <p className="text-blue-600 dark:text-blue-400 font-footer text-sm mt-2">
+                      {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
                     </p>
-                    {unreadCount > 0 && (
-                      <p className="text-blue-600 dark:text-blue-400 font-footer text-sm mt-2">
-                        {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => navigate('/messages/new')}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-footer"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>New Message</span>
-                  </button>
+                  )}
                 </div>
 
                 {/* Conversations List */}
@@ -258,6 +264,12 @@ export function MessagesListPage() {
                                       <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                                     )}
                                   </div>
+                                  {/* Display email prominently for admin conversations */}
+                                  {conversation.otherUser.role === 'admin' && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-300 font-footer mb-2">
+                                      <span className="text-blue-400">{conversation.otherUser.email}</span>
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-gray-400 font-footer flex-shrink-0 ml-4">
                                   <Clock className="h-4 w-4" />
@@ -273,7 +285,9 @@ export function MessagesListPage() {
 
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-sm text-gray-400 font-footer">
-                                  <span>{conversation.otherUser.email}</span>
+                                  {conversation.otherUser.role !== 'admin' && (
+                                    <span>{conversation.otherUser.email}</span>
+                                  )}
                                 </div>
                                 {conversation.unreadCount > 0 && (
                                   <span className="bg-blue-500 text-white text-sm font-footer px-3 py-1.5 rounded-full">

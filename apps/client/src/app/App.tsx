@@ -72,6 +72,14 @@ function App() {
           path="/messages" 
           element={
             <ProtectedRoute>
+              <MessagesListPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/messages/new" 
+          element={
+            <ProtectedRoute>
               <MessageConversationPage />
             </ProtectedRoute>
           } 
