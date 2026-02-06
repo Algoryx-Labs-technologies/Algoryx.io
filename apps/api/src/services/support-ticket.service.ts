@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { SupportTicket, Priority, TicketStatus } from '@prisma/client';
 import { AppError } from '@/types';
@@ -150,7 +151,10 @@ export class SupportTicketService {
     email?: string;
   }): Promise<SupportTicket> {
     return prisma.supportTicket.create({
-      data,
+      data: {
+        uid: randomUUID(),
+        ...data,
+      },
       include: {
         User: {
           select: {

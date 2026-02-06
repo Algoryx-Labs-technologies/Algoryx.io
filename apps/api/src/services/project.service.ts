@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
-import { Project } from '@prisma/client';
+import { Project, ProjectStatus, Priority } from '@prisma/client';
 import { AppError } from '@/types';
 
 export class ProjectService {
@@ -31,9 +31,9 @@ export class ProjectService {
     techStack?: string;
     clientRequirement?: string;
     projectTimeline?: string;
-    projectStatus?: string;
+    projectStatus?: ProjectStatus;
     projectFeatures?: string;
-    priority?: string;
+    priority?: Priority;
     progressStatus?: string;
   }): Promise<Project> {
     return prisma.project.create({
@@ -53,9 +53,9 @@ export class ProjectService {
       techStack: string;
       clientRequirement: string;
       projectTimeline: string;
-      projectStatus: string;
+      projectStatus: ProjectStatus;
       projectFeatures: string;
-      priority: string;
+      priority: Priority;
       progressStatus: string;
     }>
   ): Promise<Project> {

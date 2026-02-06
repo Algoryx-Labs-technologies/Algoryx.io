@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/config/database';
 import { User } from '@prisma/client';
 import { AppError } from '@/types';
@@ -31,7 +32,7 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return prisma.user.findUnique({
+    return prisma.user.findFirst({
       where: { email },
     });
   }
@@ -43,12 +44,12 @@ export class UserService {
       throw new AppError(409, 'User with this email already exists');
     }
 
-    return prisma.user.create({
-      data,
-    });
+    // Note: This method may not be used as users are created via auth.service
+    // If used, supabaseUserId and role must be provided
+    throw new AppError(400, 'User creation must be done through auth service');
   }
 
-  async update(id: string, data: Partial<Pick<User, 'name' | 'avatarUrl'>>): Promise<User> {
+  async update(id: string, data: Partial<Pick<User, 'firstName' | 'lastName' | 'phoneNumber' | 'country' | 'state'>>): Promise<User> {
     const user = await this.findById(id);
     
     if (!user) {

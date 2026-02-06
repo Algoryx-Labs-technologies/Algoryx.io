@@ -46,7 +46,7 @@ export class FeedbackController {
 
     const feedbackData = {
       userId: user.id,
-      userName: userName,
+      userName: userName || undefined,
       email: user.email,
       overallRating: req.body.overallRating,
       serviceQuality: req.body.serviceQuality || undefined,

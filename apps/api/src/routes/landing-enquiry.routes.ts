@@ -6,7 +6,7 @@ import { z } from 'zod';
 const router = Router();
 
 // Validation schema for creating landing enquiry
-const createLandingEnquirySchema = z.object({
+const createLandingEnquirySchema = {
   body: z.object({
     fullName: z.string().min(1, 'Full name is required'),
     email: z.string().email('Invalid email address'),
@@ -15,7 +15,7 @@ const createLandingEnquirySchema = z.object({
     message: z.string().min(1, 'Message is required'),
     haveSource: z.string().optional(),
   }),
-});
+};
 
 // Routes
 // Public endpoint - no authentication required

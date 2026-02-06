@@ -47,8 +47,9 @@ export class UserController {
     }
 
     const { id } = req.params;
+    const userId = Array.isArray(id) ? id[0] : id;
 
-    const user = await userService.findById(id);
+    const user = await userService.findById(userId);
     
     if (!user) {
       throw new AppError(404, 'User not found');

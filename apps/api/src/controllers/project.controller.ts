@@ -60,6 +60,7 @@ export class ProjectController {
     }
 
     const { id } = req.params;
+    const projectId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
     const user = await prisma.user.findUnique({
@@ -77,7 +78,7 @@ export class ProjectController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    const project = await projectService.findById(id, clientId);
+    const project = await projectService.findById(projectId, clientId);
 
     if (!project) {
       throw new AppError(404, 'Project not found');
@@ -139,6 +140,7 @@ export class ProjectController {
     }
 
     const { id } = req.params;
+    const projectId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
     const user = await prisma.user.findUnique({
@@ -156,7 +158,7 @@ export class ProjectController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    const project = await projectService.update(id, clientId, req.body);
+    const project = await projectService.update(projectId, clientId, req.body);
 
     res.json({
       success: true,
@@ -171,6 +173,7 @@ export class ProjectController {
     }
 
     const { id } = req.params;
+    const projectId = Array.isArray(id) ? id[0] : id;
 
     // Find user in database
     const user = await prisma.user.findUnique({
@@ -188,7 +191,7 @@ export class ProjectController {
       throw new AppError(404, 'Client profile not found');
     }
 
-    await projectService.delete(id, clientId);
+    await projectService.delete(projectId, clientId);
 
     res.json({
       success: true,
