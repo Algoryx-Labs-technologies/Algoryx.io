@@ -248,7 +248,7 @@ export function Labs() {
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm sm:text-base">
                   <div className="w-1.5 h-1.5 bg-blue-400 rounded-full flex-shrink-0"></div>
-                  <span>Backtesting & performance analysis</span>
+                  <span>Backtesting &amp; performance analysis</span>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm sm:text-base">
                   <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div>
