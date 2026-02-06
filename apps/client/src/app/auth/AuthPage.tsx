@@ -7,6 +7,7 @@ import { Label } from '../components/ui/label';
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, User, AlertCircle, Phone, Globe, MapPin, FlaskConical, Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { ForgotPassword } from './ForgotPassword';
 import { useAuth } from '../contexts/AuthContext';
+import { WorldMap } from '../components/WorldMap';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -167,6 +168,15 @@ export function AuthPage() {
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/5 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-500/10 dark:bg-blue-700/15 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* World Map Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30 dark:opacity-20">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-full max-w-4xl h-full max-h-[600px]">
+            <WorldMap className="w-full h-full" />
+          </div>
+        </div>
       </div>
 
       <div className="relative z-10 h-full flex items-center">
