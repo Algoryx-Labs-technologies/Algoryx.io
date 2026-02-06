@@ -3,10 +3,19 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
 } from 'react-simple-maps';
 
 const geoUrl =
   'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+
+// Key locations for blue markers: [longitude, latitude]
+const markers = [
+  { coordinates: [-95.7129, 37.0902], name: 'United States' }, // US Center
+  { coordinates: [77.2090, 28.6139], name: 'India' }, // New Delhi, India
+  { coordinates: [2.3522, 48.8566], name: 'Europe' }, // Paris, France (Europe representative)
+  { coordinates: [54.3773, 24.4539], name: 'Middle East' }, // Dubai, UAE (Middle East representative)
+];
 
 interface WorldMapProps {
   className?: string;
@@ -14,6 +23,7 @@ interface WorldMapProps {
 
 export function WorldMap({ className = '' }: WorldMapProps) {
   const [isDark, setIsDark] = useState(false);
+  const [activeMarker, setActiveMarker] = useState(0);
 
   useEffect(() => {
     // Check initial theme
@@ -31,6 +41,15 @@ export function WorldMap({ className = '' }: WorldMapProps) {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // Auto-navigate through markers
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveMarker((prev) => (prev + 1) % markers.length);
+    }, 3000); // Change marker every 3 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   // Function to check if a country should be highlighted
@@ -151,7 +170,114 @@ export function WorldMap({ className = '' }: WorldMapProps) {
             })
           }
         </Geographies>
+        
+        {/* Blue markers for key regions */}
+        {markers.map((marker, index) => {
+          const isActive = activeMarker === index;
+          return (
+            <Marker key={index} coordinates={marker.coordinates}>
+              <g>
+                {/* Outer glow layer 1 - largest */}
+                <circle
+                  r={isActive ? 16 : 10}
+                  fill="rgba(59, 130, 246, 0.2)"
+                  style={{
+                    filter: isActive 
+                      ? 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 30px rgba(59, 130, 246, 0.5))'
+                      : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.4))',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  {isActive && (
+                    <>
+                      <animate
+                        attributeName="r"
+                        values="10;16;10"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.2;0.4;0.2"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </>
+                  )}
+                </circle>
+                
+                {/* Outer glow layer 2 - medium */}
+                <circle
+                  r={isActive ? 12 : 8}
+                  fill="rgba(59, 130, 246, 0.35)"
+                  style={{
+                    filter: isActive 
+                      ? 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 25px rgba(59, 130, 246, 0.6))'
+                      : 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.5))',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  {isActive && (
+                    <>
+                      <animate
+                        attributeName="r"
+                        values="8;12;8"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.35;0.5;0.35"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </>
+                  )}
+                </circle>
+                
+                {/* Inner solid circle with strong glow */}
+                <circle
+                  r={isActive ? 7 : 5}
+                  fill="rgba(59, 130, 246, 1)"
+                  stroke="rgba(96, 165, 250, 1)"
+                  strokeWidth={isActive ? 2.5 : 1.5}
+                  style={{
+                    filter: isActive
+                      ? 'drop-shadow(0 0 12px rgba(59, 130, 246, 1)) drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 30px rgba(59, 130, 246, 0.5))'
+                      : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.7)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))',
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+                
+                {/* Center bright dot */}
+                <circle
+                  r={isActive ? 3 : 2}
+                  fill="white"
+                  style={{
+                    filter: isActive
+                      ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))'
+                      : 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))',
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+              </g>
+            </Marker>
+          );
+        })}
       </ComposableMap>
+      
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.4;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
