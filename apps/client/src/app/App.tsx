@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthPage } from './auth/AuthPage';
+import { AuthCallback } from './auth/AuthCallback';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { ProjectsListPage } from './projects/ProjectsListPage';
 import { ProjectDetailPage } from './projects/ProjectDetailPage';
@@ -130,6 +131,10 @@ function App() {
           element={
             user ? <Navigate to="/dashboard" replace /> : <AuthPage />
           } 
+        />
+        <Route 
+          path="/auth/callback" 
+          element={<AuthCallback />}
         />
         <Route 
           path="/" 
