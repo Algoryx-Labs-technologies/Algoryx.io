@@ -56,7 +56,13 @@ export function Sidebar() {
     },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    // Exact match
+    if (location.pathname === path) return true;
+    // For projects, also match project detail pages (e.g., /projects/:id)
+    if (path === '/projects' && location.pathname.startsWith('/projects/')) return true;
+    return false;
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
