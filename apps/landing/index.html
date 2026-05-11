@@ -72,11 +72,12 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link rel="dns-prefetch" href="https://algoryx.io" />
       
-      <!-- Favicon -->
+      <!-- Favicon & app icons (Algoryx hex mark, transparent PNG) -->
+      <link rel="icon" type="image/png" href="/algoryx-mark.png" sizes="251x238" />
       <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
       <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <link rel="manifest" href="/site.webmanifest" />
       
       <!-- Structured Data (JSON-LD) -->
@@ -92,9 +93,9 @@
             "url": "https://algoryx.io",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://algoryx.io/logo.png",
-              "width": 512,
-              "height": 512
+              "url": "https://algoryx.io/algoryx-mark.png",
+              "width": 251,
+              "height": 238
             },
             "sameAs": [
               "https://instagram.com/algoryx",
@@ -125,7 +126,7 @@
             "name": "Algoryx",
             "description": "India's first platform for algorithmic trading education and quantitative research. Learn systematic trading, quantitative labs projects, and build strategies for Indian markets (NSE/BSE).",
             "url": "https://algoryx.io",
-            "logo": "https://algoryx.io/logo.png",
+            "logo": "https://algoryx.io/algoryx-mark.png",
             "address": {
               "@type": "PostalAddress",
               "addressCountry": "IN"
@@ -288,7 +289,10 @@
 
     <body itemscope itemtype="https://schema.org/WebPage">
       <noscript>
-        <p>JavaScript is required to use this application. Please enable JavaScript in your browser settings.</p>
+        <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;padding:2rem;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center">
+          <img src="/algoryx-mark.png" width="160" height="152" alt="Algoryx" style="max-width:min(200px,50vw);height:auto;width:auto" />
+          <p style="max-width:28rem;margin:0;line-height:1.5">JavaScript is required to use this application. Please enable JavaScript in your browser settings.</p>
+        </div>
       </noscript>
       <div id="root" role="main" aria-label="Algoryx - Algorithmic Trading Education Platform"></div>
       <script type="module" src="/src/main.tsx"></script>

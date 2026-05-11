@@ -22,7 +22,7 @@ export function Hero() {
         <ScrollReveal>
           <div className="text-center mb-10 lg:mb-14">
           <p className="text-xs md:text-sm text-gray-400 dark:text-gray-500 font-light tracking-[0.2em] uppercase" style={{ fontFamily: 'Inter, sans-serif' }}>
-          India's first edtech platform for algorithmic trading and quantitative research
+          Engineering infrastructure for modern finance, broker systems, and trading platforms.
             </p>
           </div>
         </ScrollReveal>
