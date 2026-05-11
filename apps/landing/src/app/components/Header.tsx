@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Menu, X, Sparkles, Moon, Sun } from 'lucide-react';
+import { Menu, X, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BrandLogo } from './BrandLogo';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,15 +11,7 @@ export function Header() {
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-transparent font-header">
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-              Algoryx
-            </span>
-          </div>
+          <BrandLogo variant="header" />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">

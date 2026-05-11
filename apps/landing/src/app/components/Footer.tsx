@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Instagram, Twitter, Linkedin, Youtube, Sparkles, Check, Send } from 'lucide-react';
+import { Instagram, Twitter, Linkedin, Youtube, Check, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './ScrollReveal';
 import {
@@ -11,6 +11,7 @@ import {
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { BrandLogo } from './BrandLogo';
 
 export function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -70,14 +71,7 @@ export function Footer() {
           <div className="grid md:grid-cols-6 gap-8 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Algoryx
-              </span>
-            </div>
+            <BrandLogo variant="footer" />
             <p className="text-gray-400 text-sm">
               India's first platform for algorithmic trading education and quantitative research.
             </p>
