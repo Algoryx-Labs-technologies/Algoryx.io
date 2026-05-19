@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer';
 import { Button } from '../components/ui/button';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { SERVICES } from '../../data/services';
+import { StackIconRow } from '../components/StackIconRow';
 
 function PageBackground() {
   return (
@@ -104,6 +105,8 @@ export function ServiceDetailsPage() {
                   </D>
 
                   <p className="text-gray-400 leading-relaxed mb-8">{service.overview}</p>
+
+                  <StackIconRow icons={service.stackIcons} label="Tech stack & platforms" />
 
                   <D className="grid md:grid-cols-2 gap-8">
                     <D>

@@ -55,3 +55,42 @@ html {
 .hero-metrics-marquee:hover {
   animation-play-state: paused;
 }
+
+@keyframes labsOrbFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-12px, 8px) scale(1.05);
+  }
+}
+
+.labs-orb-float {
+  animation: labsOrbFloat 8s ease-in-out infinite;
+}
+
+@keyframes testimonialsMarquee {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.testimonials-marquee {
+  animation: testimonialsMarquee 55s linear infinite;
+}
+
+.testimonials-marquee:hover {
+  animation-play-state: paused;
+}
+
+.services-stack-marquee {
+  animation: testimonialsMarquee 45s linear infinite;
+}
+
+.services-stack-marquee:hover {
+  animation-play-state: paused;
+}

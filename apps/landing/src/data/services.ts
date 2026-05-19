@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { IconName } from 'tech-stack-icons';
 import {
   Bot,
   Smartphone,
@@ -7,6 +8,7 @@ import {
   Rocket,
   Clapperboard,
 } from 'lucide-react';
+import { SERVICE_STACK_BY_ID } from './serviceStackIcons';
 
 export type Service = {
   id: string;
@@ -18,6 +20,7 @@ export type Service = {
   deliverables: string[];
   process: string[];
   icon: LucideIcon;
+  stackIcons: IconName[];
 };
 
 export const SERVICES: Service[] = [
@@ -48,6 +51,7 @@ export const SERVICES: Service[] = [
       'Go-live — production rollout and support window',
     ],
     icon: Bot,
+    stackIcons: SERVICE_STACK_BY_ID['trading-bots'],
   },
   {
     id: 'web-app',
@@ -76,6 +80,7 @@ export const SERVICES: Service[] = [
       'Launch — deploy, monitor, and iterate',
     ],
     icon: Smartphone,
+    stackIcons: SERVICE_STACK_BY_ID['web-app'],
   },
   {
     id: 'ai-ml',
@@ -104,6 +109,7 @@ export const SERVICES: Service[] = [
       'Operate — monitoring, drift detection, and improvements',
     ],
     icon: Brain,
+    stackIcons: SERVICE_STACK_BY_ID['ai-ml'],
   },
   {
     id: 'devops',
@@ -132,6 +138,7 @@ export const SERVICES: Service[] = [
       'Enable — train your team and hand off operations',
     ],
     icon: CloudCog,
+    stackIcons: SERVICE_STACK_BY_ID['devops'],
   },
   {
     id: 'mvp',
@@ -160,6 +167,7 @@ export const SERVICES: Service[] = [
       'Learn — metrics review and v2 planning',
     ],
     icon: Rocket,
+    stackIcons: SERVICE_STACK_BY_ID['mvp'],
   },
   {
     id: 'video-editing',
@@ -188,6 +196,7 @@ export const SERVICES: Service[] = [
       'Delivery — finals and format variations',
     ],
     icon: Clapperboard,
+    stackIcons: SERVICE_STACK_BY_ID['video-editing'],
   },
 ];
 

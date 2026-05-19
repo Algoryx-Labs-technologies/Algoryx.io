@@ -153,6 +153,7 @@ export function TradingDemo() {
   const candlestickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const windowSwitchIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const switchTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   
   // Window switching state
   const [activeWindow, setActiveWindow] = useState<'trading' | 'analyser'>('trading');
@@ -243,9 +244,9 @@ export function TradingDemo() {
     }
   }, [shouldAnimate]);
   
-  // Code scanning animation - Main animation cycle
+  // Code scanning animation - Main animation cycle (pauses when off-screen)
   useEffect(() => {
-    if (!hasScanned || !hasEntered) return;
+    if (!hasScanned || !hasEntered || !shouldAnimate) return;
 
     let isMounted = true;
     codeIndexRef.current = 0;
@@ -374,7 +375,7 @@ export function TradingDemo() {
       isMounted = false;
       cleanup();
     };
-  }, [hasScanned, hasEntered]);
+  }, [hasScanned, hasEntered, shouldAnimate]);
 
   // Initial intersection observer for code scanning
   useEffect(() => {
@@ -512,52 +513,42 @@ export function TradingDemo() {
 
     let isMounted = true;
 
+    const scheduleSwitchTimer = (fn: () => void, delayMs: number) => {
+      const id = setTimeout(() => {
+        switchTimersRef.current = switchTimersRef.current.filter((timerId) => timerId !== id);
+        fn();
+      }, delayMs);
+      switchTimersRef.current.push(id);
+      return id;
+    };
+
+    const clearSwitchTimers = () => {
+      switchTimersRef.current.forEach(clearTimeout);
+      switchTimersRef.current = [];
+    };
+
+    const runWindowSwitch = () => {
+      if (!isMounted) return;
+      setIsTransitioning(true);
+      scheduleSwitchTimer(() => {
+        if (!isMounted) return;
+        setActiveWindow((prev) => (prev === 'trading' ? 'analyser' : 'trading'));
+        scheduleSwitchTimer(() => {
+          if (isMounted) setIsTransitioning(false);
+        }, 300);
+      }, 50);
+    };
+
     // Initial delay to show trading view for 5 seconds first
     initialTimeoutRef.current = setTimeout(() => {
       if (!isMounted) return;
-
-      setIsTransitioning(true);
-      
-      // Switch to analyser after transition starts
-      setTimeout(() => {
-        if (isMounted) {
-          setActiveWindow('analyser');
-          setTimeout(() => {
-            if (isMounted) {
-              setIsTransitioning(false);
-            }
-          }, 300); // Transition duration
-        }
-      }, 50);
-
-      // Then set up interval to switch every 5 seconds (5s trading + 5s analyser)
-      windowSwitchIntervalRef.current = setInterval(() => {
-        if (!isMounted) {
-          if (windowSwitchIntervalRef.current) {
-            clearInterval(windowSwitchIntervalRef.current);
-            windowSwitchIntervalRef.current = null;
-          }
-          return;
-        }
-
-        setIsTransitioning(true);
-        
-        // Switch window after a brief delay for transition start
-        setTimeout(() => {
-          if (isMounted) {
-            setActiveWindow(prev => prev === 'trading' ? 'analyser' : 'trading');
-            setTimeout(() => {
-              if (isMounted) {
-                setIsTransitioning(false);
-              }
-            }, 300); // Transition duration
-          }
-        }, 50);
-      }, 5000); // Switch every 5 seconds (each view stays for 5 seconds)
-    }, 5000); // Show trading view for 5 seconds first
+      runWindowSwitch();
+      windowSwitchIntervalRef.current = setInterval(runWindowSwitch, 5000);
+    }, 5000);
 
     return () => {
       isMounted = false;
+      clearSwitchTimers();
       if (windowSwitchIntervalRef.current) {
         clearInterval(windowSwitchIntervalRef.current);
         windowSwitchIntervalRef.current = null;

@@ -8,6 +8,7 @@ import { TradingDemo } from '../components/TradingDemo';
 import { WorkWithAlgoryxLabs } from '../components/WorkWithAlgoryxLabs';
 import { FAQ } from '../components/FAQ';
 import { Labs } from '../components/Labs';
+import { Testimonials } from '../components/Testimonials';
 import { Footer } from '../components/Footer';
 
 export function HomePage() {
@@ -28,6 +29,7 @@ export function HomePage() {
           <WhyAlgoryx />
           <TradingDemo />
           <Labs />
+          <Testimonials />
           <WorkWithAlgoryxLabs />
           <FAQ />
           <Footer />

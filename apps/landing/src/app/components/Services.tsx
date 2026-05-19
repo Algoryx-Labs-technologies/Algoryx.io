@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { Button } from './ui/button';
 import { SERVICES } from '../../data/services';
+import { ServiceStackLogos } from './ServiceStackLogos';
 
 export function Services() {
   return (
@@ -20,6 +21,10 @@ export function Services() {
               End-to-end engineering for trading systems, products, AI, infrastructure, and creative production.
             </p>
           </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.08}>
+          <ServiceStackLogos />
         </ScrollReveal>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">

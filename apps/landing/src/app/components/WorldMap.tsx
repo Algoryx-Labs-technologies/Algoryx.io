@@ -19,9 +19,11 @@ const markers = [
 
 interface WorldMapProps {
   className?: string;
+  /** When false, marker cycling pauses to avoid background timers. */
+  active?: boolean;
 }
 
-export function WorldMap({ className = '' }: WorldMapProps) {
+export function WorldMap({ className = '', active = true }: WorldMapProps) {
   const [isDark, setIsDark] = useState(false);
   const [activeMarker, setActiveMarker] = useState(0);
 
@@ -43,14 +45,16 @@ export function WorldMap({ className = '' }: WorldMapProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Auto-navigate through markers
+  // Auto-navigate through markers (only while section is visible)
   useEffect(() => {
+    if (!active) return;
+
     const interval = setInterval(() => {
       setActiveMarker((prev) => (prev + 1) % markers.length);
-    }, 3000); // Change marker every 3 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [active]);
 
   // Function to check if a country should be highlighted
   const isHighlightedRegion = (geo: any): boolean => {
