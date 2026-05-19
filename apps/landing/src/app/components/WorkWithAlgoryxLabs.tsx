@@ -241,12 +241,12 @@ export function WorkWithAlgoryxLabs() {
                 <ul className="space-y-2.5 text-sm text-gray-400 mb-4 lg:mb-5 shrink-0">
                   <li>
                     <a
-                      href="tel:+919875113265"
+                      href="tel:+917016465159"
                       className="inline-flex items-start gap-2.5 hover:text-cyan-300 transition-colors"
                     >
                       <Phone className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
                       <span>
-                        +91 98751 13265
+                        +91 70164 65159
                         <span className="text-gray-500"> (India HQ)</span>
                       </span>
                     </a>
