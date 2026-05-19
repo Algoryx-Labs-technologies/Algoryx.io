@@ -5,7 +5,6 @@ import { Services } from '../components/Services';
 import { AIDoubtTool } from '../components/AIDoubtTool';
 import { WhyAlgoryx } from '../components/WhyAlgoryx';
 import { TradingDemo } from '../components/TradingDemo';
-import { Waitlist } from '../components/Waitlist';
 import { WorkWithAlgoryxLabs } from '../components/WorkWithAlgoryxLabs';
 import { FAQ } from '../components/FAQ';
 import { Labs } from '../components/Labs';
@@ -25,7 +24,6 @@ export function HomePage() {
           <Header />
           <Hero />
           <Services />
-          <Waitlist />
           <AIDoubtTool />
           <WhyAlgoryx />
           <TradingDemo />
