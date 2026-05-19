@@ -68,7 +68,7 @@ export function Footer() {
     <footer ref={footerRef} className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer overflow-hidden">
       <div className="container mx-auto px-6 py-12 relative z-10">
         <ScrollReveal>
-          <div className="grid md:grid-cols-6 gap-8 mb-12">
+          <div className="grid md:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="space-y-4">
             <BrandLogo variant="footer" />
@@ -104,28 +104,6 @@ export function Footer() {
               <li>
                 <a href="#help" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Help
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Courses */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Courses</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#courses" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  All Courses
-                </a>
-              </li>
-              <li>
-                <a href="#beginner" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Beginner
-                </a>
-              </li>
-              <li>
-                <a href="#advanced" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Advanced
                 </a>
               </li>
             </ul>

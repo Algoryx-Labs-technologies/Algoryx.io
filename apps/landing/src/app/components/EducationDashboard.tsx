@@ -12,63 +12,6 @@ interface EducationDashboardProps {
   };
 }
 
-const courses = [
-  {
-    id: 1,
-    title: 'Algorithmic Trading Foundations',
-    description: 'Master the fundamentals of systematic trading',
-    duration: '8 weeks',
-    progress: 65,
-    status: 'active' as const,
-    topics: ['Market Basics', 'Order Types', 'Risk Management']
-  },
-  {
-    id: 2,
-    title: 'Python for Quant Finance',
-    description: 'Learn Python programming for quantitative finance',
-    duration: '6 weeks',
-    progress: 100,
-    status: 'completed' as const,
-    topics: ['Pandas & NumPy', 'Data Analysis', 'API Integration']
-  },
-  {
-    id: 3,
-    title: 'ML for Trading Strategies',
-    description: 'Apply machine learning to trading algorithms',
-    duration: '10 weeks',
-    progress: 0,
-    status: 'upcoming' as const,
-    topics: ['ML Models', 'Feature Engineering', 'Model Validation']
-  },
-  {
-    id: 4,
-    title: 'Options Trading Strategies',
-    description: 'Advanced options trading and Greeks',
-    duration: '7 weeks',
-    progress: 0,
-    status: 'upcoming' as const,
-    topics: ['Options Basics', 'Greeks', 'Volatility Trading']
-  },
-  {
-    id: 5,
-    title: 'Backtesting & Optimization',
-    description: 'Build and test strategies on historical data',
-    duration: '5 weeks',
-    progress: 0,
-    status: 'upcoming' as const,
-    topics: ['Backtesting', 'Walk-Forward Analysis', 'Optimization']
-  },
-  {
-    id: 6,
-    title: 'Risk Management Fundamentals',
-    description: 'Master portfolio risk and position sizing',
-    duration: '4 weeks',
-    progress: 0,
-    status: 'upcoming' as const,
-    topics: ['Position Sizing', 'Risk Metrics', 'Portfolio Theory']
-  }
-];
-
 const videos = [
   {
     id: 1,
@@ -340,7 +283,7 @@ export function EducationVideos() {
 
 export function EducationCourses() {
   return (
-    <div 
+    <div
       className="bg-gradient-to-br from-slate-900 to-black overflow-hidden relative h-full flex flex-col"
       style={{
         imageRendering: 'crisp-edges',
@@ -349,59 +292,15 @@ export function EducationCourses() {
         textRendering: 'optimizeLegibility'
       }}
     >
-      {/* Top Bar */}
       <div className="bg-slate-800/50 border-b border-white/10 px-6 py-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-4 h-4 text-gray-400" />
-          <span className="text-xs text-gray-400">All Courses</span>
+          <span className="text-xs text-gray-400">Learning</span>
         </div>
       </div>
 
-      {/* Courses List - Non-scrollable, fits all courses */}
-      <div className="p-4 flex-1 overflow-hidden flex flex-col">
-        <div className="grid grid-cols-1 gap-2 h-full" style={{ gridTemplateRows: 'repeat(6, minmax(0, 1fr))' }}>
-          {courses.map((course) => (
-            <div
-              key={course.id}
-              className={`bg-slate-800/30 rounded-lg p-2 border border-white/5 flex items-center gap-3 ${
-                course.status === 'active' ? 'ring-2 ring-blue-500/50' : ''
-              }`}
-            >
-              <div className="flex-shrink-0">
-                {course.status === 'completed' ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
-                ) : course.status === 'active' ? (
-                  <Circle className="w-4 h-4 text-blue-400 fill-blue-400/20" />
-                ) : (
-                  <Circle className="w-4 h-4 text-gray-500" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <h4 className="text-white text-[11px] font-semibold truncate">{course.title}</h4>
-                  <span className="text-gray-500 text-[9px] ml-2 flex-shrink-0">{course.duration}</span>
-                </div>
-                <p className="text-gray-400 text-[9px] mb-1 truncate">{course.description}</p>
-                {course.status === 'active' && course.progress > 0 && (
-                  <div className="w-full h-0.5 bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                      initial={{ width: '0%' }}
-                      animate={{ width: `${course.progress}%` }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                )}
-                {course.status === 'completed' && (
-                  <div className="flex items-center gap-1 text-[9px] text-green-400">
-                    <CheckCircle2 className="w-2.5 h-2.5" />
-                    <span>Completed</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="p-4 flex-1 flex items-center justify-center">
+        <p className="text-gray-500 text-sm text-center">No courses available yet.</p>
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ export function WaitlistConfirmation({
           
           <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20">
             <p className="text-sm text-gray-300 leading-relaxed">
-              We'll notify you as soon as our courses are available. Get ready for exclusive early access and special discounts!
+              We'll notify you as soon as Algoryx launches. Get ready for exclusive early access and updates!
             </p>
           </div>
         </div>

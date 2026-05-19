@@ -34,12 +34,12 @@ export function Waitlist() {
               </span>
               <br />
               <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Algoryx Courses
+                Algoryx
               </span>
             </h2>
 
             <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-              Join our waitlist and get exclusive early access to courses, special discounts, and insider updates on Indian market strategies.
+              Join our waitlist for early access, product updates, and insider news on Indian market strategies.
             </p>
 
             {/* Email form */}

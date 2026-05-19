@@ -38,3 +38,20 @@ html {
 .animate-spotlight {
   animation: spotlight 2s ease-out forwards;
 }
+
+@keyframes heroRibbonMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.hero-metrics-marquee {
+  animation: heroRibbonMarquee 32s linear infinite;
+}
+
+.hero-metrics-marquee:hover {
+  animation-play-state: paused;
+}

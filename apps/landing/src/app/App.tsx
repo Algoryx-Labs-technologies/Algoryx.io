@@ -3,7 +3,6 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { LaptopDemo } from './components/LaptopDemo';
 import { Features } from './components/Features';
-import { Courses } from './components/Courses';
 import { AIDoubtTool } from './components/AIDoubtTool';
 import { WhyAlgoryx } from './components/WhyAlgoryx';
 import { EducationDemo } from './components/EducationDemo';
@@ -32,7 +31,6 @@ export default function App() {
           {/* <LaptopDemo /> */}
           <Features />
           {/* <EducationDemo /> */}
-          <Courses />
           <Waitlist />
           <AIDoubtTool />
           <WhyAlgoryx />
