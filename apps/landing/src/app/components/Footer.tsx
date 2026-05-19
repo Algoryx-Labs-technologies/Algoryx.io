@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Linkedin, Youtube, Check, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './ScrollReveal';
@@ -73,8 +74,8 @@ export function Footer() {
           <div className="space-y-4">
             <BrandLogo variant="footer" />
             <p className="text-gray-400 text-sm">
-              India's first platform for algorithmic trading education and quantitative research.
-            </p>
+              Building scalable technology and Modern engineering for platforms, products, and infrastructure.
+            </p> 
           </div>
 
           {/* Company */}
@@ -113,6 +114,16 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-white mb-4">Solutions</h4>
             <ul className="space-y-2">
+              <li>
+                <Link to="/#services" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link to="/service-details" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  All Services
+                </Link>
+              </li>
               <li>
                 <a href="#labs" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Labs

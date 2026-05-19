@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 type BrandLogoProps = {
   /** Header uses a taller mark; footer stays slightly smaller for the grid. */
@@ -13,8 +14,8 @@ export function BrandLogo({ variant = 'header', className = '' }: BrandLogoProps
       : 'h-14 w-auto min-h-[3.5rem] sm:h-16 sm:min-h-16 md:h-[4.25rem] md:min-h-[4.25rem]';
 
   return (
-    <a
-      href="#home"
+    <Link
+      to="/"
       className={`inline-flex items-center shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 rounded-md ${className}`}
     >
       <img
@@ -25,6 +26,6 @@ export function BrandLogo({ variant = 'header', className = '' }: BrandLogoProps
         decoding="async"
         className={`${sizeClass} max-w-[min(100%,22rem)] sm:max-w-[min(100%,26rem)] md:max-w-none object-contain object-left`}
       />
-    </a>
+    </Link>
   );
 }
