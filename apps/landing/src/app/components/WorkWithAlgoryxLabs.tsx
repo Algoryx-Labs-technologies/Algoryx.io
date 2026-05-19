@@ -87,21 +87,21 @@ export function WorkWithAlgoryxLabs() {
   };
 
   return (
-    <section id="work-with-labs" className="py-12 md:py-14 relative font-waitlist scroll-mt-20">
-      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+    <section id="work-with-labs" className="py-10 md:py-12 relative font-waitlist scroll-mt-20">
+      <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
         <ScrollReveal>
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-sm shadow-[0_0_32px_rgba(59,130,246,0.06)]">
-            <div className="grid lg:grid-cols-2 lg:items-stretch gap-8 lg:gap-10 p-6 sm:p-8 md:p-9">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-800/70 backdrop-blur-sm shadow-[0_0_28px_rgba(59,130,246,0.05)]">
+            <div className="grid lg:grid-cols-2 lg:items-stretch gap-6 lg:gap-8 p-5 sm:p-6 md:p-7">
               <div>
-                <p className="text-sm font-medium text-cyan-400/90 mb-2">Let&apos;s talk</p>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+                <p className="text-sm font-medium text-cyan-400/90 mb-1.5">Let&apos;s talk</p>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1.5 text-white">
                   Work With Algoryx Labs
                 </h2>
-                <p className="text-gray-400 text-sm leading-relaxed mb-5">
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
                   Tell us about your requirement and our team will reach out to you.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-3.5">
+                <form onSubmit={handleSubmit} className="space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="fullName" className="text-white text-sm">
                       Full Name <span className="text-red-400">*</span>
@@ -223,8 +223,8 @@ export function WorkWithAlgoryxLabs() {
               </div>
 
               <div className="flex flex-col h-full min-h-0">
-                <p className="text-sm font-medium text-cyan-400/90 mb-2">Visit us</p>
-                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-snug">
+                <p className="text-sm font-medium text-cyan-400/90 mb-1.5">Visit us</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 leading-snug">
                   Algoryx Labs and Technologies Pvt. Ltd.
                 </h3>
                 <div className="flex gap-2.5 text-sm text-gray-400 leading-relaxed mb-4">
@@ -265,7 +265,7 @@ export function WorkWithAlgoryxLabs() {
                   </li>
                 </ul>
 
-                <div className="relative w-full flex-1 min-h-[240px] sm:min-h-[280px] lg:min-h-[300px] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+                <div className="relative w-full flex-1 min-h-[200px] sm:min-h-[240px] lg:min-h-[260px] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
                   <iframe
                     title="Algoryx Labs and Technologies — Arjun Tower Ghatlodia, Ahmedabad"
                     src={MAP_EMBED_SRC}
