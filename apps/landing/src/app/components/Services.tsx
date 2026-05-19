@@ -13,7 +13,7 @@ export function Services() {
           <div className="text-center mb-10 md:mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
               <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                Top Services We Provide
+                Services Algoryx Labs Provides
               </span>
             </h2>
             <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
