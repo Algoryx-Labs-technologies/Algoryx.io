@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { ArrowRight, Lock, Crown } from 'lucide-react';
-import { ScrollReveal } from './ScrollReveal';
-import { motion } from 'motion/react';
-import { WorldMap } from './WorldMap';
 import { BrandLogo } from './BrandLogo';
 
 function BloombergTerminal() {
@@ -14,6 +11,7 @@ function BloombergTerminal() {
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const terminalIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const terminalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lineIndexRef = useRef(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -62,25 +60,20 @@ function BloombergTerminal() {
       '[METRICS] Sharpe 1.85 | Sortino 2.14 | Max DD -2.3%',
     ];
 
-    let lineIndex = 0;
+    lineIndexRef.current = 0;
 
     const addLine = () => {
-      if (!isMounted) {
-        if (terminalIntervalRef.current) {
-          clearInterval(terminalIntervalRef.current);
-          terminalIntervalRef.current = null;
-        }
-        return;
-      }
+      if (!isMounted) return;
 
-      if (lineIndex < tradingMessages.length) {
-        setTerminalLines((prev) => {
-          const newLines = [...prev, tradingMessages[lineIndex]];
-          return newLines.slice(-8);
-        });
-        lineIndex++;
+      const index = lineIndexRef.current;
+      if (index < tradingMessages.length) {
+        const message = tradingMessages[index];
+        if (message) {
+          setTerminalLines((prev) => [...prev, message].slice(-8));
+        }
+        lineIndexRef.current = index + 1;
       } else {
-        lineIndex = 0;
+        lineIndexRef.current = 0;
         setTerminalLines([]);
       }
     };
@@ -94,25 +87,15 @@ function BloombergTerminal() {
 
     return () => {
       isMounted = false;
-      if (terminalTimeoutRef.current) {
-        clearTimeout(terminalTimeoutRef.current);
-        terminalTimeoutRef.current = null;
-      }
-      if (terminalIntervalRef.current) {
-        clearInterval(terminalIntervalRef.current);
-        terminalIntervalRef.current = null;
-      }
+      if (terminalTimeoutRef.current) clearTimeout(terminalTimeoutRef.current);
+      if (terminalIntervalRef.current) clearInterval(terminalIntervalRef.current);
     };
   }, [shouldAnimate]);
 
   return (
-    <motion.div
+    <div
       ref={containerRef}
       className="w-full max-w-full sm:max-w-xl md:max-w-2xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-xl overflow-hidden shadow-2xl relative"
-      initial={{ opacity: 0, y: 24, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="flex items-center gap-2 px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4 bg-slate-800/50 border-b border-white/10">
         <div className="flex gap-1.5">
@@ -149,6 +132,8 @@ function BloombergTerminal() {
           )}
 
           {terminalLines.map((line, index) => {
+            if (typeof line !== 'string') return null;
+
             let lineColor = 'text-gray-300';
             if (line.includes('[DESK]')) lineColor = 'text-cyan-300';
             else if (line.includes('[ALPHA]')) lineColor = 'text-blue-300';
@@ -160,15 +145,9 @@ function BloombergTerminal() {
             else if (line.includes('[METRICS]')) lineColor = 'text-blue-300';
 
             return (
-              <motion.div
-                key={`line-${index}`}
-                className={lineColor}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
+              <div key={`line-${index}-${line.slice(0, 12)}`} className={lineColor}>
                 {line}
-              </motion.div>
+              </div>
             );
           })}
 
@@ -177,7 +156,7 @@ function BloombergTerminal() {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -188,10 +167,24 @@ const premiumHighlights = [
   'Enterprise risk, exposure & compliance architecture',
 ] as const;
 
+function LabsMapBackdrop() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 dark:opacity-20" aria-hidden>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_40%,rgba(59,130,246,0.35),transparent_65%)]" />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 20% 30%, rgba(6,182,212,0.25) 0%, transparent 40%), radial-gradient(circle at 75% 55%, rgba(37,99,235,0.3) 0%, transparent 45%)',
+        }}
+      />
+    </div>
+  );
+}
+
 export function Labs() {
   const labsCardRef = useRef<HTMLDivElement>(null);
   const [shineKey, setShineKey] = useState(0);
-  const [isSectionVisible, setIsSectionVisible] = useState(false);
   const hasShinedRef = useRef(false);
   const shineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -201,8 +194,6 @@ export function Labs() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsSectionVisible(entry.isIntersecting);
-
         if (entry.isIntersecting && !hasShinedRef.current) {
           hasShinedRef.current = true;
           shineTimerRef.current = setTimeout(() => setShineKey(1), 600);
@@ -214,115 +205,92 @@ export function Labs() {
     observer.observe(el);
     return () => {
       observer.disconnect();
-      if (shineTimerRef.current) {
-        clearTimeout(shineTimerRef.current);
-        shineTimerRef.current = null;
-      }
+      if (shineTimerRef.current) clearTimeout(shineTimerRef.current);
     };
   }, []);
 
   return (
-    <section id="labs" className="py-12 md:py-16 lg:py-24 relative font-labs">
+    <section id="labs" className="py-12 md:py-16 lg:py-24 relative font-labs scroll-mt-24">
       <div className="container mx-auto px-4 sm:px-6">
-        <ScrollReveal>
-          <motion.div
-            ref={labsCardRef}
-            className="group relative bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl px-6 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]"
-            initial={{ opacity: 0, y: 32 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="labs-orb-float absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl" />
+        <div
+          ref={labsCardRef}
+          className="group relative bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl px-6 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]"
+        >
+          <div className="labs-orb-float absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl" />
+          <LabsMapBackdrop />
 
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-15">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-full max-w-5xl h-full max-h-[700px]">
-                  <WorldMap className="w-full h-full" active={isSectionVisible} />
-                </div>
-              </div>
-            </div>
+          <div className="relative z-10 mb-6 md:mb-6 flex justify-center lg:justify-start">
+            <BrandLogo className="[&_img]:!h-10 [&_img]:!min-h-0 sm:[&_img]:!h-11 md:[&_img]:!h-12 [&_img]:max-w-[12rem]" />
+          </div>
 
-            <div className="relative z-10 mb-6 md:mb-6 flex justify-center lg:justify-start">
-              <BrandLogo className="[&_img]:!h-10 [&_img]:!min-h-0 sm:[&_img]:!h-11 md:[&_img]:!h-12 [&_img]:max-w-[12rem]" />
-            </div>
+          <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-8 items-center">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-amber-500/10 border border-amber-400/40 rounded-full text-amber-200 text-xs md:text-sm font-medium">
+                <Crown className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
+                Top Algoryx Labs Service
+              </span>
 
-            <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-8 items-center">
-              <div className="space-y-4">
-                <span className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-amber-500/10 border border-amber-400/40 rounded-full text-amber-200 text-xs md:text-sm font-medium">
-                  <Crown className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
-                  Top Algoryx Labs Service
-                </span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+                <span className="text-white">Institutional-Grade Quant</span>
+                <br />
+                <span className="text-cyan-300">&amp; AI Research Desk</span>
+              </h2>
 
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-                  <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                    Institutional-Grade Quant
-                  </span>
-                  <br />
-                  <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
-                    &amp; AI Research Desk
-                  </span>
-                </h2>
+              <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed">
+                A niche, premium offering for funds, prop desks, and serious market participants—bespoke
+                alpha models, execution systems, and risk architecture engineered for the financial world,
+                not generic software shops.
+              </p>
 
-                <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed">
-                  A niche, premium offering for funds, prop desks, and serious market participants—bespoke
-                  alpha models, execution systems, and risk architecture engineered for the financial world,
-                  not generic software shops.
-                </p>
-
-                <div className="space-y-2 md:space-y-3">
-                  {premiumHighlights.map((item, index) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm sm:text-base group"
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse ${index % 2 === 0 ? 'bg-blue-400' : 'bg-cyan-400'}`}
-                      />
-                      <span className="group-hover:text-cyan-100/90 transition-colors">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Button
-                  size="lg"
-                  disabled
-                  className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto opacity-50 cursor-not-allowed"
-                >
-                  <Lock className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                  Visit Algoryx Labs
-                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
+              <div className="space-y-2 md:space-y-3">
+                {premiumHighlights.map((item, index) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm sm:text-base group"
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse ${index % 2 === 0 ? 'bg-blue-400' : 'bg-cyan-400'}`}
+                    />
+                    <span className="group-hover:text-cyan-100/90 transition-colors">{item}</span>
+                  </div>
+                ))}
               </div>
 
-              <div className="flex items-center justify-center lg:justify-end mt-6 lg:mt-0">
-                <BloombergTerminal />
-              </div>
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 rounded-2xl md:rounded-3xl transition-all duration-300 pointer-events-none" />
-
-            {shineKey > 0 && (
-              <motion.div
-                key={`labs-shine-${shineKey}`}
-                className="absolute inset-0 pointer-events-none z-20 rounded-2xl md:rounded-3xl overflow-hidden"
+              <Button
+                size="lg"
+                disabled
+                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto opacity-50 cursor-not-allowed"
               >
-                <div
-                  className="absolute w-full h-full"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%, transparent 100%)',
-                    transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
-                    animation: 'mirrorShine 2s ease-out forwards',
-                    animationDelay: '0.3s',
-                    width: '200%',
-                    height: '200%',
-                  }}
-                />
-              </motion.div>
-            )}
-          </motion.div>
-        </ScrollReveal>
+                <Lock className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                Visit Algoryx Labs
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-center lg:justify-end mt-6 lg:mt-0">
+              <BloombergTerminal />
+            </div>
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 rounded-2xl md:rounded-3xl transition-all duration-300 pointer-events-none" />
+
+          {shineKey > 0 && (
+            <div className="absolute inset-0 pointer-events-none z-20 rounded-2xl md:rounded-3xl overflow-hidden">
+              <div
+                className="absolute w-full h-full"
+                style={{
+                  background:
+                    'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%, transparent 100%)',
+                  transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
+                  animation: 'mirrorShine 2s ease-out forwards',
+                  animationDelay: '0.3s',
+                  width: '200%',
+                  height: '200%',
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

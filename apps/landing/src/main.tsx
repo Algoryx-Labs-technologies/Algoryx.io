@@ -2,10 +2,13 @@
   import App from "./app/App.tsx";
   import "./styles/index.css";
   import { ThemeProvider } from "./app/contexts/ThemeContext";
+  import { RootErrorBoundary } from "./app/components/RootErrorBoundary";
 
   createRoot(document.getElementById("root")!).render(
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <RootErrorBoundary>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </RootErrorBoundary>
   );
   

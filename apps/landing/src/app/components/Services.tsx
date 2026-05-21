@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { Button } from './ui/button';
 import { SERVICES } from '../../data/services';
-import { ServiceStackLogos } from './ServiceStackLogos';
+
+const ServiceStackLogos = lazy(() =>
+  import('./ServiceStackLogos').then((m) => ({ default: m.ServiceStackLogos }))
+);
 
 export function Services() {
   return (
@@ -24,7 +27,9 @@ export function Services() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.08}>
-          <ServiceStackLogos />
+          <Suspense fallback={<div className="mb-10 md:mb-12 h-12" aria-hidden />}>
+            <ServiceStackLogos />
+          </Suspense>
         </ScrollReveal>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">

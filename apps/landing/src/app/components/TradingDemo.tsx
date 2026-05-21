@@ -1071,15 +1071,16 @@ export function TradingDemo() {
                               
                               const lines = displayedCode.split('\n');
                               return lines.map((line, lineIdx) => {
+                                const safeLine = line ?? '';
                                 const parts: Array<{ text: string; className: string }> = [];
                                 let currentText = '';
                                 let inString = false;
                                 let stringChar = '';
                                 let inComment = false;
                                 
-                                for (let i = 0; i < line.length; i++) {
-                                  const char = line[i];
-                                  const remaining = line.substring(i);
+                                for (let i = 0; i < safeLine.length; i++) {
+                                  const char = safeLine[i];
+                                  const remaining = safeLine.substring(i);
                                   
                                   // Check for comments
                                   if (!inString && char === '#') {
@@ -1146,15 +1147,15 @@ export function TradingDemo() {
                                     }
                                     
                                     // Check for numbers
-                                    if (/\d/.test(char) && (i === 0 || !/\w/.test(line[i - 1]))) {
+                                    if (/\d/.test(char) && (i === 0 || !/\w/.test(safeLine[i - 1]))) {
                                       if (currentText) {
                                         parts.push({ text: currentText, className: 'text-gray-300' });
                                         currentText = '';
                                       }
                                       let num = char;
                                       i++;
-                                      while (i < line.length && /\d/.test(line[i])) {
-                                        num += line[i];
+                                      while (i < safeLine.length && /\d/.test(safeLine[i])) {
+                                        num += safeLine[i];
                                         i++;
                                       }
                                       i--;

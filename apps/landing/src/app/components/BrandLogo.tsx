@@ -20,11 +20,11 @@ export function BrandLogo({ variant = 'header', className = '' }: BrandLogoProps
     >
       <img
         src="/algoryx-labs-logo.png"
-        alt="Algoryx Labs"
-        width={1024}
-        height={682}
+        alt="Algoryx Labs and Tech"
+        width={608}
+        height={253}
         decoding="async"
-        className={`${sizeClass} max-w-[min(100%,22rem)] sm:max-w-[min(100%,26rem)] md:max-w-none object-contain object-left`}
+        className={`${sizeClass} max-w-[min(100%,18rem)] sm:max-w-[min(100%,22rem)] md:max-w-[min(100%,28rem)] object-contain object-left`}
       />
     </Link>
   );
