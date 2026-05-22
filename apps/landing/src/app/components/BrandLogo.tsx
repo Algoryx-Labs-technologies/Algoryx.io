@@ -20,7 +20,7 @@ export function BrandLogo({ variant = 'header', className = '' }: BrandLogoProps
     >
       <img
         src="/algoryx-labs-logo.png"
-        alt="Algoryx Labs and Tech"
+        alt="Algoryx Labs and Algoryx Tech — official site Algoryx.io"
         width={608}
         height={253}
         decoding="async"

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { PageSeo } from './components/PageSeo';
 import { HomePage } from './pages/HomePage';
 import { ServiceDetailsPage } from './pages/ServiceDetailsPage';
 import { AlgoryxPrimePage } from './pages/AlgoryxPrimePage';
@@ -33,6 +34,7 @@ function ScrollToHash() {
 export default function App() {
   return (
     <BrowserRouter>
+      <PageSeo />
       <ScrollToHash />
       <Routes>
         <Route path="/" element={<HomePage />} />

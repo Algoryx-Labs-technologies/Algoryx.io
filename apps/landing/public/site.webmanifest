@@ -1,8 +1,9 @@
 {
-  "name": "Algoryx.io - Algorithmic Trading Education & Quantitative Research",
+  "name": "Algoryx.io — Algoryx Labs & Algoryx Tech",
   "short_name": "Algoryx Labs",
-  "description": "India's first platform for algorithmic trading education and quantitative research",
+  "description": "Official Algoryx.io site for Algoryx Labs and Algoryx Technologies—trading systems, AI/ML, platforms, and Algoryx Prime.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#3b82f6",
@@ -26,10 +27,9 @@
       "type": "image/png"
     }
   ],
-  "categories": ["education", "finance", "trading"],
+  "categories": ["business", "finance", "productivity"],
   "lang": "en-IN",
   "dir": "ltr",
   "scope": "/",
   "prefer_related_applications": false
 }
-

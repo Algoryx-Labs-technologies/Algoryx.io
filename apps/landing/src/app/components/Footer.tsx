@@ -74,7 +74,7 @@ export function Footer() {
           <div className="space-y-4">
             <BrandLogo variant="footer" />
             <p className="text-gray-400 text-sm">
-              Building scalable technology and Modern engineering for platforms, products, and infrastructure.
+              Algoryx.io — Algoryx Labs &amp; Algoryx Tech build trading systems, AI/ML, web platforms, DevOps, and Algoryx Prime for modern finance and digital products.
             </p> 
           </div>
 

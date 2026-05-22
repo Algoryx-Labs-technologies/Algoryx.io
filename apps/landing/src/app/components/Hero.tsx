@@ -88,7 +88,11 @@ export function Hero() {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex flex-col items-center overflow-hidden font-hero">
+    <section id="home" className="relative min-h-screen flex flex-col items-center overflow-hidden font-hero" aria-labelledby="hero-heading">
+      <p className="sr-only">
+        Algoryx.io — official website of Algoryx Labs and Algoryx Tech (Algoryx Technologies). Engineering
+        trading systems, AI, web platforms, and Algoryx Prime for India and global markets.
+      </p>
       {/* Animated grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
@@ -111,7 +115,7 @@ export function Hero() {
         {/* Main Heading */}
         <ScrollReveal delay={0.1}>
           <div className="text-center mb-12 lg:mb-16">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-hero-heading leading-tight mb-6 tracking-tight">
+            <h1 id="hero-heading" className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-hero-heading leading-tight mb-6 tracking-tight">
               <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
                 Algorithms Over
               </span>
