@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
-import { ArrowRight, Lock, Crown } from 'lucide-react';
+import { ArrowRight, Crown } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
-function BloombergTerminal() {
+function PrimeDeskTerminal() {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,15 +50,15 @@ function BloombergTerminal() {
 
     let isMounted = true;
 
-    const tradingMessages = [
-      '[DESK] Algoryx Quant Research — session authenticated',
-      '[ALPHA] Proprietary signal engine online | NIFTY · BANKNIFTY',
-      '[SIGNAL] Long bias confirmed @ 18,450.25 | confidence 0.91',
-      '[EXEC] Block routed: BUY 10 NIFTY50 @ 18,450.25',
-      '[FILL] Institutional fill confirmed | slippage 0.8 bps',
-      '[PNL] Intraday alpha: +₹1,250.00 (+0.68%)',
-      '[RISK] Gross exposure capped at 45.2% | VaR within limits',
-      '[METRICS] Sharpe 1.85 | Sortino 2.14 | Max DD -2.3%',
+    const deskMessages = [
+      '[PRIME] Algoryx Prime Desk — trader session authenticated',
+      '[DESK] Equities · forex · commodities · derivatives — all venues live',
+      '[AUTO] Strategy rules deployed | execution latency under 500ms',
+      '[SCAN] Custom screener active | 512 symbols monitored continuously',
+      '[RISK] Exposure capped at 42% | drawdown within desk limits',
+      '[BTST] Walk-forward validation passed | out-of-sample Sharpe 1.72',
+      '[PAPER] Live feed simulation running | zero capital at risk today',
+      '[LIVE] Broker bridge synced | orders routing to production stack',
     ];
 
     lineIndexRef.current = 0;
@@ -66,8 +67,8 @@ function BloombergTerminal() {
       if (!isMounted) return;
 
       const index = lineIndexRef.current;
-      if (index < tradingMessages.length) {
-        const message = tradingMessages[index];
+      if (index < deskMessages.length) {
+        const message = deskMessages[index];
         if (message) {
           setTerminalLines((prev) => [...prev, message].slice(-8));
         }
@@ -107,7 +108,7 @@ function BloombergTerminal() {
           className="ml-2 text-xs sm:text-sm text-gray-400"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
-          Algoryx Quant Terminal
+          Algoryx Prime Desk
         </span>
       </div>
 
@@ -117,17 +118,17 @@ function BloombergTerminal() {
       >
         <div className="text-gray-300 leading-relaxed space-y-1">
           <div className="text-green-400 mb-2">
-            <span className="text-cyan-400">algoryx@quant</span>
+            <span className="text-cyan-400">trader@prime</span>
             <span className="text-gray-500">:</span>
-            <span className="text-blue-400">~/trading</span>
+            <span className="text-blue-400">~/desk</span>
             <span className="text-gray-500">$</span>
-            <span className="ml-2 text-gray-400">python quant_trader.py</span>
+            <span className="ml-2 text-gray-400">prime_desk --live</span>
           </div>
 
           {terminalLines.length === 0 && (
             <div className="text-gray-500 animate-pulse">
               <span className="inline-block w-2 h-4 bg-gray-500 mr-1" />
-              Initializing institutional research stack...
+              Initializing Prime desk infrastructure...
             </div>
           )}
 
@@ -135,14 +136,14 @@ function BloombergTerminal() {
             if (typeof line !== 'string') return null;
 
             let lineColor = 'text-gray-300';
-            if (line.includes('[DESK]')) lineColor = 'text-cyan-300';
-            else if (line.includes('[ALPHA]')) lineColor = 'text-blue-300';
-            else if (line.includes('[SIGNAL]')) lineColor = 'text-yellow-400';
-            else if (line.includes('[EXEC]')) lineColor = 'text-purple-400';
-            else if (line.includes('[FILL]')) lineColor = 'text-green-400';
-            else if (line.includes('[PNL]')) lineColor = 'text-green-300';
+            if (line.includes('[PRIME]')) lineColor = 'text-amber-300';
+            else if (line.includes('[DESK]')) lineColor = 'text-cyan-300';
+            else if (line.includes('[AUTO]')) lineColor = 'text-blue-300';
+            else if (line.includes('[SCAN]')) lineColor = 'text-yellow-400';
             else if (line.includes('[RISK]')) lineColor = 'text-orange-400';
-            else if (line.includes('[METRICS]')) lineColor = 'text-blue-300';
+            else if (line.includes('[BTST]')) lineColor = 'text-purple-300';
+            else if (line.includes('[PAPER]')) lineColor = 'text-green-300';
+            else if (line.includes('[LIVE]')) lineColor = 'text-green-400';
 
             return (
               <div key={`line-${index}-${line.slice(0, 12)}`} className={lineColor}>
@@ -160,14 +161,15 @@ function BloombergTerminal() {
   );
 }
 
-const premiumHighlights = [
-  'Proprietary strategy research & multi-asset optimization',
-  'Production ML pipelines for live market inference',
-  'Institutional backtesting, TCA & performance attribution',
-  'Enterprise risk, exposure & compliance architecture',
+/** Each line is exactly 12 words for balanced layout */
+const PRIME_DESK_POINTS = [
+  'Your dedicated Prime desk for equities, forex, commodities, and derivative markets worldwide.',
+  'Full execution stack with broker APIs, automation, screeners, dashboards, and live alerts.',
+  'Rigorous backtests and walk-forward tuning before live deploy with paper-trade validation gates.',
+  'Eight engineered Prime services from broker integration through monitoring and production support.',
 ] as const;
 
-function LabsMapBackdrop() {
+function PrimeDeskBackdrop() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 dark:opacity-20" aria-hidden>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_40%,rgba(59,130,246,0.35),transparent_65%)]" />
@@ -183,13 +185,13 @@ function LabsMapBackdrop() {
 }
 
 export function Labs() {
-  const labsCardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [shineKey, setShineKey] = useState(0);
   const hasShinedRef = useRef(false);
   const shineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const el = labsCardRef.current;
+    const el = cardRef.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
@@ -210,14 +212,22 @@ export function Labs() {
   }, []);
 
   return (
-    <section id="labs" className="py-12 md:py-16 lg:py-24 relative font-labs scroll-mt-24">
+    <section id="prime" className="py-12 md:py-16 lg:py-24 relative font-labs scroll-mt-24">
       <div className="container mx-auto px-4 sm:px-6">
         <div
-          ref={labsCardRef}
-          className="group relative bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl px-6 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]"
+          ref={cardRef}
+          className="group relative bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm border border-white/10 rounded-2xl md:rounded-3xl px-6 py-6 sm:px-8 sm:py-8 md:px-10 md:py-10 lg:px-12 lg:py-12 overflow-hidden transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_28px_rgba(34,211,238,0.18)]"
         >
           <div className="labs-orb-float absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl" />
-          <LabsMapBackdrop />
+          <PrimeDeskBackdrop />
+
+          <div
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 md:top-6 md:right-6 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-yellow-500/15 text-amber-100 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] shadow-[0_0_20px_rgba(251,191,36,0.2)]"
+            aria-label="Premium offering"
+          >
+            <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+            Premium
+          </div>
 
           <div className="relative z-10 mb-6 md:mb-6 flex justify-center lg:justify-start">
             <BrandLogo className="[&_img]:!h-10 [&_img]:!min-h-0 sm:[&_img]:!h-11 md:[&_img]:!h-12 [&_img]:max-w-[12rem]" />
@@ -225,50 +235,52 @@ export function Labs() {
 
           <div className="relative z-10 grid lg:grid-cols-2 gap-6 md:gap-8 items-center">
             <div className="space-y-4">
-              <span className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-amber-500/10 border border-amber-400/40 rounded-full text-amber-200 text-xs md:text-sm font-medium">
+              {/* <span className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-cyan-500/10 border border-cyan-400/40 rounded-full text-cyan-200 text-xs md:text-sm font-medium">
                 <Crown className="w-3 h-3 md:w-4 md:h-4 text-amber-400" />
-                Top Algoryx Labs Service
-              </span>
+                Algoryx Prime
+              </span> */}
 
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-                <span className="text-white">Institutional-Grade Quant</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+                <span className="text-white">Algoryx Prime Desk for</span>
                 <br />
-                <span className="text-cyan-300">&amp; AI Research Desk</span>
+                <span className="bg-gradient-to-r from-cyan-200 to-blue-300 bg-clip-text text-transparent">
+                  Serious Market Operators
+                </span>
               </h2>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed">
-                A niche, premium offering for funds, prop desks, and serious market participants—bespoke
-                alpha models, execution systems, and risk architecture engineered for the financial world,
-                not generic software shops.
+                A focused trading desk for full-time traders and investors—we engineer broker connectivity,
+                automation, validation, and monitoring as one production stack, not disconnected tools.
               </p>
 
-              <div className="space-y-2 md:space-y-3">
-                {premiumHighlights.map((item, index) => (
+              <div className="space-y-3 md:space-y-3.5 pt-1">
+                {PRIME_DESK_POINTS.map((item, index) => (
                   <div
                     key={item}
-                    className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm sm:text-base group"
+                    className="flex items-start gap-3 text-gray-300 text-sm sm:text-[15px] leading-relaxed group"
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse ${index % 2 === 0 ? 'bg-blue-400' : 'bg-cyan-400'}`}
+                      className={`mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0 ${index % 2 === 0 ? 'bg-cyan-400' : 'bg-blue-400'}`}
                     />
-                    <span className="group-hover:text-cyan-100/90 transition-colors">{item}</span>
+                    <span className="group-hover:text-cyan-50/95 transition-colors">{item}</span>
                   </div>
                 ))}
               </div>
 
               <Button
+                asChild
                 size="lg"
-                disabled
-                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto opacity-50 cursor-not-allowed"
+                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto shadow-lg shadow-cyan-500/15"
               >
-                <Lock className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                Visit Algoryx Labs
-                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                <Link to="/algoryx-prime">
+                  Visit Prime Desk
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                </Link>
               </Button>
             </div>
 
             <div className="flex items-center justify-center lg:justify-end mt-6 lg:mt-0">
-              <BloombergTerminal />
+              <PrimeDeskTerminal />
             </div>
           </div>
 

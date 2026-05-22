@@ -125,8 +125,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#labs" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Labs
+                <a href="#prime" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Prime
                 </a>
               </li>
               <li>

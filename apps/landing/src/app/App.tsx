@@ -20,7 +20,7 @@ function ScrollToHash() {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Wait for layout + ScrollReveal mounts when opening /#labs directly
+    // Wait for layout + ScrollReveal mounts when opening /#prime directly
     const timer = setTimeout(scrollToTarget, 350);
     requestAnimationFrame(() => requestAnimationFrame(scrollToTarget));
 
