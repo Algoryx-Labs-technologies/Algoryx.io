@@ -7,17 +7,11 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { AboutEditorialBlock } from '../components/about/AboutEditorialBlock';
 import { TeamMemberCard } from '../components/about/TeamMemberCard';
-import {
-  ABOUT_INTRO,
-  ABOUT_JOURNEY,
-  ABOUT_MISSION,
-  ABOUT_VISION,
-  CORE_VALUES,
-} from '../../data/aboutContent';
+import { ABOUT_INTRO, ABOUT_JOURNEY } from '../../data/aboutContent';
 import { TEAM_MEMBERS } from '../../data/teamMembers';
 
-const featuredMember = TEAM_MEMBERS.find((m) => m.featured);
-const supportingMembers = TEAM_MEMBERS.filter((m) => !m.featured);
+const leadershipProfiles = TEAM_MEMBERS.filter((m) => m.expandedProfile);
+const supportingMembers = TEAM_MEMBERS.filter((m) => !m.expandedProfile);
 
 export function AboutPage() {
   return (
@@ -80,60 +74,6 @@ export function AboutPage() {
           </div>
         </section>
 
-        {/* Mission & Vision */}
-        <section className="pb-20 md:pb-28 border-t border-white/5">
-          <div className="container mx-auto px-6 max-w-5xl grid md:grid-cols-2 gap-16 md:gap-20">
-            <ScrollReveal>
-              <p className="text-xs uppercase tracking-[0.25em] text-gray-500 mb-4">
-                {ABOUT_MISSION.eyebrow}
-              </p>
-              <h2 className="font-tagline text-3xl md:text-4xl text-white font-medium mb-6 leading-tight">
-                {ABOUT_MISSION.title}
-              </h2>
-              <AboutEditorialBlock>
-                <p>{ABOUT_MISSION.body}</p>
-              </AboutEditorialBlock>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.08}>
-              <p className="text-xs uppercase tracking-[0.25em] text-gray-500 mb-4">
-                {ABOUT_VISION.eyebrow}
-              </p>
-              <h2 className="font-tagline text-3xl md:text-4xl text-white font-medium mb-6 leading-tight">
-                {ABOUT_VISION.title}
-              </h2>
-              <AboutEditorialBlock>
-                <p>{ABOUT_VISION.body}</p>
-              </AboutEditorialBlock>
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* Core values */}
-        <section className="pb-20 md:pb-28 border-t border-white/5">
-          <div className="container mx-auto px-6 max-w-5xl">
-            <ScrollReveal>
-              <p className="text-xs uppercase tracking-[0.25em] text-gray-500 mb-4">Core Values</p>
-              <h2 className="font-tagline text-3xl md:text-4xl text-white font-medium mb-12">
-                What we stand for
-              </h2>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-10 md:gap-12">
-              {CORE_VALUES.map((value, index) => (
-                <ScrollReveal key={value.title} delay={index * 0.06}>
-                  <div className="space-y-4">
-                    <h3 className="font-tagline text-xl md:text-2xl text-white">{value.title}</h3>
-                    <AboutEditorialBlock className="text-sm md:text-base pl-5 md:pl-6">
-                      <p>{value.description}</p>
-                    </AboutEditorialBlock>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Leadership */}
         <section className="pb-24 md:pb-32 border-t border-white/5">
           <div className="container mx-auto px-6 max-w-5xl">
@@ -147,11 +87,13 @@ export function AboutPage() {
               </p>
             </ScrollReveal>
 
-            {featuredMember && (
-              <ScrollReveal delay={0.06} className="mb-16 md:mb-20">
-                <TeamMemberCard member={featuredMember} expanded />
-              </ScrollReveal>
-            )}
+            <div className="space-y-16 md:space-y-20 mb-16 md:mb-20">
+              {leadershipProfiles.map((member, index) => (
+                <ScrollReveal key={member.id} delay={0.06 + index * 0.06}>
+                  <TeamMemberCard member={member} expanded />
+                </ScrollReveal>
+              ))}
+            </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {supportingMembers.map((member, index) => (

@@ -7,7 +7,7 @@ type TeamMemberCardProps = {
 };
 
 export function TeamMemberCard({ member, expanded = false }: TeamMemberCardProps) {
-  if (expanded && member.featured) {
+  if (expanded && member.expandedProfile) {
     return (
       <article
         id={member.id}
