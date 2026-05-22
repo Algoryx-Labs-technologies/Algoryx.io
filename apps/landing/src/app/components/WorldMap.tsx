@@ -19,9 +19,11 @@ const markers = [
 
 interface WorldMapProps {
   className?: string;
+  /** When false, marker cycling pauses to avoid background timers. */
+  active?: boolean;
 }
 
-export function WorldMap({ className = '' }: WorldMapProps) {
+export function WorldMap({ className = '', active = true }: WorldMapProps) {
   const [isDark, setIsDark] = useState(false);
   const [activeMarker, setActiveMarker] = useState(0);
 
@@ -43,21 +45,25 @@ export function WorldMap({ className = '' }: WorldMapProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Auto-navigate through markers
+  // Auto-navigate through markers (only while section is visible)
   useEffect(() => {
+    if (!active) return;
+
     const interval = setInterval(() => {
       setActiveMarker((prev) => (prev + 1) % markers.length);
-    }, 3000); // Change marker every 3 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [active]);
 
   // Function to check if a country should be highlighted
   const isHighlightedRegion = (geo: any): boolean => {
     if (!geo.properties) return false;
     
     const props = geo.properties;
-    const name = (props.NAME || props.NAME_LONG || props.name || props.NAME_EN || '').toLowerCase();
+    const name = String(
+      props.NAME || props.NAME_LONG || props.name || props.NAME_EN || ''
+    ).toLowerCase();
     const isoA3 = (props.ISO_A3 || props.iso_a3 || '').toUpperCase();
     const isoA2 = (props.ISO_A2 || props.iso_a2 || '').toUpperCase();
     
@@ -182,58 +188,24 @@ export function WorldMap({ className = '' }: WorldMapProps) {
                   r={isActive ? 16 : 10}
                   fill="rgba(59, 130, 246, 0.2)"
                   style={{
-                    filter: isActive 
+                    filter: isActive
                       ? 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 30px rgba(59, 130, 246, 0.5))'
                       : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.4))',
                     transition: 'all 0.3s ease',
                   }}
-                >
-                  {isActive && (
-                    <>
-                      <animate
-                        attributeName="r"
-                        values="10;16;10"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.2;0.4;0.2"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                    </>
-                  )}
-                </circle>
-                
+                />
+
                 {/* Outer glow layer 2 - medium */}
                 <circle
                   r={isActive ? 12 : 8}
                   fill="rgba(59, 130, 246, 0.35)"
                   style={{
-                    filter: isActive 
+                    filter: isActive
                       ? 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 25px rgba(59, 130, 246, 0.6))'
                       : 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.5))',
                     transition: 'all 0.3s ease',
                   }}
-                >
-                  {isActive && (
-                    <>
-                      <animate
-                        attributeName="r"
-                        values="8;12;8"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                      <animate
-                        attributeName="opacity"
-                        values="0.35;0.5;0.35"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                    </>
-                  )}
-                </circle>
+                />
                 
                 {/* Inner solid circle with strong glow */}
                 <circle

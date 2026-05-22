@@ -1,0 +1,17 @@
+# Algoryx.io — Algoryx Labs & Algoryx Tech
+# https://algoryx.io
+
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+Sitemap: https://algoryx.io/sitemap.xml
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /

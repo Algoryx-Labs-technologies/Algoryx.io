@@ -1,45 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserCheck, Crosshair, Zap, Infinity } from 'lucide-react';
+import { Code2, ShieldCheck, Layers, Handshake } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const benefits = [
   {
-    icon: UserCheck,
-    title: 'Mentored by Top Engineering Talent',
-    description: 'Learn from experienced quants, data scientists, and traders from leading firms and institutions.',
+    icon: Code2,
+    title: 'Engineering-First Delivery',
+    description:
+      'We ship production systems—trading bots, web apps, APIs, and cloud pipelines—with tests, observability, and clear handover documentation.',
   },
   {
-    icon: Crosshair,
-    title: 'Built for Indian Traders & Students',
-    description: 'Curriculum specifically designed for NSE/BSE markets with India-specific regulations and strategies.',
-  },
-
-  {
-    icon: Zap,
-    title: 'Practical, Project-Based Learning',
-    description: 'Build real trading systems and strategies through hands-on projects with actual market data.',
+    icon: Layers,
+    title: 'End-to-End Tech Services',
+    description:
+      'One partner across automation, product development, AI/ML, DevOps, MVPs, and creative production—so you are not juggling multiple vendors.',
   },
   {
-    icon: Infinity,
-    title: 'Community & Lifetime Access',
-    description: 'Join a vibrant community of quant traders with lifetime access to course materials and updates.',
+    icon: ShieldCheck,
+    title: 'Built for Real-World Scale',
+    description:
+      'Architectures designed for live traffic, broker integrations, security, and cost-aware infrastructure—not throwaway prototypes.',
+  },
+  {
+    icon: Handshake,
+    title: 'Transparent Process & Support',
+    description:
+      'Structured discovery, milestone demos, and post-launch support windows so your team understands and owns what we build.',
   },
 ];
 
 interface AnimatedCounterProps {
   target: number;
   suffix?: string;
-  isInfinity?: boolean;
   duration?: number;
 }
 
-function AnimatedCounter({ target, suffix = '', isInfinity = false, duration = 2000 }: AnimatedCounterProps) {
+function AnimatedCounter({ target, suffix = '', duration = 2000 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (isInfinity || hasAnimated) return;
+    if (hasAnimated) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -88,11 +90,7 @@ function AnimatedCounter({ target, suffix = '', isInfinity = false, duration = 2
       }
       observer.disconnect();
     };
-  }, [target, duration, hasAnimated, isInfinity]);
-
-  if (isInfinity) {
-    return <span>∞</span>;
-  }
+  }, [target, duration, hasAnimated]);
 
   return <span ref={ref}>{count}{suffix}</span>;
 }
@@ -105,11 +103,11 @@ export function WhyAlgoryx() {
           <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-              The Algoryx Advantage
+              Why Algoryx Labs
             </span>
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            What sets us apart in quantitative trading education
+            A technology partner for trading systems, digital products, AI, infrastructure, and launch-ready creative work.
           </p>
         </div>
         </ScrollReveal>
@@ -148,27 +146,27 @@ export function WhyAlgoryx() {
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={15} suffix="+" />
+                  <AnimatedCounter target={100} suffix="+" />
                 </div>
-                <div className="text-gray-400">Expert Instructors</div>
+                <div className="text-gray-400">Projects Delivered</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
                   <AnimatedCounter target={50} suffix="+" />
                 </div>
-                <div className="text-gray-400">Hours of Content</div>
+                <div className="text-gray-400">Clients Served</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={100} suffix="%" />
+                  <AnimatedCounter target={6} />
                 </div>
-                <div className="text-gray-400">Hands-on Projects</div>
+                <div className="text-gray-400">Core Service Verticals</div>
               </div>
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={0} isInfinity={true} />
+                  <AnimatedCounter target={98} suffix="%" />
                 </div>
-                <div className="text-gray-400">Lifetime Access</div>
+                <div className="text-gray-400">Client Satisfaction</div>
               </div>
             </div>
           </div>

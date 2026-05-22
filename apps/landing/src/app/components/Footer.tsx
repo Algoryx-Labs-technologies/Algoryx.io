@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Instagram, Twitter, Linkedin, Youtube, Sparkles, Check, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Instagram, Twitter, Linkedin, Youtube, Check, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './ScrollReveal';
 import {
@@ -11,6 +12,7 @@ import {
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { BrandLogo } from './BrandLogo';
 
 export function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -67,20 +69,13 @@ export function Footer() {
     <footer ref={footerRef} className="relative border-t border-white/10 dark:border-white/10 border-gray-300/30 bg-black/50 dark:bg-black/50 bg-white/50 backdrop-blur-sm font-footer overflow-hidden">
       <div className="container mx-auto px-6 py-12 relative z-10">
         <ScrollReveal>
-          <div className="grid md:grid-cols-6 gap-8 mb-12">
+          <div className="grid md:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Algoryx
-              </span>
-            </div>
+            <BrandLogo variant="footer" />
             <p className="text-gray-400 text-sm">
-              India's first platform for algorithmic trading education and quantitative research.
-            </p>
+              Algoryx.io — Algoryx Labs &amp; Algoryx Tech build trading systems, AI/ML, web platforms, DevOps, and Algoryx Prime for modern finance and digital products.
+            </p> 
           </div>
 
           {/* Company */}
@@ -88,9 +83,9 @@ export function Footer() {
             <h4 className="font-bold text-white mb-4">Company</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
+                <Link to="/about" className="text-gray-400 hover:text-white transition-colors text-sm">
                   About
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#careers" className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -115,35 +110,23 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Courses */}
-          <div>
-            <h4 className="font-bold text-white mb-4">Courses</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#courses" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  All Courses
-                </a>
-              </li>
-              <li>
-                <a href="#beginner" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Beginner
-                </a>
-              </li>
-              <li>
-                <a href="#advanced" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Advanced
-                </a>
-              </li>
-            </ul>
-          </div>
-
           {/* Solutions */}
           <div>
             <h4 className="font-bold text-white mb-4">Solutions</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#labs" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Labs
+                <Link to="/#services" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link to="/service-details" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  All Services
+                </Link>
+              </li>
+              <li>
+                <a href="#prime" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Prime
                 </a>
               </li>
               <li>

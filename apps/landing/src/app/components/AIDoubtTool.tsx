@@ -63,6 +63,8 @@ export function AIDoubtTool() {
   const sectionRef = useRef<HTMLElement>(null);
   const answerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const notificationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cycleTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const notificationHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // IntersectionObserver to trigger animation on scroll
   useEffect(() => {
@@ -109,27 +111,36 @@ export function AIDoubtTool() {
     }
 
     let isMounted = true;
-    let typingTimeout: ReturnType<typeof setTimeout> | null = null;
-    let cycleTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const schedule = (fn: () => void, delayMs: number) => {
+      const id = setTimeout(() => {
+        cycleTimersRef.current = cycleTimersRef.current.filter((timerId) => timerId !== id);
+        fn();
+      }, delayMs);
+      cycleTimersRef.current.push(id);
+      return id;
+    };
+
+    const clearCycleTimers = () => {
+      cycleTimersRef.current.forEach(clearTimeout);
+      cycleTimersRef.current = [];
+    };
 
     const startCycle = () => {
       if (!isMounted) return;
 
       const currentQA = qaPairs[currentIndex];
 
-      // Reset state - show question
       setIsThinking(false);
       setDisplayedAnswer('');
 
-      // After 2 seconds, show "Thinking..."
-      setTimeout(() => {
+      schedule(() => {
         if (!isMounted) return;
         setIsThinking(true);
         setDisplayedAnswer('');
       }, 2000);
 
-      // After 3 more seconds (5s total), start typing answer
-      setTimeout(() => {
+      schedule(() => {
         if (!isMounted) return;
         setIsThinking(false);
         let charIndex = 0;
@@ -140,13 +151,12 @@ export function AIDoubtTool() {
           if (charIndex < answerText.length) {
             setDisplayedAnswer(answerText.slice(0, charIndex + 1));
             charIndex++;
-            typingTimeout = setTimeout(typeAnswer, 30); // Typing speed
+            schedule(typeAnswer, 30);
           } else {
-            // Answer complete, wait 4 seconds then move to next question
-            cycleTimeout = setTimeout(() => {
+            schedule(() => {
               if (!isMounted) return;
               setCurrentIndex((prev) => (prev + 1) % qaPairs.length);
-            }, 4000); // Show answer for 4 seconds
+            }, 4000);
           }
         };
 
@@ -154,17 +164,11 @@ export function AIDoubtTool() {
       }, 5000);
     };
 
-    // Start the cycle for current question
     startCycle();
 
     return () => {
       isMounted = false;
-      if (typingTimeout) {
-        clearTimeout(typingTimeout);
-      }
-      if (cycleTimeout) {
-        clearTimeout(cycleTimeout);
-      }
+      clearCycleTimers();
     };
   }, [shouldAnimate, currentIndex]);
 
@@ -184,9 +188,12 @@ export function AIDoubtTool() {
     const showNotif = () => {
       if (!isMounted) return;
       setShowNotification(true);
-      
-      // Hide after 2 seconds
-      setTimeout(() => {
+
+      if (notificationHideTimerRef.current) {
+        clearTimeout(notificationHideTimerRef.current);
+      }
+      notificationHideTimerRef.current = setTimeout(() => {
+        notificationHideTimerRef.current = null;
         if (isMounted) {
           setShowNotification(false);
         }
@@ -210,6 +217,10 @@ export function AIDoubtTool() {
     return () => {
       isMounted = false;
       clearTimeout(initialTimeout);
+      if (notificationHideTimerRef.current) {
+        clearTimeout(notificationHideTimerRef.current);
+        notificationHideTimerRef.current = null;
+      }
       if (notificationIntervalRef.current) {
         clearInterval(notificationIntervalRef.current);
         notificationIntervalRef.current = null;

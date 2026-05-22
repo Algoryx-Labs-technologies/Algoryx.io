@@ -1,48 +1,48 @@
-import React, { useState } from 'react';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { LaptopDemo } from './components/LaptopDemo';
-import { Features } from './components/Features';
-import { Courses } from './components/Courses';
-import { AIDoubtTool } from './components/AIDoubtTool';
-import { WhyAlgoryx } from './components/WhyAlgoryx';
-import { EducationDemo } from './components/EducationDemo';
-import { TradingDemo } from './components/TradingDemo';
-import { Waitlist } from './components/Waitlist';
-import { WorkWithAlgoryxLabs } from './components/WorkWithAlgoryxLabs';
-import { FAQ } from './components/FAQ';
-import { Labs } from './components/Labs';
-import { Footer } from './components/Footer';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { PageSeo } from './components/PageSeo';
+import { HomePage } from './pages/HomePage';
+import { ServiceDetailsPage } from './pages/ServiceDetailsPage';
+import { AlgoryxPrimePage } from './pages/AlgoryxPrimePage';
+import { AlgoryxPrimeDetailPage } from './pages/AlgoryxPrimeDetailPage';
+import { AboutPage } from './pages/AboutPage';
+
+function ScrollToHash() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const id = hash.replace('#', '');
+    const scrollToTarget = () => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Wait for layout + ScrollReveal mounts when opening /#prime directly
+    const timer = setTimeout(scrollToTarget, 350);
+    requestAnimationFrame(() => requestAnimationFrame(scrollToTarget));
+
+    return () => clearTimeout(timer);
+  }, [pathname, hash]);
+
+  return null;
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
-      <div className="relative">
-        {/* Background gradient effects */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/5 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-500/10 dark:bg-blue-700/15 rounded-full blur-3xl"></div>
-        </div>
-        
-        {/* Content */}
-        <div className="relative z-10">
-          <Header />
-          <Hero />
-          {/* <LaptopDemo /> */}
-          <Features />
-          {/* <EducationDemo /> */}
-          <Courses />
-          <Waitlist />
-          <AIDoubtTool />
-          <WhyAlgoryx />
-          <TradingDemo />
-          <Labs />
-          <WorkWithAlgoryxLabs />
-          <FAQ />
-          <Footer />
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <PageSeo />
+      <ScrollToHash />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/service-details" element={<ServiceDetailsPage />} />
+        <Route path="/algoryx-prime" element={<AlgoryxPrimePage />} />
+        <Route path="/algoryx-prime/:serviceId" element={<AlgoryxPrimeDetailPage />} />
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

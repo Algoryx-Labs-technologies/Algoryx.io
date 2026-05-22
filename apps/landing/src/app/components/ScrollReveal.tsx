@@ -18,31 +18,38 @@ export function ScrollReveal({
   const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const revealIfVisible = () => {
+      const rect = el.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight - 80 && rect.bottom > 80;
+      if (inView) setIsInView(true);
+    };
+
+    revealIfVisible();
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsInView(true);
-          // Disconnect after first trigger to ensure animation only happens once
-          if (ref.current) {
-            observer.unobserve(ref.current);
-          }
+          observer.unobserve(el);
         }
       },
-      { 
-        threshold: 0.1,
-        rootMargin: '-100px 0px'
+      {
+        threshold: 0.05,
+        rootMargin: '-40px 0px',
       }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
+    observer.observe(el);
+
+    const onHashScroll = () => requestAnimationFrame(revealIfVisible);
+    window.addEventListener('hashchange', onHashScroll);
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
       observer.disconnect();
+      window.removeEventListener('hashchange', onHashScroll);
     };
   }, []);
 

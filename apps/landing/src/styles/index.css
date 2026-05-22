@@ -38,3 +38,179 @@ html {
 .animate-spotlight {
   animation: spotlight 2s ease-out forwards;
 }
+
+@keyframes heroRibbonMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.hero-metrics-marquee {
+  animation: heroRibbonMarquee 32s linear infinite;
+}
+
+.hero-metrics-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes labsOrbFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-12px, 8px) scale(1.05);
+  }
+}
+
+.labs-orb-float {
+  animation: labsOrbFloat 8s ease-in-out infinite;
+}
+
+@keyframes testimonialsMarquee {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.testimonials-marquee {
+  animation: testimonialsMarquee 55s linear infinite;
+}
+
+.testimonials-marquee:hover {
+  animation-play-state: paused;
+}
+
+.services-stack-marquee {
+  animation: testimonialsMarquee 45s linear infinite;
+}
+
+.services-stack-marquee:hover {
+  animation-play-state: paused;
+}
+
+.prime-stack-marquee {
+  animation: testimonialsMarquee 50s linear infinite;
+}
+
+.prime-stack-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Prime card 3D flip */
+.perspective-premium {
+  perspective: 1400px;
+}
+
+.prime-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .prime-flip:hover .prime-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.prime-flip-inner.is-flipped-touch {
+  transform: rotateY(180deg);
+}
+
+.prime-flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.prime-flip-back {
+  transform: rotateY(180deg);
+}
+
+/* Mirror shine on hover (parent needs .prime-shine-group) */
+.prime-shine-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 35%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(34, 211, 238, 0.12) 55%,
+    rgba(255, 255, 255, 0.03) 65%,
+    transparent 100%
+  );
+  transform: translateX(-120%) skewX(-12deg);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .prime-shine-group:hover .prime-shine-sweep {
+    animation: mirrorShine 0.9s ease-out forwards;
+  }
+}
+
+.prime-shine-sweep-auto {
+  animation: primeMirrorLoop 6s ease-in-out infinite;
+}
+
+@keyframes primeMirrorLoop {
+  0%,
+  62% {
+    transform: translateX(-120%) skewX(-12deg);
+    opacity: 0;
+  }
+  68% {
+    opacity: 0.5;
+  }
+  78% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(220%) skewX(-12deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prime-flip-inner,
+  .prime-flip:hover .prime-flip-inner,
+  .prime-flip-inner.is-flipped-touch {
+    transition: none;
+    transform: none !important;
+  }
+
+  .prime-flip-back {
+    transform: none;
+    position: relative;
+    margin-top: 1rem;
+  }
+
+  .prime-flip-face-front {
+    position: relative;
+  }
+
+  .prime-shine-sweep,
+  .prime-shine-sweep-auto {
+    animation: none !important;
+    display: none;
+  }
+
+  .prime-stack-marquee,
+  .services-stack-marquee,
+  .hero-metrics-marquee,
+  .testimonials-marquee {
+    animation: none !important;
+  }
+}
