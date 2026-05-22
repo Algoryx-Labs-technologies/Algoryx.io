@@ -26,25 +26,31 @@ export const TEAM_MEMBERS: TeamMember[] = [
       'Technology doesn\'t replace the human advisor; it liberates them to focus on what matters—the client\'s goals.',
   },
   {
+    id: 'abhishek-gupta',
+    name: 'Abhishek Gupta',
+    role: 'Co-Founder',
+    initials: 'AG',
+    expandedProfile: true,
+    bio: [
+      'Abhishek brings a fintech foundation in financial backends, modelling, and market terminology—along with scalable SaaS built for growing usage and data.',
+      'Since 2022 he has analysed Indian equities, shaping platform decisions around real sector, index, and risk dynamics.',
+      'He leads tech on a UAE hedge-fund-style platform—maintaining financial data and HNI reporting aligned with Algoryx’s cross-border wealth focus.',
+    ],
+    quote:
+      'Strong products in finance start with models and terms everyone trusts—and backends that scale without breaking when portfolios do.',
+  },
+  {
     id: 'pratyush-birole',
     name: 'Pratyush Birole',
     role: 'CTO',
     initials: 'PB',
     expandedProfile: true,
     bio: [
-      'Pratyush is a Computer Science engineer who has built production trading and wealth-tech platforms in Dubai and India. He leads engineering for Valura.ai’s global investment platform from GIFT City under the IFSCA free-zone—enabling regulated cross-border access for NRIs and LRS investors through institutional broker connectivity and event-driven backend systems.',
-      'Previously he engineered multi-market trade infrastructure and RM operations modules architected algorithmic trading and wallet systems on the Lean Engine at 2Cents Capital, and shipped high-volume registration and payment backends on AWS—experience he applies so Algoryx clients get reliable, audit-ready technology under regulatory constraints.',
+      'Pratyush is a Computer Science engineer with production trading and wealth-tech experience across Dubai and India.',
+      'He leads engineering for Valura.ai’s GIFT City platform under IFSCA—regulated cross-border access for NRIs and LRS investors through institutional broker integration.',
+      'Previously at Valura.ai and 2Cents Capital he built multi-market trade systems, Lean-based ATS, and AWS backends—applied today to Algoryx’s audit-ready platforms.',
     ],
     quote:
       'Regulation and global reach only work when the backend is institutional—idempotent orders, broker truth, and systems that stay up when markets move.',
-  },
-  {
-    id: 'delivery-lead',
-    name: 'Client Delivery Leadership',
-    role: 'Head of Client Success',
-    initials: 'CD',
-    bio: [
-      'Partners with founders, funds, and desks through discovery, milestone delivery, and post-launch support so every engagement stays transparent and outcome-focused.',
-    ],
   },
 ];

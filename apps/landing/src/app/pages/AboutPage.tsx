@@ -6,12 +6,15 @@ import { Footer } from '../components/Footer';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { AboutEditorialBlock } from '../components/about/AboutEditorialBlock';
-import { TeamMemberCard } from '../components/about/TeamMemberCard';
+import { LeadershipGrid, TeamMemberCard } from '../components/about/TeamMemberCard';
 import { ABOUT_INTRO, ABOUT_JOURNEY } from '../../data/aboutContent';
 import { TEAM_MEMBERS } from '../../data/teamMembers';
 
-const leadershipProfiles = TEAM_MEMBERS.filter((m) => m.expandedProfile);
-const supportingMembers = TEAM_MEMBERS.filter((m) => !m.expandedProfile);
+const LEADERSHIP_ORDER = ['varun-pandya', 'abhishek-gupta', 'pratyush-birole'] as const;
+
+const leadershipProfiles = LEADERSHIP_ORDER.map((id) => TEAM_MEMBERS.find((m) => m.id === id)).filter(
+  (m): m is (typeof TEAM_MEMBERS)[number] => m !== undefined
+);
 
 export function AboutPage() {
   return (
@@ -76,32 +79,27 @@ export function AboutPage() {
 
         {/* Leadership */}
         <section className="pb-24 md:pb-32 border-t border-white/5">
-          <div className="container mx-auto px-6 max-w-5xl">
+          <div className="container mx-auto px-6 max-w-7xl">
             <ScrollReveal>
               <h2 className="font-tagline text-3xl md:text-4xl lg:text-5xl text-white font-medium mb-12">
                 Leadership
               </h2>
               <p className="text-gray-500 max-w-2xl mb-14 text-base md:text-lg leading-relaxed">
-                Three pillars of Algoryx Labs—strategy, technology, and client delivery—working as one
-                team for disciplined outcomes.
+                Three founders across strategy, markets, and engineering—building disciplined outcomes
+                for global investors.
               </p>
             </ScrollReveal>
 
-            <div className="space-y-16 md:space-y-20 mb-16 md:mb-20">
-              {leadershipProfiles.map((member, index) => (
-                <ScrollReveal key={member.id} delay={0.06 + index * 0.06}>
-                  <TeamMemberCard member={member} expanded />
-                </ScrollReveal>
-              ))}
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {supportingMembers.map((member, index) => (
-                <ScrollReveal key={member.id} delay={0.1 + index * 0.06}>
-                  <TeamMemberCard member={member} />
-                </ScrollReveal>
-              ))}
-            </div>
+            <ScrollReveal delay={0.06}>
+              <div className="lg:hidden space-y-14 divide-y divide-white/10">
+                {leadershipProfiles.map((member) => (
+                  <div key={member.id} className="first:pt-0 pt-14 first:border-0">
+                    <TeamMemberCard member={member} />
+                  </div>
+                ))}
+              </div>
+              <LeadershipGrid members={leadershipProfiles} />
+            </ScrollReveal>
           </div>
         </section>
       </main>
