@@ -278,7 +278,7 @@ export function Footer() {
             ease: [0.25, 0.1, 0.25, 1]
           }}
         >
-          Algoryx.io
+          Algoryx Labs
         </motion.h1>
       </div>
 
