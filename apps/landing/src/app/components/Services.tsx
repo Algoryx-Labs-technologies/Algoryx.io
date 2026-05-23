@@ -1,65 +1,147 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValueEvent, useScroll } from 'motion/react';
 import { ScrollReveal } from './ScrollReveal';
 import { Button } from './ui/button';
+import { cn } from './ui/utils';
 import { SERVICES } from '../../data/services';
+import { ServiceDeviceMockup } from './ServiceDeviceMockup';
 
 const ServiceStackLogos = lazy(() =>
   import('./ServiceStackLogos').then((m) => ({ default: m.ServiceStackLogos }))
 );
 
+const SERVICE_COUNT = SERVICES.length;
+
 export function Services() {
+  const scrollTrackRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: scrollTrackRef,
+    offset: ['start start', 'end end'],
+  });
+
+  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
+    const index = Math.min(
+      SERVICE_COUNT - 1,
+      Math.max(0, Math.floor(latest * SERVICE_COUNT))
+    );
+    setActiveIndex((prev) => (prev === index ? prev : index));
+  });
+
+  const activeService = SERVICES[activeIndex];
+  const phoneOnLeft = activeIndex % 2 === 0;
+
   return (
-    <section id="services" className="py-14 md:py-16 relative font-features scroll-mt-20">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <ScrollReveal>
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                Services Algoryx Labs Provides
-              </span>
-            </h2>
-            <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              End-to-end engineering for trading systems, products, AI, infrastructure, and creative production.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.08}>
-          <Suspense fallback={<div className="mb-10 md:mb-12 h-12" aria-hidden />}>
-            <ServiceStackLogos />
-          </Suspense>
-        </ScrollReveal>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-          {SERVICES.map((service, index) => (
-            <ScrollReveal key={service.id} delay={index * 0.06}>
-              <Link
-                to={`/service-details#${service.id}`}
-                className="group relative flex h-full flex-col bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm border border-white/10 rounded-2xl p-5 md:p-5 hover:border-blue-500/50 transition-all duration-300 hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]"
-              >
-                <div className="mb-3 w-10 h-10 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                  <service.icon className="w-5 h-5 text-blue-400" />
-                </div>
-                <h3 className="text-base md:text-lg font-bold mb-2 text-white group-hover:text-cyan-100 transition-colors leading-snug">
-                  {service.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed text-sm flex-1 line-clamp-3">
-                  {service.shortDescription}
-                </p>
-                <span className="mt-3 inline-flex items-center text-sm font-medium text-cyan-400/90 group-hover:text-cyan-300">
-                  Learn more
-                  <ArrowRight className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+    <section id="services" className="relative font-features scroll-mt-20">
+      <div
+        ref={scrollTrackRef}
+        className="services-scroll-track relative"
+        style={{ '--services-count': SERVICE_COUNT } as React.CSSProperties}
+        aria-label="Services scroll showcase"
+      >
+        <div className="container mx-auto px-6 max-w-7xl pt-14 md:pt-16 pb-4 md:pb-6">
+          <ScrollReveal>
+            <div className="text-center mb-6 md:mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold mb-3">
+                <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                  Services Algoryx Labs Provides
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 rounded-2xl transition-all duration-300 pointer-events-none" />
-              </Link>
-            </ScrollReveal>
-          ))}
+              </h2>
+              <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                SaaS platforms, business software, AI, DevOps, MVPs, and video production—built for companies that need to ship and scale.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.08}>
+            <Suspense fallback={<div className="h-12" aria-hidden />}>
+              <ServiceStackLogos compact />
+            </Suspense>
+          </ScrollReveal>
         </div>
 
+        <div className="sticky top-20 md:top-24 z-10">
+          <div className="container mx-auto px-6 max-w-7xl w-full py-2 md:py-4">
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full">
+              <motion.div
+                layout
+                transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+                className={cn(
+                  'flex justify-center lg:justify-end',
+                  phoneOnLeft ? 'lg:col-start-1 lg:row-start-1' : 'lg:col-start-2 lg:row-start-1'
+                )}
+              >
+                <ServiceDeviceMockup service={activeService} />
+              </motion.div>
+
+              <motion.div
+                layout
+                transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+                className={cn(
+                  'flex flex-col justify-center max-w-xl mx-auto lg:mx-0 text-center lg:text-left',
+                  phoneOnLeft ? 'lg:col-start-2 lg:row-start-1' : 'lg:col-start-1 lg:row-start-1'
+                )}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeService.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16 }}
+                    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.2em] text-cyan-400/90 mb-3">
+                      {activeService.tagline}
+                    </p>
+                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                      {activeService.title}
+                    </h3>
+                    <p className="text-base md:text-lg text-gray-400 leading-relaxed mb-6">
+                      {activeService.shortDescription}
+                    </p>
+                    <Link
+                      to={`/service-details#${activeService.id}`}
+                      className="inline-flex items-center text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Learn more
+                      <ArrowRight className="ml-1.5 w-4 h-4" />
+                    </Link>
+                  </motion.div>
+                </AnimatePresence>
+
+                <div
+                  className="flex items-center justify-center lg:justify-start gap-2 mt-6 md:mt-8"
+                  role="tablist"
+                  aria-label="Service progress"
+                >
+                  {SERVICES.map((service, index) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={index === activeIndex}
+                      aria-label={`${service.title}, step ${index + 1} of ${SERVICE_COUNT}`}
+                      className={cn(
+                        'h-1.5 rounded-full transition-all duration-300',
+                        index === activeIndex
+                          ? 'w-8 bg-gradient-to-r from-blue-500 to-cyan-400'
+                          : 'w-1.5 bg-white/20 hover:bg-white/35'
+                      )}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 max-w-7xl pb-14 md:pb-16">
         <ScrollReveal delay={0.15}>
-          <div className="text-center mt-10 md:mt-11">
+          <div className="text-center mt-4 md:mt-6">
             <Button
               asChild
               size="lg"

@@ -8,6 +8,10 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { SERVICES } from '../../data/services';
 import { StackIconRow } from '../components/StackIconRow';
 
+function serviceNavLabel(title: string): string {
+  return title.replace(/\s+Agency$/i, '').replace(/\s+Services$/i, '').trim();
+}
+
 function PageBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -22,6 +26,10 @@ export function ServiceDetailsPage() {
   const location = useLocation();
 
   useEffect(() => {
+    if (location.hash === '#trading-bots') {
+      window.location.replace('/service-details#saas-development');
+      return;
+    }
     if (!location.hash) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -66,8 +74,8 @@ export function ServiceDetailsPage() {
                   </span>
                 </h1>
                 <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                  In-depth overview of every capability Algoryx Labs offers—from automated trading systems to
-                  full-stack products, AI, DevOps, MVPs, and video production.
+                  In-depth overview of every capability Algoryx Labs offers—SaaS platforms, web and mobile apps, AI
+                  and automation, DevOps, MVPs, and video production.
                 </p>
               </ScrollReveal>
 
@@ -79,7 +87,7 @@ export function ServiceDetailsPage() {
                       href={`#${service.id}`}
                       className="px-3 py-1.5 text-xs md:text-sm rounded-full border border-white/10 bg-slate-900/40 text-gray-400 hover:text-white hover:border-cyan-500/40 hover:bg-slate-800/60 transition-all"
                     >
-                      {service.title.split('&')[0].trim()}
+                      {serviceNavLabel(service.title)}
                     </a>
                   ))}
                 </nav>
@@ -104,6 +112,7 @@ export function ServiceDetailsPage() {
                     </D>
                   </D>
 
+                  <p className="text-gray-300 leading-relaxed mb-4">{service.shortDescription}</p>
                   <p className="text-gray-400 leading-relaxed mb-8">{service.overview}</p>
 
                   <StackIconRow icons={service.stackIcons} label="Tech stack & platforms" />
@@ -111,7 +120,9 @@ export function ServiceDetailsPage() {
                   <D className="grid md:grid-cols-2 gap-8">
                     <D>
                       <h3 className="text-sm font-semibold uppercase tracking-wider text-white mb-4">
-                        Key capabilities
+                        {service.id === 'saas-development' || service.id === 'ai-ml'
+                          ? 'Services'
+                          : 'Key capabilities'}
                       </h3>
                       <ul className="space-y-3">
                         {service.highlights.map((item) => (

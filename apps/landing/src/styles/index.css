@@ -95,6 +95,17 @@ html {
   animation-play-state: paused;
 }
 
+.services-scroll-track {
+  /* Intro block + pinned showcase scroll length */
+  height: calc(var(--services-count, 6) * 100vh + 14rem);
+}
+
+@media (max-width: 1023px) {
+  .services-scroll-track {
+    height: calc(var(--services-count, 6) * 85vh + 12rem);
+  }
+}
+
 .prime-stack-marquee {
   animation: testimonialsMarquee 50s linear infinite;
 }

@@ -6,10 +6,10 @@ import { Spotlight } from './ui/spotlight';
 import { EncryptedText } from './ui/encrypted-text';
 
 const heroMetrics = [
-  { value: '100+', label: 'Projects Delivered' },
-  { value: '50+', label: 'Clients Satisfied' },
-  { value: '10+', label: 'Partnerships' },
-  { value: '98%', label: 'Accuracy' },
+  { value: '10+', label: 'Projects Delivered' },
+  { value: '5+', label: 'Clients Satisfied' },
+  { value: '2+', label: 'Partnerships' },
+  { value: '100+', label: 'Accuracy' },
   { value: '10+', label: 'Service Offerings' },
 ] as const;
 

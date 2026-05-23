@@ -13,11 +13,15 @@ function StackLogo({ name }: { name: IconName }) {
   );
 }
 
-export function ServiceStackLogos() {
+type ServiceStackLogosProps = {
+  compact?: boolean;
+};
+
+export function ServiceStackLogos({ compact = false }: ServiceStackLogosProps) {
   const marqueeIcons = [...SERVICE_MARQUEE_ICONS, ...SERVICE_MARQUEE_ICONS];
 
   return (
-    <div className="relative mb-10 md:mb-12">
+    <div className={compact ? 'relative mb-0' : 'relative mb-10 md:mb-12'}>
       <div className="absolute inset-y-0 left-0 z-10 w-10 sm:w-16 bg-gradient-to-r from-white dark:from-black to-transparent pointer-events-none" />
       <div className="absolute inset-y-0 right-0 z-10 w-10 sm:w-16 bg-gradient-to-l from-white dark:from-black to-transparent pointer-events-none" />
 
