@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { StockAnalyser } from './StockAnalyser';
+import { TradingDemoMobile } from './TradingDemoMobile';
+import { useIsMobile } from './ui/use-mobile';
 
 // Generate realistic candlestick data
 interface Candlestick {
@@ -107,7 +109,14 @@ const CODE_SNIPPETS = [
   }
 ];
 
-export function TradingDemo() {
+type TradingDemoProps = {
+  /** Tighter vertical spacing when embedded under a page hero (e.g. Algoryx Prime). */
+  embedded?: boolean;
+};
+
+export function TradingDemo({ embedded = false }: TradingDemoProps) {
+  const isMobileViewport = useIsMobile();
+
   // Track if animation should run (triggered on scroll)
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -403,13 +412,10 @@ export function TradingDemo() {
     }
 
     return () => {
-      if (codeCardContainerRef.current) {
-        observer.unobserve(codeCardContainerRef.current);
-      }
       observer.disconnect();
     };
   }, [hasScanned, hasEntered]);
-  
+
   useEffect(() => {
     if (!shouldAnimate) {
       // Clear intervals when animation should stop
@@ -496,9 +502,9 @@ export function TradingDemo() {
     };
   }, [shouldAnimate]);
 
-  // Window switching animation - each view stays for 5 seconds
+  // Window switching animation - each view stays for 5 seconds (desktop laptop only — mobile keeps code + PnL static)
   useEffect(() => {
-    if (!shouldAnimate || !hasEntered) {
+    if (!shouldAnimate || !hasEntered || isMobileViewport) {
       // Clear interval and timeout when animation should stop
       if (windowSwitchIntervalRef.current) {
         clearInterval(windowSwitchIntervalRef.current);
@@ -558,14 +564,30 @@ export function TradingDemo() {
         initialTimeoutRef.current = null;
       }
     };
-  }, [shouldAnimate, hasEntered]);
+  }, [shouldAnimate, hasEntered, isMobileViewport]);
 
   return (
-    <section ref={sectionRef} className="py-24 relative font-trading-demo">
+    <section
+      ref={sectionRef}
+      className={`relative font-trading-demo ${embedded ? 'py-6 md:py-10' : 'py-24'}`}
+      aria-label="Algoryx Prime trading platform preview"
+    >
       <div className="container mx-auto px-6">
         <div className="max-w-7xl mx-auto">
-            {/* Laptop Container */}
-            <div className="relative">
+          {/* Mobile — dual phone layout */}
+          <div className="md:hidden">
+            <TradingDemoMobile
+              hasEntered={hasEntered}
+              pnlAmount={pnlAmount}
+              pnlPercent={pnlPercent}
+              pnlTrend={pnlTrend}
+              candlestickData={candlestickData}
+              shineKey={shineKey}
+            />
+          </div>
+
+          {/* Desktop — laptop layout */}
+          <div className="relative hidden md:block">
               {/* Gradient fade overlay at bottom */}
               <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none z-20"></div>
               
@@ -1278,8 +1300,8 @@ export function TradingDemo() {
                   Algorithms Over opinion.
                 </p>
               </motion.div>
-            </div>
           </div>
+        </div>
       </div>
     </section>
   );

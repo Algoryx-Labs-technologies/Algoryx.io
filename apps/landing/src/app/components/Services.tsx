@@ -6,7 +6,7 @@ import { ScrollReveal } from './ScrollReveal';
 import { Button } from './ui/button';
 import { cn } from './ui/utils';
 import { SERVICES } from '../../data/services';
-import { ServiceDeviceMockup } from './ServiceDeviceMockup';
+import { ServiceStackCard } from './ServiceStackCard';
 
 const ServiceStackLogos = lazy(() =>
   import('./ServiceStackLogos').then((m) => ({ default: m.ServiceStackLogos }))
@@ -32,7 +32,7 @@ export function Services() {
   });
 
   const activeService = SERVICES[activeIndex];
-  const phoneOnLeft = activeIndex % 2 === 0;
+  const cardOnLeft = activeIndex % 2 === 0;
 
   return (
     <section id="services" className="relative font-features scroll-mt-20">
@@ -63,26 +63,22 @@ export function Services() {
           </ScrollReveal>
         </div>
 
-        <div className="sticky top-20 md:top-24 z-10">
-          <div className="container mx-auto px-6 max-w-7xl w-full py-2 md:py-4">
-            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full">
-              <motion.div
-                layout
-                transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+        <div className="sticky top-[4.5rem] md:top-24 z-10 flex min-h-[calc(100svh-4.5rem)] md:min-h-[calc(100svh-6rem)] items-center">
+          <div className="container mx-auto px-6 max-w-7xl w-full py-8 md:py-10">
+            <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div
                 className={cn(
-                  'flex justify-center lg:justify-end',
-                  phoneOnLeft ? 'lg:col-start-1 lg:row-start-1' : 'lg:col-start-2 lg:row-start-1'
+                  'w-full',
+                  cardOnLeft ? 'lg:order-1' : 'lg:order-2'
                 )}
               >
-                <ServiceDeviceMockup service={activeService} />
-              </motion.div>
+                <ServiceStackCard service={activeService} />
+              </div>
 
-              <motion.div
-                layout
-                transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+              <div
                 className={cn(
-                  'flex flex-col justify-center max-w-xl mx-auto lg:mx-0 text-center lg:text-left',
-                  phoneOnLeft ? 'lg:col-start-2 lg:row-start-1' : 'lg:col-start-1 lg:row-start-1'
+                  'flex w-full flex-col justify-center text-center lg:text-left',
+                  cardOnLeft ? 'lg:order-2' : 'lg:order-1'
                 )}
               >
                 <AnimatePresence mode="wait">
@@ -92,11 +88,12 @@ export function Services() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -16 }}
                     transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="mx-auto w-full max-w-xl lg:mx-0"
                   >
                     <p className="text-xs uppercase tracking-[0.2em] text-cyan-400/90 mb-3">
                       {activeService.tagline}
                     </p>
-                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                    <h3 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-white mb-4 leading-tight">
                       {activeService.title}
                     </h3>
                     <p className="text-base md:text-lg text-gray-400 leading-relaxed mb-6">
@@ -113,7 +110,7 @@ export function Services() {
                 </AnimatePresence>
 
                 <div
-                  className="flex items-center justify-center lg:justify-start gap-2 mt-6 md:mt-8"
+                  className="mx-auto mt-6 flex w-full max-w-xl items-center justify-center gap-2 md:mt-8 lg:mx-0 lg:justify-start"
                   role="tablist"
                   aria-label="Service progress"
                 >
@@ -133,7 +130,7 @@ export function Services() {
                     />
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>

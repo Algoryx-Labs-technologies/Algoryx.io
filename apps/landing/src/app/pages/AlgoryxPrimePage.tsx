@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, TrendingUp } from 'lucide-react';
 import { Header } from '../components/Header';
@@ -11,6 +11,10 @@ import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { PrimeFlipCard } from '../components/prime/PrimeFlipCard';
 import { PrimeStackMarquee } from '../components/prime/PrimeStackLogos';
 import { PRIME_SERVICES } from '../../data/primeServices';
+
+const TradingDemo = lazy(() =>
+  import('../components/TradingDemo').then((m) => ({ default: m.TradingDemo }))
+);
 
 export function AlgoryxPrimePage() {
   const scrollToConsultation = () => {
@@ -51,6 +55,16 @@ export function AlgoryxPrimePage() {
             </ScrollReveal>
           </div>
         </section>
+
+        <Suspense
+          fallback={
+            <div className="min-h-[420px] flex items-center justify-center text-gray-500 text-sm">
+              Loading platform preview…
+            </div>
+          }
+        >
+          <TradingDemo embedded />
+        </Suspense>
 
         <section className="container mx-auto px-6 max-w-6xl pb-10">
           <ScrollReveal delay={0.05}>
