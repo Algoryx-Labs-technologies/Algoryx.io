@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { BarChart3 } from 'lucide-react';
-import { StockAnalyser } from './StockAnalyser';
+import { TrendingUp } from 'lucide-react';
 
 interface Candlestick {
   open: number;
@@ -20,6 +19,13 @@ type TradingDemoMobileProps = {
   shineKey: number;
 };
 
+const TOP_STOCKS = [
+  { symbol: 'MSFT', price: 378.92, change: 1.1 },
+  { symbol: 'NVDA', price: 485.23, change: -1.15 },
+  { symbol: 'AAPL', price: 169.23, change: -1.08 },
+  { symbol: 'META', price: 312.45, change: 0.39 },
+];
+
 function PhoneFrame({
   children,
   className = '',
@@ -33,9 +39,9 @@ function PhoneFrame({
     <div className={`relative w-[210px] sm:w-[220px] ${className}`}>
       <div className="rounded-[2rem] bg-gradient-to-b from-slate-700 to-slate-800 p-[3px] shadow-[0_20px_50px_rgba(0,0,0,0.45)] border border-slate-600/40">
         <div className="rounded-[1.85rem] bg-slate-900 p-[6px]">
-          <div className="absolute left-1/2 top-[14px] z-20 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-black" />
+          <div className="absolute left-1/2 top-[14px] z-30 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-black" />
           <div
-            className="relative overflow-hidden rounded-[1.5rem] bg-black"
+            className="relative overflow-hidden rounded-[1.5rem] bg-black pt-7"
             style={{ height: screenHeight }}
           >
             {children}
@@ -51,7 +57,7 @@ function PhoneFrame({
 
 function MobileStatusBar({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 text-[10px] text-gray-400 border-b border-white/5 bg-slate-900/80">
+    <div className="flex shrink-0 items-center justify-between px-3 pb-2 text-[9px] text-gray-400">
       <span>9:41</span>
       <span className="font-medium text-cyan-400/90">{label}</span>
       <span>100%</span>
@@ -68,15 +74,15 @@ function MobilePnlScreen({
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-slate-900 to-black">
       <MobileStatusBar label="Prime" />
-      <div className="flex-1 overflow-hidden p-3 space-y-3">
-        <div className="rounded-xl border border-white/5 bg-slate-800/40 p-3">
-          <p className="text-[10px] text-gray-400 mb-0.5">Portfolio value</p>
-          <p className="text-lg font-bold text-white">$130,067.40</p>
-          <div className="mt-2 flex items-end justify-between">
+      <div className="flex-1 overflow-hidden px-2.5 pb-2.5 space-y-2.5">
+        <div className="rounded-xl border border-white/5 bg-slate-800/40 p-2.5">
+          <p className="text-[9px] text-gray-400 mb-0.5">Portfolio value</p>
+          <p className="text-base font-bold text-white">$130,067.40</p>
+          <div className="mt-1.5 flex items-end justify-between">
             <div>
-              <p className="text-[10px] text-gray-400">Past year returns</p>
+              <p className="text-[9px] text-gray-400">Past year returns</p>
               <p
-                className="text-sm font-bold"
+                className="text-xs font-bold"
                 style={{ color: pnlTrend === 'up' ? '#10b981' : '#ef4444' }}
               >
                 +$
@@ -91,9 +97,9 @@ function MobilePnlScreen({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-gray-400">Return</p>
+              <p className="text-[9px] text-gray-400">Return</p>
               <p
-                className="text-sm font-bold"
+                className="text-xs font-bold"
                 style={{ color: pnlTrend === 'up' ? '#10b981' : '#ef4444' }}
               >
                 +{Math.floor(pnlPercent * 10) / 10}%
@@ -104,10 +110,10 @@ function MobilePnlScreen({
 
         <div className="rounded-xl border border-white/5 bg-slate-900/60 p-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] font-medium text-gray-300">Live chart</span>
-            <span className="text-[9px] text-gray-500">1Y</span>
+            <span className="text-[9px] font-medium text-gray-300">Live chart</span>
+            <span className="text-[8px] text-gray-500">1Y</span>
           </div>
-          <div className="h-24 overflow-hidden rounded-lg border border-white/5 bg-slate-950/50">
+          <div className="h-[72px] overflow-hidden rounded-lg border border-white/5 bg-slate-950/50">
             <svg className="h-full w-full" viewBox="0 0 300 100" preserveAspectRatio="none">
               {[20, 40, 60, 80].map((y) => (
                 <line
@@ -156,15 +162,15 @@ function MobilePnlScreen({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/5 bg-slate-800/30 p-2.5">
-          <p className="mb-2 text-[10px] font-semibold text-white">Top movers</p>
-          <div className="space-y-1.5">
+        <div className="rounded-xl border border-white/5 bg-slate-800/30 p-2">
+          <p className="mb-1.5 text-[9px] font-semibold text-white">Top movers</p>
+          <div className="space-y-1">
             {[
               { sym: 'NVDA', ch: '+1.15%', up: true },
               { sym: 'AAPL', ch: '-0.82%', up: false },
               { sym: 'MSFT', ch: '+0.64%', up: true },
             ].map((row) => (
-              <div key={row.sym} className="flex items-center justify-between text-[10px]">
+              <div key={row.sym} className="flex items-center justify-between text-[9px]">
                 <span className="text-gray-300">{row.sym}</span>
                 <span className={row.up ? 'text-green-400' : 'text-red-400'}>{row.ch}</span>
               </div>
@@ -176,17 +182,57 @@ function MobilePnlScreen({
   );
 }
 
-/** Laptop analyser view scaled to fit the second phone (static — no tab cycling on mobile). */
 function MobilePortfolioAnalysisScreen({ shineKey }: { shineKey: number }) {
-  const scale = 0.265;
+  const [closingData, setClosingData] = useState(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      closing: 0.02 + Math.sin(i * 0.5) * 0.025,
+      opening: 0.015 + Math.sin(i * 0.5) * 0.02,
+      volume: 40 + Math.sin(i * 0.4) * 25,
+    }))
+  );
+  const [volumeData, setVolumeData] = useState(() =>
+    Array.from({ length: 12 }, (_, i) => 50 + Math.sin(i * 0.35) * 30)
+  );
+  const [stocks, setStocks] = useState(TOP_STOCKS);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setClosingData((prev) =>
+        prev.map((d, i) => {
+          const base = 0.02 + Math.sin(i * 0.5) * 0.025;
+          const offset = (Math.random() - 0.5) * 0.008;
+          return {
+            closing: base + offset,
+            opening: base + offset - 0.004,
+            volume: 40 + Math.sin(i * 0.4) * 25 + Math.random() * 10,
+          };
+        })
+      );
+      setVolumeData((prev) =>
+        prev.map((v, i) => 50 + Math.sin(i * 0.35) * 30 + Math.random() * 15)
+      );
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStocks((prev) =>
+        prev.map((s) => {
+          const delta = (Math.random() - 0.5) * 0.4;
+          const change = s.change + delta * 0.1;
+          return { ...s, price: s.price + delta, change };
+        })
+      );
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-black">
-      <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-slate-800/95 px-3 py-2">
-        <BarChart3 className="h-3.5 w-3.5 shrink-0 text-cyan-400/90" aria-hidden />
-        <span className="text-[10px] font-medium text-gray-100">Portfolio analysis</span>
-      </div>
-      <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-950">
+    <div className="flex h-full min-h-0 flex-col bg-gradient-to-b from-slate-900 to-black">
+      <MobileStatusBar label="Analysis" />
+
+      <div className="relative flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-2.5 pb-2.5">
         {shineKey > 0 && (
           <div
             key={`mobile-analyser-shine-${shineKey}`}
@@ -196,7 +242,7 @@ function MobilePortfolioAnalysisScreen({ shineKey }: { shineKey: number }) {
               className="absolute h-full w-full"
               style={{
                 background:
-                  'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%, transparent 100%)',
+                  'linear-gradient(135deg, transparent 0%, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%, transparent 100%)',
                 transform: 'translateX(-100%) translateY(-100%) skewX(-45deg)',
                 animation: 'mirrorShine 2s ease-out',
                 animationDelay: '0.4s',
@@ -207,15 +253,125 @@ function MobilePortfolioAnalysisScreen({ shineKey }: { shineKey: number }) {
             />
           </div>
         )}
-        <div
-          className="absolute left-0 top-0 origin-top-left"
-          style={{
-            width: 900,
-            height: 520,
-            transform: `scale(${scale})`,
-          }}
-        >
-          <StockAnalyser />
+
+        <div className="grid grid-cols-2 gap-1.5">
+          {[
+            { label: 'High volume', value: '618.2M' },
+            { label: 'Low volume', value: '0' },
+            { label: 'All-time low', value: '1.5' },
+            { label: 'All-time high', value: '2,068' },
+          ].map((m) => (
+            <div
+              key={m.label}
+              className="rounded-lg border border-white/5 bg-slate-800/40 px-2 py-1.5"
+            >
+              <p className="text-[8px] text-gray-400">{m.label}</p>
+              <p className="text-[10px] font-bold text-white">{m.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-white/5 bg-slate-800/30 p-2">
+          <p className="mb-1.5 text-[9px] font-semibold text-white">Top stocks</p>
+          <div className="grid grid-cols-2 gap-1">
+            {stocks.map((stock) => (
+              <div
+                key={stock.symbol}
+                className="flex items-center justify-between gap-0.5 rounded bg-slate-900/50 px-1.5 py-1"
+              >
+                <span className="text-[8px] font-medium text-white">{stock.symbol}</span>
+                <span className="text-[8px] text-gray-300">{stock.price.toFixed(0)}</span>
+                <span
+                  className={`text-[7px] ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                >
+                  {stock.change >= 0 ? '▲' : '▼'}
+                  {Math.abs(stock.change).toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-white/5 bg-slate-800/30 p-2">
+          <p className="mb-1 text-[9px] font-semibold text-white">Closing vs opening</p>
+          <div className="h-[52px]">
+            <svg className="h-full w-full" viewBox="0 0 200 60" preserveAspectRatio="none">
+              {[15, 30, 45].map((y) => (
+                <line key={y} x1="0" y1={y} x2="200" y2={y} stroke="#374151" strokeWidth="0.5" opacity="0.3" />
+              ))}
+              {closingData.map((d, i) => {
+                const x = (i / (closingData.length - 1)) * 200;
+                const w = (200 / closingData.length) * 0.7;
+                const h = (d.volume / 80) * 55;
+                return (
+                  <rect
+                    key={`bar-${i}`}
+                    x={x - w / 2}
+                    y={60 - h}
+                    width={w}
+                    height={h}
+                    fill={d.closing >= d.opening ? '#10b981' : '#ef4444'}
+                    opacity="0.55"
+                  />
+                );
+              })}
+              <polyline
+                points={closingData
+                  .map((d, i) => {
+                    const x = (i / (closingData.length - 1)) * 200;
+                    const y = 60 - d.closing * 1800;
+                    return `${x},${y}`;
+                  })
+                  .join(' ')}
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div className="grid min-h-0 flex-1 grid-cols-5 gap-1.5">
+          <div className="col-span-3 flex min-h-0 flex-col rounded-lg border border-white/5 bg-slate-800/30 p-2">
+            <p className="mb-1 text-[9px] font-semibold text-white">Total volume</p>
+            <div className="min-h-[44px] flex-1">
+              <svg className="h-full w-full" viewBox="0 0 120 44" preserveAspectRatio="none">
+                {volumeData.map((v, i) => {
+                  const x = (i / (volumeData.length - 1)) * 120;
+                  const w = (120 / volumeData.length) * 0.75;
+                  const h = (v / 90) * 40;
+                  return (
+                    <rect
+                      key={`vol-${i}`}
+                      x={x - w / 2}
+                      y={44 - h}
+                      width={w}
+                      height={h}
+                      fill="#3b82f6"
+                      opacity="0.75"
+                    />
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+          <div className="col-span-2 flex flex-col justify-between rounded-lg border border-white/5 bg-slate-800/30 p-2">
+            <p className="text-[8px] font-semibold text-white">Summary</p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-[7px]">
+                <span className="text-gray-400">Vol 7d</span>
+                <span className="text-white">2.4M</span>
+              </div>
+              <div className="flex justify-between text-[7px]">
+                <span className="text-gray-400">High</span>
+                <span className="text-white">1.78K</span>
+              </div>
+              <div className="flex items-center gap-0.5 text-[7px] text-green-400">
+                <TrendingUp className="h-2.5 w-2.5" />
+                <span>+5.2%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -232,15 +388,15 @@ export function TradingDemoMobile({
 }: TradingDemoMobileProps) {
   return (
     <div className="relative mx-auto max-w-sm px-2">
-      <div className="relative flex min-h-[480px] items-start justify-center pt-2">
+      <div className="relative flex min-h-[440px] items-start justify-center pt-2">
         <motion.div
           className="relative z-10 shrink-0"
-          style={{ marginRight: '-36px' }}
+          style={{ marginRight: '-32px' }}
           initial={{ opacity: 0, y: 40, scale: 0.9 }}
           animate={hasEntered ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.9 }}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <PhoneFrame screenHeight={420}>
+          <PhoneFrame screenHeight={400}>
             <MobilePnlScreen
               pnlAmount={pnlAmount}
               pnlPercent={pnlPercent}
@@ -251,12 +407,12 @@ export function TradingDemoMobile({
         </motion.div>
 
         <motion.div
-          className="relative z-20 mt-20 shrink-0"
+          className="relative z-20 mt-16 shrink-0"
           initial={{ opacity: 0, y: 60, x: 40 }}
           animate={hasEntered ? { opacity: 1, y: 0, x: 0 } : { opacity: 0, y: 60, x: 40 }}
           transition={{ duration: 0.9, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <PhoneFrame screenHeight={360} className="scale-[0.92] origin-top">
+          <PhoneFrame screenHeight={400}>
             <MobilePortfolioAnalysisScreen shineKey={shineKey} />
           </PhoneFrame>
         </motion.div>
