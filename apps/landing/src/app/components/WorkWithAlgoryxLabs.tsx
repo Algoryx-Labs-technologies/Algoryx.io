@@ -21,8 +21,8 @@ import {
 import { ScrollReveal } from './ScrollReveal';
 import { submitLandingEnquiry } from '../../lib/api';
 
-const MAP_COORDS = { lat: 23.06333, lng: 72.54106 };
-const MAP_EMBED_SRC = `https://www.google.com/maps?q=${MAP_COORDS.lat},${MAP_COORDS.lng}&hl=en&z=17&output=embed`;
+const MAP_EMBED_SRC =
+  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.994128055255!2d72.52821727600804!3d23.023987816274047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e84d7246eaa59%3A0xdd7d07e9a7fff65e!2sAum%20Enercon%20Pvt.%20Ltd!5e0!3m2!1sen!2sin!4v1779483697506!5m2!1sen!2sin';
 
 export function WorkWithAlgoryxLabs() {
   const [formData, setFormData] = useState({
@@ -230,9 +230,9 @@ export function WorkWithAlgoryxLabs() {
                 <div className="flex gap-2.5 text-sm text-gray-400 leading-relaxed mb-4">
                   <MapPin className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
                   <address className="not-italic">
-                    Arjun Tower Ghatlodia
+                  UL-17, Arjun Tower,
                     <br />
-                    Ghatlodiya, Ahmedabad-380061
+                    Shivranjani Cross Road, Satellite, Ahmedabad — 380015
                     <br />
                     Gujarat, India
                   </address>
@@ -267,7 +267,7 @@ export function WorkWithAlgoryxLabs() {
 
                 <div className="relative w-full flex-1 min-h-[200px] sm:min-h-[240px] lg:min-h-[260px] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
                   <iframe
-                    title="Algoryx Labs and Technologies — Arjun Tower Ghatlodia, Ahmedabad"
+                    title="Algoryx Labs and Technologies — Satellite, Ahmedabad"
                     src={MAP_EMBED_SRC}
                     className="absolute inset-0 h-full w-full border-0"
                     loading="lazy"

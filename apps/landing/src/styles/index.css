@@ -95,6 +95,10 @@ html {
   animation-play-state: paused;
 }
 
+.services-scroll-track {
+  height: calc(var(--services-count, 6) * 100vh);
+}
+
 .prime-stack-marquee {
   animation: testimonialsMarquee 50s linear infinite;
 }

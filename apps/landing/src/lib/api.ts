@@ -1,11 +1,9 @@
-// API utility for landing page
+// API utility for landing page (apiv2)
 const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-  // Remove trailing slash if present
+  const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:4001';
   const baseUrl = envUrl.replace(/\/+$/, '');
-  // Append /api/v1 if not already present
-  if (!baseUrl.includes('/api/v1')) {
-    return `${baseUrl}/api/v1`;
+  if (!baseUrl.includes('/api/v2')) {
+    return `${baseUrl}/api/v2`;
   }
   return baseUrl;
 };
@@ -17,6 +15,45 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
   error?: string;
+  errors?: Record<string, string[]>;
+}
+
+export type ChatMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export async function sendLandingChatMessage(
+  messages: ChatMessage[],
+): Promise<ApiResponse<{ message: string }>> {
+  const url = `${API_BASE_URL}/landing-chat`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result.error || result.message || 'Failed to get a reply',
+      };
+    }
+
+    return {
+      success: true,
+      data: result.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error occurred',
+    };
+  }
 }
 
 export async function submitLandingEnquiry(data: {
@@ -26,8 +63,8 @@ export async function submitLandingEnquiry(data: {
   companyOrg?: string;
   message: string;
   haveSource?: string;
-}): Promise<ApiResponse<any>> {
-  const url = `${API_BASE_URL}/landing-enquiries`;
+}): Promise<ApiResponse<{ id: string }>> {
+  const url = `${API_BASE_URL}/landing-requirements`;
 
   try {
     const response = await fetch(url, {
@@ -41,9 +78,18 @@ export async function submitLandingEnquiry(data: {
     const result = await response.json();
 
     if (!response.ok) {
+      const validationError =
+        result.errors &&
+        Object.values(result.errors as Record<string, string[]>)
+          .flat()
+          .join(', ');
       return {
         success: false,
-        error: result.message || result.error || 'Failed to submit enquiry',
+        error:
+          validationError ||
+          result.message ||
+          result.error ||
+          'Failed to submit requirement',
       };
     }
 
@@ -58,4 +104,3 @@ export async function submitLandingEnquiry(data: {
     };
   }
 }
-

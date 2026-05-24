@@ -40,7 +40,17 @@ export const SERVICE_MARQUEE_ICONS: IconName[] = [
 ];
 
 export const SERVICE_STACK_BY_ID: Record<string, IconName[]> = {
-  'trading-bots': ['python', 'docker', 'mongodb', 'postgresql', 'graphql', 'datadog', 'ec2', 'nvidia'],
+  'saas-development': [
+    'react',
+    'vitejs',
+    'postgresql',
+    'supabase',
+    'vercel',
+    'docker',
+    'graphql',
+    'figma',
+    'posthog',
+  ],
   'web-app': [
     'react',
     'vitejs',

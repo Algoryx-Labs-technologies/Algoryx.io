@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { Header } from '../components/Header';
 import { Hero } from '../components/Hero';
 import { Services } from '../components/Services';
@@ -9,10 +9,6 @@ import { FAQ } from '../components/FAQ';
 import { Labs } from '../components/Labs';
 import { Testimonials } from '../components/Testimonials';
 import { Footer } from '../components/Footer';
-
-const TradingDemo = lazy(() =>
-  import('../components/TradingDemo').then((m) => ({ default: m.TradingDemo }))
-);
 
 export function HomePage() {
   return (
@@ -30,15 +26,6 @@ export function HomePage() {
           <Services />
           <AIDoubtTool />
           <WhyAlgoryx />
-          <Suspense
-            fallback={
-              <div className="min-h-[420px] flex items-center justify-center text-gray-500 text-sm">
-                Loading trading demo…
-              </div>
-            }
-          >
-            <TradingDemo />
-          </Suspense>
           <Labs />
           <Testimonials />
           <WorkWithAlgoryxLabs />
