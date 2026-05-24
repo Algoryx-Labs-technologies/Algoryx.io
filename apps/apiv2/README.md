@@ -43,8 +43,27 @@ npm run dev
 | GET | `/api/v2/health` | Health check |
 | POST | `/api/v2/landing-requirements` | Submit landing contact form |
 | POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (Gemini) |
+| POST | `/api/v2/support` | Submit support ticket (multipart form) |
 
 Default port: **4001** (v1 API uses 4000).
+
+### Support tickets
+
+`POST /api/v2/support` accepts `multipart/form-data`:
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `name` | yes | |
+| `email` | yes | |
+| `subject` | yes | |
+| `category` | yes | `general`, `technical`, `billing`, `feature-request`, `account`, `other` |
+| `priority` | yes | `low`, `medium`, `high`, `urgent` |
+| `description` | yes | |
+| `attachment` | no | PDF, images, plain text, Word, Excel — max 5 MB |
+
+IP address, user agent, and referer are stored automatically in `client`.
+
+Collection: `support_tickets`
 
 ### MongoDB
 
