@@ -9,18 +9,15 @@ import { Spotlight } from '../components/ui/spotlight';
 import { MirrorShine } from '../components/prime/MirrorShine';
 import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { PrimeFlipCard } from '../components/prime/PrimeFlipCard';
-import { PrimeStackMarquee } from '../components/prime/PrimeStackLogos';
+import { PrimeServicesSwap } from '../components/prime/PrimeServicesSwap';
 import { PRIME_SERVICES } from '../../data/primeServices';
+import { getCalButtonProps } from '../../lib/cal';
 
 const TradingDemo = lazy(() =>
   import('../components/TradingDemo').then((m) => ({ default: m.TradingDemo }))
 );
 
 export function AlgoryxPrimePage() {
-  const scrollToConsultation = () => {
-    window.location.href = '/#work-with-labs';
-  };
-
   return (
     <PrimePageShell>
       <Header />
@@ -50,7 +47,7 @@ export function AlgoryxPrimePage() {
               </h1>
               <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
                 Full-time traders and market investors across equities, forex, commodities, and derivatives.
-                Hover a card to see our stack — then explore the full service.
+                Explore each Prime service below — built for serious execution.
               </p>
             </ScrollReveal>
           </div>
@@ -68,7 +65,7 @@ export function AlgoryxPrimePage() {
 
         <section className="container mx-auto px-6 max-w-6xl pb-10">
           <ScrollReveal delay={0.05}>
-            <PrimeStackMarquee />
+            <PrimeServicesSwap />
           </ScrollReveal>
         </section>
 
@@ -111,7 +108,7 @@ export function AlgoryxPrimePage() {
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/25"
-                    onClick={scrollToConsultation}
+                    {...getCalButtonProps()}
                   >
                     Book Free Consultation
                     <ArrowRight className="ml-2 w-5 h-5" />

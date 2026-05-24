@@ -18,6 +18,7 @@ import { ScrollReveal } from '../ScrollReveal';
 import { Spotlight } from '../ui/spotlight';
 import { MirrorShine } from './MirrorShine';
 import { PrimeStackLogoRow } from './PrimeStackLogos';
+import { getCalButtonProps } from '../../../lib/cal';
 
 type PrimeServiceDetailProps = {
   service: PrimeService;
@@ -29,10 +30,6 @@ export function PrimeServiceDetail({ service }: PrimeServiceDetailProps) {
   const currentIndex = PRIME_SERVICES.findIndex((s) => s.id === service.id);
   const prev = currentIndex > 0 ? PRIME_SERVICES[currentIndex - 1] : null;
   const next = currentIndex < PRIME_SERVICES.length - 1 ? PRIME_SERVICES[currentIndex + 1] : null;
-
-  const scrollToConsultation = () => {
-    window.location.href = '/#work-with-labs';
-  };
 
   return (
     <div className="font-features">
@@ -248,7 +245,7 @@ export function PrimeServiceDetail({ service }: PrimeServiceDetailProps) {
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/20"
-                onClick={scrollToConsultation}
+                {...getCalButtonProps()}
               >
                 Start your project
                 <ArrowRight className="ml-2 w-5 h-5" />

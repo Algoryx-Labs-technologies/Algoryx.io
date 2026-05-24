@@ -38,12 +38,17 @@ function PhoneFrame({
   return (
     <div className={`relative w-[210px] sm:w-[220px] ${className}`}>
       <div className="rounded-[2rem] bg-gradient-to-b from-slate-700 to-slate-800 p-[3px] shadow-[0_20px_50px_rgba(0,0,0,0.45)] border border-slate-600/40">
-        <div className="rounded-[1.85rem] bg-slate-900 p-[6px]">
-          <div className="absolute left-1/2 top-[14px] z-30 h-[18px] w-[72px] -translate-x-1/2 rounded-full bg-black" />
+        <div className="relative rounded-[1.85rem] bg-slate-900 p-[6px]">
           <div
-            className="relative overflow-hidden rounded-[1.5rem] bg-black pt-7"
+            className="relative overflow-hidden rounded-[1.5rem] bg-black"
             style={{ height: screenHeight }}
           >
+            <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2">
+              <div className="relative h-[22px] w-[88px] rounded-b-[14px] bg-black shadow-[0_1px_0_rgba(255,255,255,0.06)]">
+                <div className="absolute left-[18px] top-[7px] h-[5px] w-[5px] rounded-full bg-slate-800 ring-1 ring-slate-700/80" />
+                <div className="absolute right-[18px] top-[7px] h-[3px] w-[16px] rounded-full bg-slate-900/90" />
+              </div>
+            </div>
             {children}
           </div>
         </div>
@@ -57,10 +62,12 @@ function PhoneFrame({
 
 function MobileStatusBar({ label }: { label: string }) {
   return (
-    <div className="flex shrink-0 items-center justify-between px-3 pb-2 text-[9px] text-gray-400">
-      <span>9:41</span>
-      <span className="font-medium text-cyan-400/90">{label}</span>
-      <span>100%</span>
+    <div className="relative shrink-0 px-3 pb-2 pt-7">
+      <div className="flex items-center justify-between text-[9px] text-gray-400">
+        <span>9:41</span>
+        <span>100%</span>
+      </div>
+      <p className="mt-0.5 text-center text-[9px] font-medium text-cyan-400/90">{label}</p>
     </div>
   );
 }

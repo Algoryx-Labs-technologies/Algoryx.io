@@ -6,6 +6,7 @@ import { ServiceDetailsPage } from './pages/ServiceDetailsPage';
 import { AlgoryxPrimePage } from './pages/AlgoryxPrimePage';
 import { AlgoryxPrimeDetailPage } from './pages/AlgoryxPrimeDetailPage';
 import { AboutPage } from './pages/AboutPage';
+import { CalEmbedProvider } from './contexts/CalEmbedProvider';
 
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -34,15 +35,17 @@ function ScrollToHash() {
 export default function App() {
   return (
     <BrowserRouter>
-      <PageSeo />
-      <ScrollToHash />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/service-details" element={<ServiceDetailsPage />} />
-        <Route path="/algoryx-prime" element={<AlgoryxPrimePage />} />
-        <Route path="/algoryx-prime/:serviceId" element={<AlgoryxPrimeDetailPage />} />
-        <Route path="/about" element={<AboutPage />} />
-      </Routes>
+      <CalEmbedProvider>
+        <PageSeo />
+        <ScrollToHash />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/service-details" element={<ServiceDetailsPage />} />
+          <Route path="/algoryx-prime" element={<AlgoryxPrimePage />} />
+          <Route path="/algoryx-prime/:serviceId" element={<AlgoryxPrimeDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </CalEmbedProvider>
     </BrowserRouter>
   );
 }

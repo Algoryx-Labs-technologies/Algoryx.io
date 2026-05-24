@@ -4,6 +4,7 @@ import { ArrowRight, CalendarCheck } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { Spotlight } from './ui/spotlight';
 import { EncryptedText } from './ui/encrypted-text';
+import { getCalButtonProps } from '../../lib/cal';
 
 const heroMetrics = [
   { value: '10+', label: 'Projects Delivered' },
@@ -80,13 +81,6 @@ function HeroMetricsRibbon() {
 }
 
 export function Hero() {
-  const scrollToConsultation = () => {
-    const consultationSection = document.getElementById('work-with-labs');
-    if (consultationSection) {
-      consultationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   return (
     <section id="home" className="relative min-h-screen flex flex-col items-center overflow-hidden font-hero" aria-labelledby="hero-heading">
       <p className="sr-only">
@@ -135,7 +129,9 @@ export function Hero() {
                 text="Building scalable technology and Modern engineering for platforms, products, and infrastructure."
                 encryptedClassName="text-gray-500 dark:text-gray-500"
                 revealedClassName="text-gray-600 dark:text-gray-400"
-                revealDelayMs={50}
+                revealMode="parallel"
+                scrambleDurationMs={2000}
+                scrambleTickMs={35}
               />
             </p>
 
@@ -144,7 +140,7 @@ export function Hero() {
                 size="lg"
                 className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-base md:text-lg px-8 md:px-9 h-12"
                 style={{ fontFamily: 'Inter, sans-serif' }}
-                onClick={scrollToConsultation}
+                {...getCalButtonProps()}
               >
                 <CalendarCheck className="mr-2 w-5 h-5" />
                 Book Free Consultation

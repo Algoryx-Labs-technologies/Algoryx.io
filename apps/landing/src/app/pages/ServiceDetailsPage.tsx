@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { SERVICES } from '../../data/services';
 import { StackIconRow } from '../components/StackIconRow';
+import { getCalButtonProps } from '../../lib/cal';
 
 function serviceNavLabel(title: string): string {
   return title.replace(/\s+Agency$/i, '').replace(/\s+Services$/i, '').trim();
@@ -42,10 +43,6 @@ export function ServiceDetailsPage() {
       }, 100);
     }
   }, [location.hash]);
-
-  const scrollToConsultation = () => {
-    window.location.href = '/#work-with-labs';
-  };
 
   const D = ({ className, children }: { className?: string; children: React.ReactNode }) => (
     <div className={className}>{children}</div>
@@ -181,7 +178,7 @@ export function ServiceDetailsPage() {
                     <Button
                       size="lg"
                       className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0"
-                      onClick={scrollToConsultation}
+                      {...getCalButtonProps()}
                     >
                       Book Free Consultation
                       <ArrowRight className="ml-2 w-5 h-5" />
