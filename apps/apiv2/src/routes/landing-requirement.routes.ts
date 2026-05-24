@@ -1,0 +1,43 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { postLandingRequirement } from '@/controllers/landing-requirement.controller';
+import { validate } from '@/middleware/validate';
+
+const hearAboutUsValues = [
+  'instagram',
+  'linkedin',
+  'google',
+  'friend',
+  'youtube',
+  'community',
+  'other',
+] as const;
+
+const createLandingRequirementSchema = {
+  body: z.object({
+    fullName: z.string().trim().min(1, 'Full name is required'),
+    email: z.string().trim().email('Invalid email address'),
+    phone: z.string().trim().min(1, 'Phone number is required'),
+    companyOrg: z.string().trim().optional(),
+    message: z.string().trim().min(1, 'Message is required'),
+    haveSource: z
+      .string()
+      .trim()
+      .min(1, 'How did you hear about us is required')
+      .refine(
+        (val) =>
+          hearAboutUsValues.includes(val as (typeof hearAboutUsValues)[number]),
+        { message: 'Invalid source option' },
+      ),
+  }),
+};
+
+const router = Router();
+
+router.post(
+  '/',
+  validate(createLandingRequirementSchema),
+  postLandingRequirement,
+);
+
+export default router;

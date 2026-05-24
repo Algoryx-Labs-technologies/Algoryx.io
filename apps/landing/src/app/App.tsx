@@ -7,6 +7,7 @@ import { AlgoryxPrimePage } from './pages/AlgoryxPrimePage';
 import { AlgoryxPrimeDetailPage } from './pages/AlgoryxPrimeDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { CalEmbedProvider } from './contexts/CalEmbedProvider';
+import { AlgoryxChatWidget } from './components/chat/AlgoryxChatWidget';
 
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/algoryx-prime/:serviceId" element={<AlgoryxPrimeDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>
+        <AlgoryxChatWidget />
       </CalEmbedProvider>
     </BrowserRouter>
   );

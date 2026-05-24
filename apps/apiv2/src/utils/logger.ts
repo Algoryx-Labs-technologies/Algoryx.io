@@ -1,0 +1,18 @@
+export const morganFormat = ':method :url :status :response-time ms - :res[content-length]';
+
+export const logger = {
+  info: (message: string, ...args: unknown[]) => {
+    console.log(`[INFO] ${message}`, ...args);
+  },
+  error: (message: string, error?: unknown) => {
+    console.error(`[ERROR] ${message}`, error);
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    console.warn(`[WARN] ${message}`, ...args);
+  },
+  debug: (message: string, ...args: unknown[]) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[DEBUG] ${message}`, ...args);
+    }
+  },
+};

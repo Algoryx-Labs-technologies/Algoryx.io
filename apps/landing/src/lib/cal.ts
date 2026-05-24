@@ -4,6 +4,7 @@ export const CAL_ORIGIN = 'https://cal.com';
 export const CAL_NAMESPACE = '15min';
 /** https://cal.com/algoryx-labs/15min */
 export const CAL_LINK = 'algoryx-labs/15min';
+export const CAL_BOOKING_URL = `${CAL_ORIGIN}/${CAL_LINK}`;
 
 export const CAL_UI_CONFIG = {
   layout: 'month_view',
