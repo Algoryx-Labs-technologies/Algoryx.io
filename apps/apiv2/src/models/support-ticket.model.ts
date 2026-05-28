@@ -17,13 +17,6 @@ export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
 export type SupportPriority = (typeof SUPPORT_PRIORITIES)[number];
 export type SupportSource = (typeof SUPPORT_SOURCES)[number];
 
-export interface ISupportAttachment {
-  originalName: string;
-  mimeType: string;
-  size: number;
-  data: Buffer;
-}
-
 export interface IClientMetadata {
   ipAddress?: string;
   userAgent?: string;
@@ -37,22 +30,11 @@ export interface ISupportTicket extends Document {
   category: SupportCategory;
   priority: SupportPriority;
   description: string;
-  attachment?: ISupportAttachment;
   client: IClientMetadata;
   source: SupportSource;
   createdAt: Date;
   updatedAt: Date;
 }
-
-const attachmentSchema = new Schema<ISupportAttachment>(
-  {
-    originalName: { type: String, required: true },
-    mimeType: { type: String, required: true },
-    size: { type: Number, required: true },
-    data: { type: Buffer, required: true },
-  },
-  { _id: false },
-);
 
 const clientMetadataSchema = new Schema<IClientMetadata>(
   {
@@ -79,7 +61,6 @@ const supportTicketSchema = new Schema<ISupportTicket>(
       enum: SUPPORT_PRIORITIES,
     },
     description: { type: String, required: true, trim: true },
-    attachment: { type: attachmentSchema, required: false },
     client: { type: clientMetadataSchema, required: true },
     source: {
       type: String,

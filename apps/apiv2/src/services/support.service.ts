@@ -1,6 +1,5 @@
 import {
   IClientMetadata,
-  ISupportAttachment,
   ISupportTicket,
   SupportCategory,
   SupportPriority,
@@ -16,7 +15,6 @@ export interface CreateSupportTicketInput {
   category: SupportCategory;
   priority: SupportPriority;
   description: string;
-  attachment?: ISupportAttachment;
   client: IClientMetadata;
   source?: SupportSource;
 }
@@ -30,17 +28,12 @@ export interface SupportTicketListItem {
   priority: SupportPriority;
   description: string;
   source: SupportSource;
-  hasAttachment: boolean;
-  attachmentName?: string;
   client: IClientMetadata;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface SupportTicketDetail extends SupportTicketListItem {
-  attachmentMimeType?: string;
-  attachmentSize?: number;
-}
+export type SupportTicketDetail = SupportTicketListItem;
 
 type TicketRecord = ISupportTicket & {
   _id: { toString(): string };
@@ -56,8 +49,6 @@ const toListItem = (record: TicketRecord): SupportTicketListItem => ({
   priority: record.priority,
   description: record.description,
   source: record.source ?? 'landing_help',
-  hasAttachment: Boolean(record.attachment),
-  attachmentName: record.attachment?.originalName,
   client: record.client ?? {},
   createdAt: record.createdAt.toISOString(),
   updatedAt: record.updatedAt.toISOString(),
@@ -109,47 +100,17 @@ export const listSupportTickets = async (
     ];
   }
 
-  const records = await SupportTicket.find(filter)
-    .sort({ createdAt: -1 })
-    .select('-attachment.data')
-    .lean();
+  const records = await SupportTicket.find(filter).sort({ createdAt: -1 }).lean();
 
   return records.map((record) => toListItem(record as unknown as TicketRecord));
 };
 
-export const getSupportTicketById = async (
-  id: string,
-): Promise<SupportTicketDetail> => {
-  const record = await SupportTicket.findById(id)
-    .select('-attachment.data')
-    .lean();
+export const getSupportTicketById = async (id: string): Promise<SupportTicketDetail> => {
+  const record = await SupportTicket.findById(id).lean();
 
   if (!record) {
     throw new AppError(404, 'Support ticket not found');
   }
 
-  const ticket = record as unknown as TicketRecord;
-  const item = toListItem(ticket);
-
-  return {
-    ...item,
-    attachmentMimeType: ticket.attachment?.mimeType,
-    attachmentSize: ticket.attachment?.size,
-  };
-};
-
-export const getSupportTicketAttachment = async (
-  id: string,
-): Promise<{ buffer: Buffer; mimeType: string; originalName: string }> => {
-  const record = await SupportTicket.findById(id).select('attachment').lean();
-
-  if (!record?.attachment?.data) {
-    throw new AppError(404, 'Attachment not found');
-  }
-
-  return {
-    buffer: record.attachment.data as Buffer,
-    mimeType: record.attachment.mimeType,
-    originalName: record.attachment.originalName,
-  };
+  return toListItem(record as unknown as TicketRecord);
 };

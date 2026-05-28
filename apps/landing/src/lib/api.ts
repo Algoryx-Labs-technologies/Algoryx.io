@@ -40,7 +40,6 @@ export interface SubmitSupportTicketInput {
   category: SupportCategory;
   priority: SupportPriority;
   description: string;
-  attachment?: File | null;
 }
 
 export async function sendLandingChatMessage(
@@ -130,21 +129,11 @@ export async function submitSupportTicket(
 ): Promise<ApiResponse<{ id: string }>> {
   const url = `${API_BASE_URL}/support`;
 
-  const formData = new FormData();
-  formData.append('name', data.name);
-  formData.append('email', data.email);
-  formData.append('subject', data.subject);
-  formData.append('category', data.category);
-  formData.append('priority', data.priority);
-  formData.append('description', data.description);
-  if (data.attachment) {
-    formData.append('attachment', data.attachment);
-  }
-
   try {
     const response = await fetch(url, {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     });
 
     const result = await response.json();

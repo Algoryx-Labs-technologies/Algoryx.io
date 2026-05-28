@@ -1,12 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import {
-  downloadSupportTicketAttachment,
-  getSupportTicket,
-  getSupportTickets,
-  postSupportTicket,
-} from '@/controllers/support.controller';
-import { handleSupportUpload } from '@/middleware/supportUpload';
+import { getSupportTicket, getSupportTickets, postSupportTicket } from '@/controllers/support.controller';
 import { validate } from '@/middleware/validate';
 import { authenticateAdmin } from '@/middleware/authenticateAdmin';
 import {
@@ -47,25 +41,13 @@ const idParamSchema = {
 
 const router = Router();
 
-router.post(
-  '/',
-  handleSupportUpload,
-  validate(createSupportTicketSchema),
-  postSupportTicket,
-);
+router.post('/', validate(createSupportTicketSchema), postSupportTicket);
 
 router.get(
   '/',
   authenticateAdmin,
   validate(listQuerySchema),
   getSupportTickets,
-);
-
-router.get(
-  '/:id/attachment',
-  authenticateAdmin,
-  validate(idParamSchema),
-  downloadSupportTicketAttachment,
 );
 
 router.get(

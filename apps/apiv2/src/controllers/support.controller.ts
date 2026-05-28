@@ -1,16 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   createSupportTicket,
-  getSupportTicketAttachment,
   getSupportTicketById,
   listSupportTickets,
 } from '@/services/support.service';
-import {
-  ISupportAttachment,
-  SupportCategory,
-  SupportPriority,
-  SupportSource,
-} from '@/models/support-ticket.model';
+import { SupportCategory, SupportPriority, SupportSource } from '@/models/support-ticket.model';
 
 const getClientIp = (req: Request): string | undefined => {
   const forwarded = req.headers['x-forwarded-for'];
@@ -31,16 +25,6 @@ export const postSupportTicket = async (
   try {
     const { name, email, subject, category, priority, description } = req.body;
 
-    let attachment: ISupportAttachment | undefined;
-    if (req.file) {
-      attachment = {
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        data: req.file.buffer,
-      };
-    }
-
     const record = await createSupportTicket({
       name,
       email,
@@ -48,7 +32,6 @@ export const postSupportTicket = async (
       category,
       priority,
       description,
-      attachment,
       client: {
         ipAddress: getClientIp(req),
         userAgent: req.get('user-agent'),
@@ -67,7 +50,6 @@ export const postSupportTicket = async (
         category: record.category,
         priority: record.priority,
         description: record.description,
-        hasAttachment: Boolean(record.attachment),
         source: record.source,
         createdAt: record.createdAt,
       },
@@ -118,26 +100,6 @@ export const getSupportTicket = async (
       success: true,
       data: ticket,
     });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const downloadSupportTicketAttachment = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const id = String(req.params.id);
-    const file = await getSupportTicketAttachment(id);
-
-    res.setHeader('Content-Type', file.mimeType);
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${encodeURIComponent(file.originalName)}"`,
-    );
-    res.send(file.buffer);
   } catch (error) {
     next(error);
   }

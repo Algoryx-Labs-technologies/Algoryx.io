@@ -19,8 +19,6 @@ export interface SupportTicket {
   priority: SupportPriority;
   description: string;
   source: SupportSource;
-  hasAttachment: boolean;
-  attachmentName?: string;
   client: {
     ipAddress?: string;
     userAgent?: string;

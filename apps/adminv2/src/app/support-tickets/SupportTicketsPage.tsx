@@ -2,13 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import {
   Calendar,
-  Download,
   FileText,
   HelpCircle,
   Loader2,
   Mail,
   MessageSquare,
-  Paperclip,
   RefreshCw,
   Search,
   User,
@@ -20,7 +18,6 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { cn } from '../components/ui/utils';
 import { apiClient } from '@/lib/api';
-import { getStoredToken } from '@/lib/auth';
 import type { SupportTicket } from './types';
 import {
   CATEGORY_LABELS,
@@ -29,15 +26,6 @@ import {
   type SupportCategory,
   type SupportPriority,
 } from './types';
-
-const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:4001';
-  const baseUrl = envUrl.replace(/\/+$/, '');
-  if (!baseUrl.includes('/api/v2')) {
-    return `${baseUrl}/api/v2`;
-  }
-  return baseUrl;
-};
 
 function priorityBadgeClass(priority: SupportPriority): string {
   switch (priority) {
@@ -58,7 +46,6 @@ export function SupportTicketsPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selected, setSelected] = useState<SupportTicket | null>(null);
   const [search, setSearch] = useState('');
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -89,41 +76,6 @@ export function SupportTicketsPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [fetchTickets]);
-
-  const downloadAttachment = async (ticket: SupportTicket) => {
-    const token = getStoredToken();
-    if (!token) {
-      setError('Authentication required to download attachments');
-      return;
-    }
-
-    setDownloadingId(ticket.id);
-    setError(null);
-
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/support/${ticket.id}/attachment`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to download attachment');
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = ticket.attachmentName ?? 'attachment';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    } catch {
-      setError('Failed to download attachment');
-    } finally {
-      setDownloadingId(null);
-    }
-  };
 
   return (
     <AppLayout
@@ -210,9 +162,6 @@ export function SupportTicketsPage() {
                         {CATEGORY_LABELS[ticket.category]}
                       </span>
                     </div>
-                    {ticket.hasAttachment && (
-                      <Paperclip className="h-4 w-4 text-gray-400 shrink-0" />
-                    )}
                   </div>
                   <h3 className="text-white font-semibold font-footer">{ticket.subject}</h3>
                   <div className="flex items-center gap-2 mt-1 text-sm text-gray-400 font-footer">
@@ -302,29 +251,6 @@ export function SupportTicketsPage() {
                   <p className="text-gray-300 whitespace-pre-wrap">{selected.description}</p>
                 </div>
               </div>
-
-              {selected.hasAttachment && (
-                <div>
-                  <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                    <Paperclip className="h-4 w-4 text-cyan-400" />
-                    Attachment
-                  </h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={downloadingId === selected.id}
-                    onClick={() => downloadAttachment(selected)}
-                    className="font-footer border-white/10"
-                  >
-                    {downloadingId === selected.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Download className="h-4 w-4" />
-                    )}
-                    {selected.attachmentName ?? 'Download file'}
-                  </Button>
-                </div>
-              )}
 
               <div className="border-t border-white/10 pt-4 text-sm text-gray-400 space-y-1">
                 <p>
