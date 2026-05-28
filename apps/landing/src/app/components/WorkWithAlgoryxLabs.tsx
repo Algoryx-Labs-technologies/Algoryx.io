@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Loader2, MapPin, Phone } from 'lucide-react';
+import { Check, Loader2, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -23,6 +23,8 @@ import { submitLandingEnquiry } from '../../lib/api';
 
 const MAP_EMBED_SRC =
   'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.994128055255!2d72.52821727600804!3d23.023987816274047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e84d7246eaa59%3A0xdd7d07e9a7fff65e!2sAum%20Enercon%20Pvt.%20Ltd!5e0!3m2!1sen!2sin!4v1779483697506!5m2!1sen!2sin';
+
+const CONTACT_EMAIL = 'contact@algoryx.io';
 
 export function WorkWithAlgoryxLabs() {
   const [formData, setFormData] = useState({
@@ -240,6 +242,15 @@ export function WorkWithAlgoryxLabs() {
                 </div>
 
                 <ul className="space-y-2.5 text-sm text-gray-400 mb-4 lg:mb-5 shrink-0">
+                  <li>
+                    <a
+                      href={`mailto:${CONTACT_EMAIL}`}
+                      className="inline-flex items-start gap-2.5 hover:text-cyan-300 transition-colors"
+                    >
+                      <Mail className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
+                      <span>{CONTACT_EMAIL}</span>
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="tel:+917016465159"
