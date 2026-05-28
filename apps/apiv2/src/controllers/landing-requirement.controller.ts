@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { createLandingRequirement } from '@/services/landing-requirement.service';
+import {
+  createLandingRequirement,
+  listLandingRequirements,
+} from '@/services/landing-requirement.service';
 
 export const postLandingRequirement = async (
   req: Request,
@@ -31,6 +34,23 @@ export const postLandingRequirement = async (
         createdAt: record.createdAt,
       },
       message: 'Requirement submitted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLandingRequirements = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const requirements = await listLandingRequirements();
+
+    res.json({
+      success: true,
+      data: requirements,
     });
   } catch (error) {
     next(error);

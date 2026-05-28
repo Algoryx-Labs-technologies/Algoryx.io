@@ -17,3 +17,35 @@ export const createLandingRequirement = async (
 ): Promise<ILandingRequirement> => {
   return LandingRequirement.create(data);
 };
+
+export interface LandingRequirementListItem {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  companyOrg?: string;
+  message: string;
+  haveSource: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const listLandingRequirements = async (): Promise<
+  LandingRequirementListItem[]
+> => {
+  const records = await LandingRequirement.find()
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return records.map((record) => ({
+    id: String(record._id),
+    fullName: record.fullName,
+    email: record.email,
+    phone: record.phone,
+    companyOrg: record.companyOrg,
+    message: record.message,
+    haveSource: record.haveSource,
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+  }));
+};

@@ -17,6 +17,17 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDevelopment ? 100 : 10,
+  message: {
+    success: false,
+    error: 'Too many login attempts. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const chatLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDevelopment ? 60 : 20,
