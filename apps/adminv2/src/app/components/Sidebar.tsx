@@ -11,6 +11,7 @@ import {
   FolderKanban,
   LayoutDashboard,
   CalendarDays,
+  Users,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
@@ -39,6 +40,11 @@ export function Sidebar() {
       icon: FolderKanban,
       label: 'Current Projects',
       path: '/current-projects',
+    },
+    {
+      icon: Users,
+      label: 'Teams',
+      path: '/teams',
     },
     {
       icon: CalendarDays,

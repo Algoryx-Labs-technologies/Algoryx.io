@@ -11,8 +11,11 @@ export const SUPPORT_CATEGORIES = [
 
 export const SUPPORT_PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
 
+export const SUPPORT_SOURCES = ['landing_help'] as const;
+
 export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
 export type SupportPriority = (typeof SUPPORT_PRIORITIES)[number];
+export type SupportSource = (typeof SUPPORT_SOURCES)[number];
 
 export interface ISupportAttachment {
   originalName: string;
@@ -36,6 +39,7 @@ export interface ISupportTicket extends Document {
   description: string;
   attachment?: ISupportAttachment;
   client: IClientMetadata;
+  source: SupportSource;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +81,12 @@ const supportTicketSchema = new Schema<ISupportTicket>(
     description: { type: String, required: true, trim: true },
     attachment: { type: attachmentSchema, required: false },
     client: { type: clientMetadataSchema, required: true },
+    source: {
+      type: String,
+      required: true,
+      enum: SUPPORT_SOURCES,
+      default: 'landing_help',
+    },
   },
   {
     timestamps: true,

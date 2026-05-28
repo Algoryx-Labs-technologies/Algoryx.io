@@ -37,6 +37,7 @@ export function WorkWithAlgoryxLabs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mapInteractive, setMapInteractive] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,7 +226,7 @@ export function WorkWithAlgoryxLabs() {
               <div className="flex flex-col h-full min-h-0">
                 <p className="text-sm font-medium text-cyan-400/90 mb-1.5">Visit us</p>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 leading-snug">
-                  Algoryx Labs and Technologies Pvt. Ltd.
+                  Algoryx Labs and Technologies & Company
                 </h3>
                 <div className="flex gap-2.5 text-sm text-gray-400 leading-relaxed mb-4">
                   <MapPin className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
@@ -269,11 +270,19 @@ export function WorkWithAlgoryxLabs() {
                   <iframe
                     title="Algoryx Labs and Technologies — Satellite, Ahmedabad"
                     src={MAP_EMBED_SRC}
-                    className="absolute inset-0 h-full w-full border-0"
+                    className={`absolute inset-0 h-full w-full border-0 ${mapInteractive ? '' : 'pointer-events-none'}`}
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
                   />
+                  {!mapInteractive && (
+                    <button
+                      type="button"
+                      className="absolute inset-0 z-10 cursor-pointer"
+                      onClick={() => setMapInteractive(true)}
+                      aria-label="Interact with map"
+                    />
+                  )}
                 </div>
               </div>
             </div>

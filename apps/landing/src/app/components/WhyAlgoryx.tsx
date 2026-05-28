@@ -47,7 +47,7 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: AnimatedCount
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true);
-          
+
           const startTime = Date.now();
           const startValue = 0;
           const endValue = target;
@@ -56,11 +56,10 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: AnimatedCount
             const now = Date.now();
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function for smooth animation
+
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart);
-            
+
             setCount(currentValue);
 
             if (progress < 1) {
@@ -71,7 +70,7 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: AnimatedCount
           };
 
           requestAnimationFrame(animate);
-          
+
           if (ref.current) {
             observer.unobserve(ref.current);
           }
@@ -92,7 +91,12 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: AnimatedCount
     };
   }, [target, duration, hasAnimated]);
 
-  return <span ref={ref}>{count}{suffix}</span>;
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
 }
 
 export function WhyAlgoryx() {
@@ -101,79 +105,71 @@ export function WhyAlgoryx() {
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-              Why Algoryx Labs
-            </span>
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            A technology partner for trading systems, digital products, AI, infrastructure, and launch-ready creative work.
-          </p>
-        </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                Why Algoryx Labs
+              </span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              A technology partner for trading systems, digital products, AI, infrastructure, and launch-ready creative work.
+            </p>
+          </div>
         </ScrollReveal>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {benefits.map((benefit, index) => (
             <ScrollReveal key={index} delay={index * 0.1}>
-              <div
-                className="flex gap-4 group"
-              >
-              {/* Icon container */}
-              <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-blue-500/50 group-hover:scale-110 transition-all">
-                  <benefit.icon className="w-7 h-7 text-blue-400" />
+              <div className="flex gap-4 group">
+                <div className="flex-shrink-0">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-blue-500/50 group-hover:scale-110 transition-all">
+                    <benefit.icon className="w-7 h-7 text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">{benefit.description}</p>
                 </div>
               </div>
-
-              {/* Content */}
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
-                  {benefit.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
-            </div>
             </ScrollReveal>
           ))}
         </div>
 
-        {/* Stats section */}
         <ScrollReveal delay={0.3}>
           <div className="mt-20 relative">
-          <div className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-12">
-            <div className="grid md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={100} suffix="+" />
+            <div className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-12">
+              <div className="grid md:grid-cols-4 gap-8 text-center">
+                <div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
+                    <AnimatedCounter target={10} suffix="+" />
+                  </div>
+                  <div className="text-gray-400">Projects Delivered</div>
                 </div>
-                <div className="text-gray-400">Projects Delivered</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={50} suffix="+" />
+                <div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
+                    <AnimatedCounter target={5} suffix="+" />
+                  </div>
+                  <div className="text-gray-400">Clients Served</div>
                 </div>
-                <div className="text-gray-400">Clients Served</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={6} />
+                <div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
+                    <AnimatedCounter target={10} suffix="+" />
+                  </div>
+                  <div className="text-gray-400">Core Service Verticals</div>
                 </div>
-                <div className="text-gray-400">Core Service Verticals</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={98} suffix="%" />
+                <div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
+                    <AnimatedCounter target={100} suffix="%" />
+                  </div>
+                  <div className="text-gray-400">Client Satisfaction</div>
                 </div>
-                <div className="text-gray-400">Client Satisfaction</div>
               </div>
             </div>
-          </div>
           </div>
         </ScrollReveal>
       </div>
     </section>
   );
 }
-

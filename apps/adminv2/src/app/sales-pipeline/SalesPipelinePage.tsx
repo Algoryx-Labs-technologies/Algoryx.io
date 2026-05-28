@@ -4,7 +4,6 @@ import {
   Grid3X3,
   LayoutList,
   Loader2,
-  MoreHorizontal,
   Plus,
   RefreshCw,
   Search,
@@ -66,7 +65,6 @@ export function SalesPipelinePage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [form, setForm] = useState<AddLeadForm>(emptyForm);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
-  const [menuLeadId, setMenuLeadId] = useState<string | null>(null);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -115,6 +113,22 @@ export function SalesPipelinePage() {
 
     return grouped;
   }, [leads]);
+
+  const visibleStages = useMemo(
+    () =>
+      PIPELINE_STAGES.filter(
+        (stage) => stageFilter === 'all' || stageFilter === stage.id,
+      ),
+    [stageFilter],
+  );
+
+  const boardGridClass = cn(
+    'grid gap-4 w-full min-h-[420px] pb-4',
+    visibleStages.length === 1 && 'grid-cols-1',
+    visibleStages.length === 2 && 'grid-cols-1 md:grid-cols-2',
+    visibleStages.length === 3 && 'grid-cols-1 md:grid-cols-3',
+    visibleStages.length >= 4 && 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
+  );
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,7 +181,6 @@ export function SalesPipelinePage() {
   };
 
   const handleDeleteLead = async (leadId: string) => {
-    setMenuLeadId(null);
     const response = await apiClient.delete(`/sales-leads/${leadId}`);
 
     if (!response.success) {
@@ -201,28 +214,18 @@ export function SalesPipelinePage() {
         <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
           {lead.leadCode}
         </span>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuLeadId(menuLeadId === lead.id ? null : lead.id)}
-            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
-            aria-label="Lead actions"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-          {menuLeadId === lead.id && (
-            <div className="absolute right-0 top-7 z-20 min-w-[120px] rounded-lg border border-white/10 bg-slate-900 shadow-lg py-1">
-              <button
-                type="button"
-                onClick={() => handleDeleteLead(lead.id)}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+        <button
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleDeleteLead(lead.id);
+          }}
+          className="p-1 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors"
+          aria-label="Delete lead"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
       <p className="font-semibold text-slate-900 dark:text-white text-sm">{lead.name}</p>
       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{lead.email}</p>
@@ -244,7 +247,7 @@ export function SalesPipelinePage() {
       title="Sales pipeline"
       description="Track leads from discovery through completion. Drag cards between stages or use filters."
     >
-      <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50/90 to-teal-50/50 dark:from-emerald-950/30 dark:to-slate-900/80 dark:border-emerald-500/10 p-4 md:p-6 min-h-[calc(100vh-12rem)]">
+      <div className="w-full max-w-none rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50/90 to-teal-50/50 dark:from-emerald-950/30 dark:to-slate-900/80 dark:border-emerald-500/10 p-4 md:p-6 min-h-[calc(100vh-12rem)]">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-5">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -352,26 +355,20 @@ export function SalesPipelinePage() {
             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
           </div>
         ) : viewMode === 'board' ? (
-          <div className="flex gap-4 overflow-x-auto pb-4 min-h-[420px]">
-            {PIPELINE_STAGES.map((stage) => {
+          <div className={boardGridClass}>
+            {visibleStages.map((stage) => {
               const columnLeads = leadsByStage[stage.id];
-              const hidden =
-                stageFilter !== 'all' && stageFilter !== stage.id;
-
-              if (hidden) {
-                return null;
-              }
 
               return (
                 <div
                   key={stage.id}
-                  className="flex-shrink-0 w-[260px] md:w-[280px] flex flex-col"
+                  className="flex min-w-0 flex-col h-full"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={() => handleDrop(stage.id)}
                 >
                   <div
                     className={cn(
-                      'rounded-t-xl px-3 py-2 text-white text-sm font-semibold flex items-center justify-between',
+                      'rounded-t-xl px-4 py-2.5 text-white text-sm font-semibold flex items-center justify-between',
                       stage.headerClass,
                     )}
                   >
@@ -380,7 +377,7 @@ export function SalesPipelinePage() {
                       {columnLeads.length}
                     </span>
                   </div>
-                  <div className="flex-1 rounded-b-xl bg-slate-100/80 dark:bg-slate-800/40 border border-t-0 border-slate-200 dark:border-white/10 p-2 space-y-2 min-h-[320px]">
+                  <div className="flex-1 rounded-b-xl bg-slate-100/80 dark:bg-slate-800/40 border border-t-0 border-slate-200 dark:border-white/10 p-3 space-y-3 min-h-[360px]">
                     {columnLeads.length === 0 ? (
                       <p className="text-center text-xs text-slate-400 py-8 px-2">
                         No leads in this stage

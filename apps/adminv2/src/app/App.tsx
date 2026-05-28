@@ -4,6 +4,9 @@ import { DashboardPage } from './dashboard/DashboardPage';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { RequirementsPage } from './requirements/RequirementsPage';
 import { SalesPipelinePage } from './sales-pipeline/SalesPipelinePage';
+import { CurrentProjectsPage } from './current-projects/CurrentProjectsPage';
+import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
+import { TeamsPage } from './teams/TeamsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -42,10 +45,15 @@ function App() {
           path="/current-projects"
           element={
             <ProtectedRoute>
-              <PlaceholderPage
-                title="Current Projects"
-                description="Active projects, status, and delivery overview."
-              />
+              <CurrentProjectsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams"
+          element={
+            <ProtectedRoute>
+              <TeamsPage />
             </ProtectedRoute>
           }
         />
@@ -80,7 +88,7 @@ function App() {
           path="/support-tickets"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Support Tickets" description="Customer support ticket queue." />
+              <SupportTicketsPage />
             </ProtectedRoute>
           }
         />

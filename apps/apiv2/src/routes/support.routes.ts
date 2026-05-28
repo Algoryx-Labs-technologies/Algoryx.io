@@ -1,11 +1,18 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { postSupportTicket } from '@/controllers/support.controller';
+import {
+  downloadSupportTicketAttachment,
+  getSupportTicket,
+  getSupportTickets,
+  postSupportTicket,
+} from '@/controllers/support.controller';
 import { handleSupportUpload } from '@/middleware/supportUpload';
 import { validate } from '@/middleware/validate';
+import { authenticateAdmin } from '@/middleware/authenticateAdmin';
 import {
   SUPPORT_CATEGORIES,
   SUPPORT_PRIORITIES,
+  SUPPORT_SOURCES,
 } from '@/models/support-ticket.model';
 
 const createSupportTicketSchema = {
@@ -23,6 +30,21 @@ const createSupportTicketSchema = {
   }),
 };
 
+const listQuerySchema = {
+  query: z.object({
+    search: z.string().trim().optional(),
+    category: z.enum(SUPPORT_CATEGORIES).optional(),
+    priority: z.enum(SUPPORT_PRIORITIES).optional(),
+    source: z.enum(SUPPORT_SOURCES).optional(),
+  }),
+};
+
+const idParamSchema = {
+  params: z.object({
+    id: z.string().trim().min(1, 'Ticket id is required'),
+  }),
+};
+
 const router = Router();
 
 router.post(
@@ -30,6 +52,27 @@ router.post(
   handleSupportUpload,
   validate(createSupportTicketSchema),
   postSupportTicket,
+);
+
+router.get(
+  '/',
+  authenticateAdmin,
+  validate(listQuerySchema),
+  getSupportTickets,
+);
+
+router.get(
+  '/:id/attachment',
+  authenticateAdmin,
+  validate(idParamSchema),
+  downloadSupportTicketAttachment,
+);
+
+router.get(
+  '/:id',
+  authenticateAdmin,
+  validate(idParamSchema),
+  getSupportTicket,
 );
 
 export default router;
