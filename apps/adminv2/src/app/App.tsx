@@ -3,6 +3,7 @@ import { AuthPage } from './auth/AuthPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { RequirementsPage } from './requirements/RequirementsPage';
+import { SalesPipelinePage } from './sales-pipeline/SalesPipelinePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -33,10 +34,7 @@ function App() {
           path="/sales-pipeline"
           element={
             <ProtectedRoute>
-              <PlaceholderPage
-                title="Sales Pipeline"
-                description="Track leads, deals, and pipeline stages."
-              />
+              <SalesPipelinePage />
             </ProtectedRoute>
           }
         />
