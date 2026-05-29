@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Loader2, MapPin, Phone } from 'lucide-react';
+import { Check, Loader2, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -24,6 +24,8 @@ import { submitLandingEnquiry } from '../../lib/api';
 const MAP_EMBED_SRC =
   'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.994128055255!2d72.52821727600804!3d23.023987816274047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e84d7246eaa59%3A0xdd7d07e9a7fff65e!2sAum%20Enercon%20Pvt.%20Ltd!5e0!3m2!1sen!2sin!4v1779483697506!5m2!1sen!2sin';
 
+const CONTACT_EMAIL = 'contact@algoryx.io';
+
 export function WorkWithAlgoryxLabs() {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -37,6 +39,7 @@ export function WorkWithAlgoryxLabs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mapInteractive, setMapInteractive] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,7 +228,7 @@ export function WorkWithAlgoryxLabs() {
               <div className="flex flex-col h-full min-h-0">
                 <p className="text-sm font-medium text-cyan-400/90 mb-1.5">Visit us</p>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 leading-snug">
-                  Algoryx Labs and Technologies Pvt. Ltd.
+                  Algoryx Labs and Technologies & Company
                 </h3>
                 <div className="flex gap-2.5 text-sm text-gray-400 leading-relaxed mb-4">
                   <MapPin className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
@@ -239,6 +242,15 @@ export function WorkWithAlgoryxLabs() {
                 </div>
 
                 <ul className="space-y-2.5 text-sm text-gray-400 mb-4 lg:mb-5 shrink-0">
+                  <li>
+                    <a
+                      href={`mailto:${CONTACT_EMAIL}`}
+                      className="inline-flex items-start gap-2.5 hover:text-cyan-300 transition-colors"
+                    >
+                      <Mail className="w-4 h-4 text-cyan-400/80 shrink-0 mt-0.5" />
+                      <span>{CONTACT_EMAIL}</span>
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="tel:+917016465159"
@@ -269,11 +281,19 @@ export function WorkWithAlgoryxLabs() {
                   <iframe
                     title="Algoryx Labs and Technologies — Satellite, Ahmedabad"
                     src={MAP_EMBED_SRC}
-                    className="absolute inset-0 h-full w-full border-0"
+                    className={`absolute inset-0 h-full w-full border-0 ${mapInteractive ? '' : 'pointer-events-none'}`}
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
                   />
+                  {!mapInteractive && (
+                    <button
+                      type="button"
+                      className="absolute inset-0 z-10 cursor-pointer"
+                      onClick={() => setMapInteractive(true)}
+                      aria-label="Interact with map"
+                    />
+                  )}
                 </div>
               </div>
             </div>

@@ -1,13 +1,5 @@
-export const ABOUT_INTRO =
-  'Algoryx Labs is a technology and markets firm built by practitioners who started on the trading floor and evolved into disciplined, research-backed wealth and platform engineering for clients across India and Canada.';
-
-export const ABOUT_JOURNEY = {
-  eyebrow: 'Our Journey',
-  title: 'From Traders to Financial Services',
-  paragraphs: [
-    'Algoryx Labs began as a venture led by a founder exploring the markets without formal boundaries. It was a period of intense learning, testing hypotheses, and understanding the raw mechanics of market movements.',
-    'With experience and expertise gained over time, the founder launched Algoryx Labs—a professional, market-ready firm focused on disciplined strategies, research-backed decisions, and delivering consistent outcomes for clients.',
-  ],
-  pullQuote:
-    'Formerly a trader-led venture — now a market-ready firm focused on disciplined strategies, research-backed decisions, and transparent client outcomes.',
-};
+export const ABOUT_INTRO = [
+  'Algoryx Labs is a technology and markets firm built by practitioners who started on the trading floor and evolved into disciplined, research-backed engineering for founders, funds, and growing businesses.',
+  'We serve clients across India, Canada, and the Middle East—helping teams navigate cross-border wealth, multi-market operations, and regulated access with platforms designed for transparency, scale, and real production load.',
+  'Our work spans algorithmic trading automation and Algoryx Prime, custom SaaS and web/mobile products, AI and workflow automation, DevOps and cloud infrastructure, rapid MVPs, and creative production—so you can ship markets infrastructure, digital products, and launch-ready assets with one engineering partner.',
+] as const;

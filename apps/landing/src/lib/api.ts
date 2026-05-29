@@ -23,6 +23,25 @@ export type ChatMessage = {
   content: string;
 };
 
+export type SupportCategory =
+  | 'general'
+  | 'technical'
+  | 'billing'
+  | 'feature-request'
+  | 'account'
+  | 'other';
+
+export type SupportPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface SubmitSupportTicketInput {
+  name: string;
+  email: string;
+  subject: string;
+  category: SupportCategory;
+  priority: SupportPriority;
+  description: string;
+}
+
 export async function sendLandingChatMessage(
   messages: ChatMessage[],
 ): Promise<ApiResponse<{ message: string }>> {
@@ -90,6 +109,48 @@ export async function submitLandingEnquiry(data: {
           result.message ||
           result.error ||
           'Failed to submit requirement',
+      };
+    }
+
+    return {
+      success: true,
+      ...result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error occurred',
+    };
+  }
+}
+
+export async function submitSupportTicket(
+  data: SubmitSupportTicketInput,
+): Promise<ApiResponse<{ id: string }>> {
+  const url = `${API_BASE_URL}/support`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      const validationError =
+        result.errors &&
+        Object.values(result.errors as Record<string, string[]>)
+          .flat()
+          .join(', ');
+      return {
+        success: false,
+        error:
+          validationError ||
+          result.message ||
+          result.error ||
+          'Failed to submit support request',
       };
     }
 

@@ -13,11 +13,13 @@ import {
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { BrandLogo } from './BrandLogo';
+import { HelpSupportDialog } from './HelpSupportDialog';
 
 export function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
   const [isFooterInView, setIsFooterInView] = useState(false);
@@ -103,9 +105,13 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#help" className="text-gray-400 hover:text-white transition-colors text-sm">
+                <button
+                  type="button"
+                  onClick={() => setHelpOpen(true)}
+                  className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                >
                   Help
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -281,6 +287,8 @@ export function Footer() {
           Algoryx Labs
         </motion.h1>
       </div>
+
+      <HelpSupportDialog open={helpOpen} onOpenChange={setHelpOpen} />
 
       {/* Privacy Policy Dialog */}
       <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>

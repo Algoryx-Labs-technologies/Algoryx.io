@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { postLandingRequirement } from '@/controllers/landing-requirement.controller';
+import {
+  getLandingRequirements,
+  postLandingRequirement,
+} from '@/controllers/landing-requirement.controller';
 import { validate } from '@/middleware/validate';
+import { authenticateAdmin } from '@/middleware/authenticateAdmin';
 
 const hearAboutUsValues = [
   'instagram',
@@ -33,6 +37,8 @@ const createLandingRequirementSchema = {
 };
 
 const router = Router();
+
+router.get('/', authenticateAdmin, getLandingRequirements);
 
 router.post(
   '/',

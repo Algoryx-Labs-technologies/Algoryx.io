@@ -15,6 +15,7 @@ const normalizeOrigin = (url: string): string =>
 
 export const createApp = (): Express => {
   const app = express();
+  app.set('trust proxy', 1);
 
   const corsOptions = {
     origin: (

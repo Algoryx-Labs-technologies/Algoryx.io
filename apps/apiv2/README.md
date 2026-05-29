@@ -42,9 +42,51 @@ npm run dev
 | GET | `/` | API info |
 | GET | `/api/v2/health` | Health check |
 | POST | `/api/v2/landing-requirements` | Submit landing contact form |
+| GET | `/api/v2/landing-requirements` | List landing requirements (admin JWT) |
 | POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (Gemini) |
+| POST | `/api/v2/support` | Submit support ticket (multipart form) |
+| POST | `/api/v2/auth/admin/login` | Admin login (ID, password, MPIN from env) |
+| GET | `/api/v2/auth/admin/me` | Verify JWT (`Authorization: Bearer`) |
 
 Default port: **4001** (v1 API uses 4000).
+
+### Admin auth (`apps/adminv2`)
+
+Set in `.env` (never commit real values):
+
+- `ADMIN_ID`
+- `ADMIN_PASSWORD`
+- `ADMIN_MPIN`
+- `JWT_SECRET` (min 16 characters)
+- `JWT_EXPIRES_IN` (optional, default `8h`)
+
+Login body:
+
+```json
+{
+  "adminId": "admin",
+  "password": "change-me",
+  "mpin": "1234"
+}
+```
+
+### Support tickets
+
+`POST /api/v2/support` accepts `multipart/form-data`:
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `name` | yes | |
+| `email` | yes | |
+| `subject` | yes | |
+| `category` | yes | `general`, `technical`, `billing`, `feature-request`, `account`, `other` |
+| `priority` | yes | `low`, `medium`, `high`, `urgent` |
+| `description` | yes | |
+| `attachment` | no | PDF, images, plain text, Word, Excel — max 5 MB |
+
+IP address, user agent, and referer are stored automatically in `client`.
+
+Collection: `support_tickets`
 
 ### MongoDB
 

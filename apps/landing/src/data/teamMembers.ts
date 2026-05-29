@@ -34,7 +34,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     bio: [
       'Abhishek brings a fintech foundation in financial backends, modelling, and market terminology—along with scalable SaaS built for growing usage and data.',
       'Since 2022 he has analysed Indian equities, shaping platform decisions around real sector, index, and risk dynamics.',
-      'He leads tech on a UAE hedge-fund-style platform—maintaining financial data and HNI reporting aligned with Algoryx’s cross-border wealth focus.',
+      'He handled tech on a UAE hedge-fund-style platform—maintaining financial data and HNI reporting aligned with Algoryx’s cross-border wealth focus.',
     ],
     quote:
       'Strong products in finance start with models and terms everyone trusts—and backends that scale without breaking when portfolios do.',
@@ -47,7 +47,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     expandedProfile: true,
     bio: [
       'Pratyush is a Computer Science engineer with production trading and wealth-tech experience across Dubai and India.',
-      'He leads engineering for Valura.ai’s GIFT City platform under IFSCA—regulated cross-border access for NRIs and LRS investors through institutional broker integration.',
+      'He lead engineering for Valura.ai’s GIFT City platform under IFSCA—regulated cross-border access for NRIs and LRS investors through institutional broker integration.',
       'Previously at Valura.ai and 2Cents Capital he built multi-market trade systems, Lean-based ATS, and AWS backends—applied today to Algoryx’s audit-ready platforms.',
     ],
     quote:
