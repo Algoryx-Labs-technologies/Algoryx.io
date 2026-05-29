@@ -14,7 +14,7 @@ export const postLandingChat = async (
     if (!isLandingChatConfigured()) {
       throw new AppError(
         503,
-        'AI assistant is not configured. Set GEMINI_API_KEY in apps/apiv2/.env.',
+        'AI assistant is not configured. Set OPENAI_API_KEY in apps/apiv2/.env.',
       );
     }
 
@@ -35,11 +35,11 @@ export const postLandingChat = async (
 
     const message = error instanceof Error ? error.message : 'Chat failed';
 
-    if (message === 'GEMINI_NOT_CONFIGURED') {
+    if (message === 'OPENAI_NOT_CONFIGURED') {
       return next(
         new AppError(
           503,
-          'AI assistant is not configured. Set GEMINI_API_KEY in apps/apiv2/.env.',
+          'AI assistant is not configured. Set OPENAI_API_KEY in apps/apiv2/.env.',
         ),
       );
     }

@@ -43,12 +43,44 @@ npm run dev
 | GET | `/api/v2/health` | Health check |
 | POST | `/api/v2/landing-requirements` | Submit landing contact form |
 | GET | `/api/v2/landing-requirements` | List landing requirements (admin JWT) |
-| POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (Gemini) |
+| POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (OpenAI) |
 | POST | `/api/v2/support` | Submit support ticket (multipart form) |
 | POST | `/api/v2/auth/admin/login` | Admin login (ID, password, MPIN from env) |
 | GET | `/api/v2/auth/admin/me` | Verify JWT (`Authorization: Bearer`) |
 
 Default port: **4001** (v1 API uses 4000).
+
+## Docker (production)
+
+Build context is the **monorepo root** (npm workspaces). From the repo root:
+
+```bash
+docker build -f apps/apiv2/Dockerfile -t algoryx-apiv2:latest .
+```
+
+Or use Compose from `apps/apiv2`:
+
+```bash
+cd apps/apiv2
+cp .env.docker.example .env
+# Edit .env — set JWT_SECRET, admin credentials, CORS_ORIGIN, etc.
+
+# API only (use MONGODB_URI for Atlas or an external MongoDB):
+docker compose up -d --build
+
+# API + local MongoDB 7:
+docker compose --profile with-db up -d --build
+```
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Multi-stage image: `npm ci`, esbuild bundle, non-root user, healthcheck |
+| `docker-compose.yml` | `apiv2` service; optional `mongodb` via profile `with-db` |
+| `.env.docker.example` | Template for Compose `env_file` |
+
+Health: `GET /api/v2/health` (used by container `HEALTHCHECK`).
+
+The production image runs `dist/server.js` built with **esbuild** (bundles `@/` path aliases; `npm run build` in this app).
 
 ### Admin auth (`apps/adminv2`)
 
