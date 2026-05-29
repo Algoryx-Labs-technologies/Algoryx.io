@@ -1,0 +1,5 @@
+# Slim build context for apps/apiv2/Dockerfile (monorepo root context).
+*
+!package.json
+!package-lock.json
+!apps/apiv2/
