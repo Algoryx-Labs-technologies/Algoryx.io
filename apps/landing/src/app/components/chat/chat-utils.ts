@@ -19,6 +19,15 @@ export function stripBookMarker(content: string): string {
   return content.replace(BOOK_MARKER, '').trim();
 }
 
+/** Strip UI-only markers before showing assistant text. */
+export function stripAssistantMarkers(content: string): string {
+  return content
+    .replace(BOOK_MARKER, '')
+    .replace(/\[\[START_REQUIREMENT_FLOW\]\]/gi, '')
+    .replace(/\[\[START_SUPPORT_FLOW\]\]/gi, '')
+    .trim();
+}
+
 export function hasBookMarker(content: string): boolean {
   return /\[\[BOOK_CONSULTATION\]\]/i.test(content);
 }

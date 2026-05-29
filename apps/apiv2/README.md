@@ -43,7 +43,7 @@ npm run dev
 | GET | `/api/v2/health` | Health check |
 | POST | `/api/v2/landing-requirements` | Submit landing contact form |
 | GET | `/api/v2/landing-requirements` | List landing requirements (admin JWT) |
-| POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (Gemini) |
+| POST | `/api/v2/landing-chat` | Algoryx Labs AI assistant (OpenAI) |
 | POST | `/api/v2/support` | Submit support ticket (multipart form) |
 | POST | `/api/v2/auth/admin/login` | Admin login (ID, password, MPIN from env) |
 | GET | `/api/v2/auth/admin/me` | Verify JWT (`Authorization: Bearer`) |

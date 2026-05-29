@@ -1,9 +1,10 @@
-/** Cal.com element-click embed — Algoryx Labs Tech Consultation (15m). */
+/** Cal.com element-click embed — Algoryx Labs Tech Consultation (30m). */
 export const CAL_EMBED_SCRIPT = 'https://app.cal.com/embed/embed.js';
 export const CAL_ORIGIN = 'https://cal.com';
 export const CAL_NAMESPACE = '15min';
-/** https://cal.com/algoryx-labs/15min */
+/** https://cal.com/algoryx-labs/15min — event slug; booking duration is 30 minutes */
 export const CAL_LINK = 'algoryx-labs/15min';
+export const CAL_CONSULTATION_DURATION = '30-min';
 export const CAL_BOOKING_URL = `${CAL_ORIGIN}/${CAL_LINK}`;
 
 export const CAL_UI_CONFIG = {

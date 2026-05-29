@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarCheck, ExternalLink } from 'lucide-react';
-import { CAL_BOOKING_URL, getCalButtonProps } from '@/lib/cal';
+import { CAL_BOOKING_URL, CAL_CONSULTATION_DURATION, getCalButtonProps } from '@/lib/cal';
 
 export function ConsultationCta() {
   return (
@@ -11,7 +11,7 @@ export function ConsultationCta() {
         {...getCalButtonProps()}
       >
         <CalendarCheck className="h-4 w-4 shrink-0" />
-        Book free 15-min consultation
+        Book free {CAL_CONSULTATION_DURATION} consultation
       </button>
       <a
         href={CAL_BOOKING_URL}
