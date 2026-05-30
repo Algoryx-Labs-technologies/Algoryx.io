@@ -4,11 +4,6 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('4001'),
   API_VERSION: z.string().default('v2'),
-  CORS_ORIGIN: z
-    .string()
-    .default(
-      'http://localhost:8080,http://localhost:5173,http://localhost:5174,http://localhost:5175',
-    ),
   ADMIN_ID: z.string().min(1, 'ADMIN_ID is required'),
   ADMIN_PASSWORD: z.string().min(1, 'ADMIN_PASSWORD is required'),
   ADMIN_MPIN: z.string().min(4, 'ADMIN_MPIN must be at least 4 characters'),
