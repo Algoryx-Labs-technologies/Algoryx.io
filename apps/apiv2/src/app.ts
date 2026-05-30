@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { env } from '@/config/env';
+import { corsMiddleware } from '@/config/cors';
 import { morganFormat } from '@/utils/logger';
 import { apiLimiter } from '@/middleware/rateLimiter';
 import { errorHandler } from '@/middleware/errorHandler';
@@ -13,7 +14,12 @@ export const createApp = (): Express => {
   const app = express();
   app.set('trust proxy', 1);
 
-  app.use(helmet());
+  app.use(corsMiddleware);
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
