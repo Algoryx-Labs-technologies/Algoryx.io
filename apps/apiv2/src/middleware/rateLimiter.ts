@@ -9,6 +9,7 @@ const rateLimitMax = isDevelopment
 export const apiLimiter = rateLimit({
   windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
   max: rateLimitMax,
+  skip: (req) => req.method === 'OPTIONS',
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again later.',
@@ -20,6 +21,7 @@ export const apiLimiter = rateLimit({
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDevelopment ? 100 : 10,
+  skip: (req) => req.method === 'OPTIONS',
   message: {
     success: false,
     error: 'Too many login attempts. Please try again later.',
@@ -31,6 +33,7 @@ export const loginLimiter = rateLimit({
 export const chatLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDevelopment ? 60 : 20,
+  skip: (req) => req.method === 'OPTIONS',
   message: {
     success: false,
     error: 'Too many chat messages. Please wait a moment and try again.',
