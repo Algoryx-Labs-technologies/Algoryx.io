@@ -72,6 +72,7 @@
       <!-- Preconnect to External Resources -->
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" />
       <link rel="dns-prefetch" href="https://algoryx.io" />
       
       <!-- Favicon & app icons (AlgoX mark — algoryx-browser-logo.png) -->
@@ -82,6 +83,234 @@
       <link rel="icon" type="image/x-icon" href="/favicon.ico" />
       <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <link rel="manifest" href="/site.webmanifest" />
+      <link rel="preload" href="/algoryx-labs-logo.png" as="image" />
+      
+      <style>
+        #algoryx-splash {
+          --splash-bg: #000000;
+          --splash-grid: #1e293b;
+          --splash-text: #94a3b8;
+          --splash-tagline: #64748b;
+          --splash-glow-1: rgba(59, 130, 246, 0.18);
+          --splash-glow-2: rgba(6, 182, 212, 0.1);
+          --splash-glow-3: rgba(37, 99, 235, 0.12);
+          --splash-ring-track: rgba(148, 163, 184, 0.15);
+          --splash-bar-track: rgba(148, 163, 184, 0.12);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1.75rem;
+          padding: 2rem;
+          background: var(--splash-bg);
+          color: var(--splash-text);
+          font-family: Inter, system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          position: relative;
+          isolation: isolate;
+        }
+
+        html:not(.dark) #algoryx-splash {
+          --splash-bg: #ffffff;
+          --splash-grid: #e2e8f0;
+          --splash-text: #64748b;
+          --splash-tagline: #94a3b8;
+          --splash-glow-1: rgba(59, 130, 246, 0.08);
+          --splash-glow-2: rgba(6, 182, 212, 0.06);
+          --splash-glow-3: rgba(37, 99, 235, 0.07);
+          --splash-ring-track: rgba(100, 116, 139, 0.2);
+          --splash-bar-track: rgba(100, 116, 139, 0.15);
+        }
+
+        #algoryx-splash::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(to right, var(--splash-grid) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--splash-grid) 1px, transparent 1px);
+          background-size: 4rem 4rem;
+          mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, #000 70%, transparent 110%);
+          opacity: 0.35;
+          pointer-events: none;
+        }
+
+        html:not(.dark) #algoryx-splash::before {
+          opacity: 0.55;
+        }
+
+        .algoryx-splash-glow {
+          position: absolute;
+          border-radius: 9999px;
+          filter: blur(80px);
+          pointer-events: none;
+          animation: algoryx-glow-drift 8s ease-in-out infinite alternate;
+        }
+
+        .algoryx-splash-glow--1 {
+          top: -6rem;
+          left: 18%;
+          width: 22rem;
+          height: 22rem;
+          background: var(--splash-glow-1);
+        }
+
+        .algoryx-splash-glow--2 {
+          top: 28%;
+          right: 12%;
+          width: 20rem;
+          height: 20rem;
+          background: var(--splash-glow-2);
+          animation-delay: -2s;
+        }
+
+        .algoryx-splash-glow--3 {
+          bottom: 8%;
+          left: 32%;
+          width: 18rem;
+          height: 18rem;
+          background: var(--splash-glow-3);
+          animation-delay: -4s;
+        }
+
+        .algoryx-splash-content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 1.5rem;
+          animation: algoryx-fade-in 0.8s ease-out both;
+        }
+
+        .algoryx-splash-logo {
+          width: auto;
+          height: auto;
+          max-width: min(280px, 72vw);
+          object-fit: contain;
+          animation: algoryx-logo-float 3.5s ease-in-out infinite;
+        }
+
+        .algoryx-splash-tagline {
+          margin: 0;
+          font-family: Cinzel, Georgia, serif;
+          font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          background: linear-gradient(90deg, #60a5fa, #22d3ee);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        html:not(.dark) .algoryx-splash-tagline {
+          background: linear-gradient(90deg, #2563eb, #0891b2);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .algoryx-splash-loader {
+          position: relative;
+          width: 3rem;
+          height: 3rem;
+        }
+
+        .algoryx-splash-loader-ring {
+          position: absolute;
+          inset: 0;
+          border-radius: 9999px;
+          border: 2px solid var(--splash-ring-track);
+          border-top-color: #3b82f6;
+          border-right-color: #22d3ee;
+          animation: algoryx-spin 0.9s linear infinite;
+        }
+
+        .algoryx-splash-loader-core {
+          position: absolute;
+          inset: 0.55rem;
+          border-radius: 9999px;
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(34, 211, 238, 0.15));
+          animation: algoryx-pulse 2s ease-in-out infinite;
+        }
+
+        .algoryx-splash-status {
+          margin: 0;
+          font-size: 0.8125rem;
+          letter-spacing: 0.04em;
+          color: var(--splash-text);
+        }
+
+        .algoryx-splash-dots::after {
+          content: "";
+          animation: algoryx-dots 1.4s steps(4, end) infinite;
+        }
+
+        .algoryx-splash-bar {
+          width: min(12rem, 60vw);
+          height: 3px;
+          border-radius: 9999px;
+          background: var(--splash-bar-track);
+          overflow: hidden;
+        }
+
+        .algoryx-splash-bar-fill {
+          display: block;
+          height: 100%;
+          width: 35%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, #3b82f6, #22d3ee, #3b82f6);
+          background-size: 200% 100%;
+          animation: algoryx-bar-slide 1.6s ease-in-out infinite;
+        }
+
+        @keyframes algoryx-spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes algoryx-pulse {
+          0%, 100% { opacity: 0.45; transform: scale(0.92); }
+          50% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes algoryx-fade-in {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes algoryx-logo-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+
+        @keyframes algoryx-glow-drift {
+          from { transform: translate(0, 0) scale(1); }
+          to { transform: translate(12px, -10px) scale(1.06); }
+        }
+
+        @keyframes algoryx-dots {
+          0% { content: ""; }
+          25% { content: "."; }
+          50% { content: ".."; }
+          75% { content: "..."; }
+        }
+
+        @keyframes algoryx-bar-slide {
+          0% { transform: translateX(-120%); background-position: 0% 50%; }
+          100% { transform: translateX(320%); background-position: 200% 50%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          #algoryx-splash *,
+          #algoryx-splash::before,
+          .algoryx-splash-glow {
+            animation: none !important;
+          }
+        }
+      </style>
       
       <!-- Structured Data (JSON-LD) -->
       <script type="application/ld+json">
@@ -262,8 +491,32 @@
         </div>
       </noscript>
       <div id="root" role="main" aria-label="Algoryx.io — Algoryx Labs and Algoryx Tech">
-        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;color:#94a3b8;font-family:system-ui,sans-serif;font-size:0.875rem">
-          Loading Algoryx…
+        <div id="algoryx-splash" aria-live="polite" aria-busy="true" aria-label="Loading Algoryx">
+          <div class="algoryx-splash-glow algoryx-splash-glow--1" aria-hidden="true"></div>
+          <div class="algoryx-splash-glow algoryx-splash-glow--2" aria-hidden="true"></div>
+          <div class="algoryx-splash-glow algoryx-splash-glow--3" aria-hidden="true"></div>
+          <div class="algoryx-splash-content">
+            <img
+              class="algoryx-splash-logo"
+              src="/algoryx-labs-logo.png"
+              width="608"
+              height="253"
+              alt="Algoryx Labs and Algoryx Tech"
+              decoding="sync"
+              fetchpriority="high"
+            />
+            <p class="algoryx-splash-tagline">Algorithms Over Opinion</p>
+            <div class="algoryx-splash-loader" aria-hidden="true">
+              <div class="algoryx-splash-loader-ring"></div>
+              <div class="algoryx-splash-loader-core"></div>
+            </div>
+            <div class="algoryx-splash-bar" aria-hidden="true">
+              <span class="algoryx-splash-bar-fill"></span>
+            </div>
+            <p class="algoryx-splash-status">
+              Loading your Algoryx experience<span class="algoryx-splash-dots" aria-hidden="true"></span>
+            </p>
+          </div>
         </div>
       </div>
       <script type="module" src="/src/main.tsx"></script>
