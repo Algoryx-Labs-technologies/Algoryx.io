@@ -63,7 +63,7 @@ Or use Compose from `apps/apiv2`:
 ```bash
 cd apps/apiv2
 cp .env.docker.example .env
-# Edit .env — set JWT_SECRET, admin credentials, CORS_ORIGIN, etc.
+# Edit .env — set JWT_SECRET, admin credentials, etc.
 
 # API only (use MONGODB_URI for Atlas or an external MongoDB):
 docker compose up -d --build
