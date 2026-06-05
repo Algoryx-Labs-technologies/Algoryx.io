@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import {
-  MEETING_STATUSES,
-  MEETING_TYPES,
-  MeetingStatus,
-  MeetingType,
-} from '@/models/meeting.model';
+import { MEETING_STATUSES, MeetingStatus } from '@/models/meeting.model';
 import {
   createMeeting,
   deleteMeeting,
@@ -19,11 +14,9 @@ export const getMeetings = async (
 ) => {
   try {
     const status = req.query.status as MeetingStatus | undefined;
-    const type = req.query.type as MeetingType | undefined;
-    const upcoming = req.query.upcoming === 'true';
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
 
-    const meetings = await listMeetings({ status, type, upcoming, search });
+    const meetings = await listMeetings({ status, search });
 
     res.json({
       success: true,
@@ -40,28 +33,13 @@ export const postMeeting = async (
   next: NextFunction,
 ) => {
   try {
-    const {
-      title,
-      type,
-      status,
-      scheduledAt,
-      durationMinutes,
-      attendeeName,
-      attendeeEmail,
-      locationOrLink,
-      notes,
-      projectId,
-    } = req.body;
+    const { title, status, scheduledAt, attendeeName, notes, projectId } = req.body;
 
     const meeting = await createMeeting({
       title,
-      type,
       status,
       scheduledAt,
-      durationMinutes,
       attendeeName,
-      attendeeEmail,
-      locationOrLink,
       notes,
       projectId,
     });
@@ -117,7 +95,6 @@ export const getMeetingMeta = (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
-      types: MEETING_TYPES,
       statuses: MEETING_STATUSES,
     },
   });

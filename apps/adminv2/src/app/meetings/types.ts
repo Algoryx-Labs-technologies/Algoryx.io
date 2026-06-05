@@ -1,20 +1,29 @@
-export const MEETING_TYPES = [
-  { id: 'meeting', label: 'Meeting' },
-  { id: 'follow_up', label: 'Follow-up' },
-  { id: 'call', label: 'Call' },
-  { id: 'internal', label: 'Internal' },
+export const MEETING_STAGES = [
+  {
+    id: 'upcoming',
+    label: 'Upcoming',
+    headerClass: 'bg-sky-600',
+  },
+  {
+    id: 'follow_up',
+    label: 'Follow-up',
+    headerClass: 'bg-violet-600',
+  },
+  {
+    id: 'cancelled',
+    label: 'Cancelled',
+    headerClass: 'bg-slate-600',
+  },
+  {
+    id: 'completed',
+    label: 'Completed',
+    headerClass: 'bg-emerald-600',
+  },
 ] as const;
 
-export const MEETING_STATUSES = [
-  { id: 'scheduled', label: 'Scheduled', badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
-  { id: 'completed', label: 'Completed', badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  { id: 'cancelled', label: 'Cancelled', badgeClass: 'bg-slate-500/20 text-slate-300 border-slate-500/30' },
-] as const;
+export type MeetingStageId = (typeof MEETING_STAGES)[number]['id'];
 
-export type MeetingTypeId = (typeof MEETING_TYPES)[number]['id'];
-export type MeetingStatusId = (typeof MEETING_STATUSES)[number]['id'];
-
-export type MeetingFilter = 'all' | 'upcoming' | MeetingStatusId;
+export type StageFilter = 'all' | MeetingStageId;
 
 export interface MeetingProjectSummary {
   id: string;
@@ -27,13 +36,9 @@ export interface Meeting {
   id: string;
   meetingCode: string;
   title: string;
-  type: MeetingTypeId;
-  status: MeetingStatusId;
+  status: MeetingStageId;
   scheduledAt: string;
-  durationMinutes?: number;
   attendeeName?: string;
-  attendeeEmail?: string;
-  locationOrLink?: string;
   notes?: string;
   projectId?: string;
   project?: MeetingProjectSummary;

@@ -3,10 +3,8 @@ import { AdminProject } from '@/models/admin-project.model';
 import {
   IMeeting,
   MEETING_STATUSES,
-  MEETING_TYPES,
   Meeting,
   MeetingStatus,
-  MeetingType,
 } from '@/models/meeting.model';
 import { AppError } from '@/types';
 
@@ -21,13 +19,9 @@ export interface MeetingListItem {
   id: string;
   meetingCode: string;
   title: string;
-  type: MeetingType;
   status: MeetingStatus;
   scheduledAt: string;
-  durationMinutes?: number;
   attendeeName?: string;
-  attendeeEmail?: string;
-  locationOrLink?: string;
   notes?: string;
   projectId?: string;
   project?: MeetingProjectSummary;
@@ -37,26 +31,18 @@ export interface MeetingListItem {
 
 export interface CreateMeetingInput {
   title: string;
-  type?: MeetingType;
   status?: MeetingStatus;
   scheduledAt: string;
-  durationMinutes?: number;
   attendeeName?: string;
-  attendeeEmail?: string;
-  locationOrLink?: string;
   notes?: string;
   projectId?: string;
 }
 
 export interface UpdateMeetingInput {
   title?: string;
-  type?: MeetingType;
   status?: MeetingStatus;
   scheduledAt?: string;
-  durationMinutes?: number | null;
   attendeeName?: string;
-  attendeeEmail?: string;
-  locationOrLink?: string;
   notes?: string;
   projectId?: string | null;
 }
@@ -64,6 +50,7 @@ export interface UpdateMeetingInput {
 type MeetingRecord = IMeeting & {
   _id: { toString(): string };
   projectId?: { toString(): string };
+  status: MeetingStatus | 'scheduled';
 };
 
 const parseScheduledAt = (value: string): Date => {
@@ -72,6 +59,16 @@ const parseScheduledAt = (value: string): Date => {
     throw new AppError(400, 'Invalid scheduled date');
   }
   return date;
+};
+
+const normalizeStatus = (status: string): MeetingStatus => {
+  if ((MEETING_STATUSES as readonly string[]).includes(status)) {
+    return status as MeetingStatus;
+  }
+  if (status === 'scheduled') {
+    return 'upcoming';
+  }
+  return 'upcoming';
 };
 
 const resolveProjectId = async (
@@ -140,13 +137,9 @@ const toListItem = (
     id: String(record._id),
     meetingCode: record.meetingCode,
     title: record.title,
-    type: record.type,
-    status: record.status,
+    status: normalizeStatus(record.status),
     scheduledAt: record.scheduledAt.toISOString(),
-    durationMinutes: record.durationMinutes,
     attendeeName: record.attendeeName,
-    attendeeEmail: record.attendeeEmail,
-    locationOrLink: record.locationOrLink,
     notes: record.notes,
     projectId,
     project,
@@ -160,18 +153,23 @@ const toListItems = async (records: MeetingRecord[]): Promise<MeetingListItem[]>
   return records.map((record) => toListItem(record, projectMap));
 };
 
+const buildStatusFilter = (
+  status: MeetingStatus,
+): MeetingStatus | { $in: string[] } => {
+  if (status === 'upcoming') {
+    return { $in: ['upcoming', 'scheduled'] };
+  }
+  return status;
+};
+
 export const generateMeetingCode = async (): Promise<string> => {
   const count = await Meeting.countDocuments();
   return `MT${String(count + 1).padStart(3, '0')}`;
 };
 
 export const createMeeting = async (data: CreateMeetingInput): Promise<MeetingListItem> => {
-  const type = data.type ?? 'meeting';
-  const status = data.status ?? 'scheduled';
+  const status = data.status ?? 'upcoming';
 
-  if (!MEETING_TYPES.includes(type)) {
-    throw new AppError(400, 'Invalid meeting type');
-  }
   if (!MEETING_STATUSES.includes(status)) {
     throw new AppError(400, 'Invalid meeting status');
   }
@@ -182,13 +180,9 @@ export const createMeeting = async (data: CreateMeetingInput): Promise<MeetingLi
   const record = await Meeting.create({
     meetingCode,
     title: data.title,
-    type,
     status,
     scheduledAt: parseScheduledAt(data.scheduledAt),
-    durationMinutes: data.durationMinutes,
     attendeeName: data.attendeeName,
-    attendeeEmail: data.attendeeEmail,
-    locationOrLink: data.locationOrLink,
     notes: data.notes,
     projectId,
   });
@@ -199,8 +193,6 @@ export const createMeeting = async (data: CreateMeetingInput): Promise<MeetingLi
 
 export interface ListMeetingsOptions {
   status?: MeetingStatus;
-  type?: MeetingType;
-  upcoming?: boolean;
   search?: string;
 }
 
@@ -213,19 +205,7 @@ export const listMeetings = async (
     if (!MEETING_STATUSES.includes(options.status)) {
       throw new AppError(400, 'Invalid meeting status filter');
     }
-    filter.status = options.status;
-  }
-
-  if (options.type) {
-    if (!MEETING_TYPES.includes(options.type)) {
-      throw new AppError(400, 'Invalid meeting type filter');
-    }
-    filter.type = options.type;
-  }
-
-  if (options.upcoming) {
-    filter.status = 'scheduled';
-    filter.scheduledAt = { $gte: new Date() };
+    filter.status = buildStatusFilter(options.status);
   }
 
   if (options.search?.trim()) {
@@ -244,25 +224,25 @@ export const listMeetings = async (
       { meetingCode: regex },
       { title: regex },
       { attendeeName: regex },
-      { attendeeEmail: regex },
       { notes: regex },
-      { locationOrLink: regex },
       ...(projectIds.length ? [{ projectId: { $in: projectIds } }] : []),
     ];
   }
 
   const records = await Meeting.find(filter).sort({ scheduledAt: 1 }).lean();
+  const items = await toListItems(records as unknown as MeetingRecord[]);
 
-  return toListItems(records as unknown as MeetingRecord[]);
+  if (options.status) {
+    return items.filter((item) => item.status === options.status);
+  }
+
+  return items;
 };
 
 export const updateMeeting = async (
   id: string,
   data: UpdateMeetingInput,
 ): Promise<MeetingListItem> => {
-  if (data.type && !MEETING_TYPES.includes(data.type)) {
-    throw new AppError(400, 'Invalid meeting type');
-  }
   if (data.status && !MEETING_STATUSES.includes(data.status)) {
     throw new AppError(400, 'Invalid meeting status');
   }
@@ -270,13 +250,9 @@ export const updateMeeting = async (
   const update: Record<string, unknown> = {};
 
   if (data.title !== undefined) update.title = data.title;
-  if (data.type !== undefined) update.type = data.type;
   if (data.status !== undefined) update.status = data.status;
   if (data.scheduledAt !== undefined) update.scheduledAt = parseScheduledAt(data.scheduledAt);
-  if (data.durationMinutes !== undefined) update.durationMinutes = data.durationMinutes;
   if (data.attendeeName !== undefined) update.attendeeName = data.attendeeName;
-  if (data.attendeeEmail !== undefined) update.attendeeEmail = data.attendeeEmail;
-  if (data.locationOrLink !== undefined) update.locationOrLink = data.locationOrLink;
   if (data.notes !== undefined) update.notes = data.notes;
 
   if (data.projectId !== undefined) {

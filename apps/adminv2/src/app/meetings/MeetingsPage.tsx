@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
-import { format, formatDistanceToNow, isPast } from 'date-fns';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
   CalendarDays,
-  CheckCircle2,
-  Link2,
+  Grid3X3,
+  LayoutList,
   Loader2,
-  MapPin,
   Pencil,
   Plus,
   RefreshCw,
@@ -18,47 +17,31 @@ import { AppLayout } from '../components/AppLayout';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { cn } from '../components/ui/utils';
 import { apiClient } from '@/lib/api';
 import {
-  MEETING_STATUSES,
-  MEETING_TYPES,
+  MEETING_STAGES,
   type AdminProjectOption,
   type Meeting,
-  type MeetingFilter,
-  type MeetingStatusId,
-  type MeetingTypeId,
+  type MeetingStageId,
+  type StageFilter,
 } from './types';
+
+type ViewMode = 'board' | 'list';
 
 interface MeetingForm {
   title: string;
-  type: MeetingTypeId;
-  status: MeetingStatusId;
   scheduledAt: string;
-  durationMinutes: string;
   attendeeName: string;
-  attendeeEmail: string;
-  locationOrLink: string;
   notes: string;
   projectId: string;
 }
 
 const emptyForm: MeetingForm = {
   title: '',
-  type: 'meeting',
-  status: 'scheduled',
   scheduledAt: '',
-  durationMinutes: '30',
   attendeeName: '',
-  attendeeEmail: '',
-  locationOrLink: '',
   notes: '',
   projectId: '',
 };
@@ -70,53 +53,61 @@ const selectClass = cn(
   'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
 );
 
-function typeLabel(type: MeetingTypeId): string {
-  return MEETING_TYPES.find((item) => item.id === type)?.label ?? type;
-}
-
-function statusMeta(status: MeetingStatusId) {
-  return MEETING_STATUSES.find((item) => item.id === status);
-}
-
-function toLocalInputValue(iso?: string): string {
+function toDateInputValue(iso?: string): string {
   if (!iso) return '';
   const date = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-function formatScheduled(iso: string): string {
+function formatScheduledDate(iso: string): string {
   try {
-    return format(new Date(iso), 'EEE, MMM d, yyyy · h:mm a');
+    return format(new Date(iso), 'MMM d, yyyy');
   } catch {
     return '';
   }
 }
 
+function formatRelativeDate(iso: string): string {
+  try {
+    const date = new Date(iso);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const scheduled = new Date(date);
+    scheduled.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((scheduled.getTime() - today.getTime()) / 86400000);
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays === -1) return 'Yesterday';
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch {
+    return '';
+  }
+}
+
+function isMeetingOverdue(iso: string, status: MeetingStageId): boolean {
+  if (status !== 'upcoming') return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const scheduled = new Date(iso);
+  scheduled.setHours(0, 0, 0, 0);
+  return scheduled < today;
+}
+
 export function MeetingsPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [stats, setStats] = useState({ scheduled: 0, completed: 0, followUps: 0 });
   const [projects, setProjects] = useState<AdminProjectOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<MeetingFilter>('upcoming');
+  const [stageFilter, setStageFilter] = useState<StageFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [showModal, setShowModal] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [form, setForm] = useState<MeetingForm>(emptyForm);
-
-  const fetchStats = useCallback(async () => {
-    const response = await apiClient.get<Meeting[]>('/meetings');
-    if (response.success && response.data) {
-      setStats({
-        scheduled: response.data.filter((m) => m.status === 'scheduled').length,
-        completed: response.data.filter((m) => m.status === 'completed').length,
-        followUps: response.data.filter((m) => m.type === 'follow_up').length,
-      });
-    }
-  }, []);
+  const [draggedMeetingId, setDraggedMeetingId] = useState<string | null>(null);
 
   const fetchMeetings = useCallback(async () => {
     setLoading(true);
@@ -124,11 +115,7 @@ export function MeetingsPage() {
 
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
-    if (filter === 'upcoming') {
-      params.set('upcoming', 'true');
-    } else if (filter !== 'all') {
-      params.set('status', filter);
-    }
+    if (stageFilter !== 'all') params.set('status', stageFilter);
 
     const query = params.toString();
     const endpoint = query ? `/meetings?${query}` : '/meetings';
@@ -143,8 +130,7 @@ export function MeetingsPage() {
 
     setMeetings(response.data);
     setLoading(false);
-    await fetchStats();
-  }, [search, filter, fetchStats]);
+  }, [search, stageFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -168,6 +154,36 @@ export function MeetingsPage() {
     void fetchProjects();
   }, [showModal]);
 
+  const meetingsByStage = useMemo(() => {
+    const grouped = Object.fromEntries(
+      MEETING_STAGES.map((s) => [s.id, [] as Meeting[]]),
+    ) as Record<MeetingStageId, Meeting[]>;
+
+    for (const meeting of meetings) {
+      if (grouped[meeting.status]) {
+        grouped[meeting.status].push(meeting);
+      }
+    }
+
+    return grouped;
+  }, [meetings]);
+
+  const visibleStages = useMemo(
+    () =>
+      MEETING_STAGES.filter(
+        (stage) => stageFilter === 'all' || stageFilter === stage.id,
+      ),
+    [stageFilter],
+  );
+
+  const boardGridClass = cn(
+    'grid gap-4 w-full min-h-[420px] pb-4',
+    visibleStages.length === 1 && 'grid-cols-1',
+    visibleStages.length === 2 && 'grid-cols-1 md:grid-cols-2',
+    visibleStages.length === 3 && 'grid-cols-1 md:grid-cols-3',
+    visibleStages.length >= 4 && 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
+  );
+
   const openCreateModal = () => {
     setEditingMeeting(null);
     setForm(emptyForm);
@@ -178,13 +194,8 @@ export function MeetingsPage() {
     setEditingMeeting(meeting);
     setForm({
       title: meeting.title,
-      type: meeting.type,
-      status: meeting.status,
-      scheduledAt: toLocalInputValue(meeting.scheduledAt),
-      durationMinutes: meeting.durationMinutes ? String(meeting.durationMinutes) : '',
+      scheduledAt: toDateInputValue(meeting.scheduledAt),
       attendeeName: meeting.attendeeName ?? '',
-      attendeeEmail: meeting.attendeeEmail ?? '',
-      locationOrLink: meeting.locationOrLink ?? '',
       notes: meeting.notes ?? '',
       projectId: meeting.projectId ?? '',
     });
@@ -204,20 +215,15 @@ export function MeetingsPage() {
 
     const payload = {
       title: form.title.trim(),
-      type: form.type,
-      status: form.status,
-      scheduledAt: new Date(form.scheduledAt).toISOString(),
-      durationMinutes: form.durationMinutes ? parseInt(form.durationMinutes, 10) : undefined,
+      scheduledAt: new Date(`${form.scheduledAt}T12:00:00`).toISOString(),
       attendeeName: form.attendeeName.trim() || undefined,
-      attendeeEmail: form.attendeeEmail.trim() || undefined,
-      locationOrLink: form.locationOrLink.trim() || undefined,
       notes: form.notes.trim() || undefined,
       projectId: form.projectId || undefined,
     };
 
     const response = editingMeeting
       ? await apiClient.patch<Meeting>(`/meetings/${editingMeeting.id}`, payload)
-      : await apiClient.post<Meeting>('/meetings', payload);
+      : await apiClient.post<Meeting>('/meetings', { ...payload, status: 'upcoming' });
 
     setSaving(false);
 
@@ -230,6 +236,27 @@ export function MeetingsPage() {
     await fetchMeetings();
   };
 
+  const moveMeetingToStage = async (meetingId: string, status: MeetingStageId) => {
+    const meeting = meetings.find((m) => m.id === meetingId);
+    if (!meeting || meeting.status === status) return;
+
+    setMeetings((prev) =>
+      prev.map((item) => (item.id === meetingId ? { ...item, status } : item)),
+    );
+
+    const response = await apiClient.patch<Meeting>(`/meetings/${meetingId}`, { status });
+
+    if (!response.success || !response.data) {
+      setError(response.error || 'Failed to move meeting');
+      await fetchMeetings();
+      return;
+    }
+
+    setMeetings((prev) =>
+      prev.map((item) => (item.id === meetingId ? response.data! : item)),
+    );
+  };
+
   const handleDeleteMeeting = async (meetingId: string) => {
     const response = await apiClient.delete(`/meetings/${meetingId}`);
 
@@ -238,252 +265,288 @@ export function MeetingsPage() {
       return;
     }
 
-    await fetchMeetings();
+    setMeetings((prev) => prev.filter((m) => m.id !== meetingId));
   };
 
-  const handleMarkCompleted = async (meeting: Meeting) => {
-    const response = await apiClient.patch<Meeting>(`/meetings/${meeting.id}`, {
-      status: 'completed',
-    });
-
-    if (!response.success) {
-      setError(response.error || 'Failed to update meeting');
-      return;
+  const handleDrop = (stage: MeetingStageId) => {
+    if (draggedMeetingId) {
+      void moveMeetingToStage(draggedMeetingId, stage);
     }
-
-    await fetchMeetings();
+    setDraggedMeetingId(null);
   };
 
-  const filterOptions: { id: MeetingFilter; label: string }[] = [
-    { id: 'upcoming', label: 'Upcoming' },
-    { id: 'all', label: 'All' },
-    { id: 'scheduled', label: 'Scheduled' },
-    { id: 'completed', label: 'Completed' },
-    { id: 'cancelled', label: 'Cancelled' },
-  ];
+  const renderMeetingCard = (meeting: Meeting) => {
+    const overdue = isMeetingOverdue(meeting.scheduledAt, meeting.status);
+
+    return (
+      <div
+        key={meeting.id}
+        draggable
+        onDragStart={() => setDraggedMeetingId(meeting.id)}
+        onDragEnd={() => setDraggedMeetingId(null)}
+        className={cn(
+          'rounded-xl border bg-white dark:bg-slate-900 shadow-sm cursor-grab active:cursor-grabbing p-4',
+          overdue ? 'border-red-500/40' : 'border-white/10',
+          draggedMeetingId === meeting.id && 'opacity-50 ring-2 ring-indigo-400/50',
+        )}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+            {meeting.meetingCode}
+          </span>
+          <div className="flex gap-0.5">
+            <button
+              type="button"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                openEditModal(meeting);
+              }}
+              className="p-1 rounded hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400"
+              aria-label="Edit meeting"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                void handleDeleteMeeting(meeting.id);
+              }}
+              className="p-1 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-400"
+              aria-label="Delete meeting"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <p className="font-semibold text-slate-900 dark:text-white text-sm">{meeting.title}</p>
+
+        <p className="text-xs text-indigo-300/90 mt-2 flex items-center gap-1.5">
+          <CalendarDays className="h-3 w-3 shrink-0" />
+          {formatScheduledDate(meeting.scheduledAt)}
+        </p>
+        <p className="text-[10px] text-slate-500 mt-0.5">{formatRelativeDate(meeting.scheduledAt)}</p>
+
+        {overdue && (
+          <span className="inline-block mt-2 text-[10px] uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
+            Overdue
+          </span>
+        )}
+
+        {meeting.attendeeName && (
+          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5 truncate">
+            <User className="h-3 w-3 shrink-0" />
+            {meeting.attendeeName}
+          </p>
+        )}
+
+        {meeting.project && (
+          <p className="text-[10px] text-slate-500 mt-1 truncate">
+            {meeting.project.projectCode} · {meeting.project.projectName}
+          </p>
+        )}
+
+        {meeting.notes && (
+          <p className="text-xs text-slate-500 mt-2 line-clamp-2">{meeting.notes}</p>
+        )}
+      </div>
+    );
+  };
 
   return (
     <AppLayout
       title="Meetings"
-      description="Schedule client meetings, calls, and follow-ups in one place."
+      description="Track upcoming meetings and follow-ups. Drag cards between columns."
     >
-      <div className="grid gap-4 sm:grid-cols-3 mb-6">
-        <Card className="bg-gradient-to-br from-indigo-900/30 to-slate-800/50 border border-indigo-500/20">
-          <CardContent className="pt-4">
-            <p className="text-xs text-gray-400 font-footer uppercase">Scheduled</p>
-            <p className="text-2xl font-bold text-white font-hero">{stats.scheduled}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-emerald-900/20 to-slate-800/50 border border-emerald-500/20">
-          <CardContent className="pt-4">
-            <p className="text-xs text-gray-400 font-footer uppercase">Completed</p>
-            <p className="text-2xl font-bold text-white font-hero">{stats.completed}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-violet-900/20 to-slate-800/50 border border-violet-500/20">
-          <CardContent className="pt-4">
-            <p className="text-xs text-gray-400 font-footer uppercase">Follow-ups</p>
-            <p className="text-2xl font-bold text-white font-hero">{stats.followUps}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="w-full max-w-none rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-50/90 to-violet-50/50 dark:from-indigo-950/30 dark:to-slate-900/80 dark:border-indigo-500/10 p-4 md:p-6 min-h-[calc(100vh-12rem)]">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-5">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search meetings, attendees, projects…"
+              className="pl-9 bg-white/80 dark:bg-slate-900/60 border-slate-200 dark:border-white/10"
+            />
+          </div>
 
-      <div className="flex flex-col lg:flex-row gap-3 justify-between mb-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search meetings, attendees, projects…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 dark:bg-slate-800 border-white/10 font-footer"
-          />
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button type="button" variant="outline" onClick={fetchMeetings} disabled={loading} className="font-footer">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          </Button>
-          <Button type="button" onClick={openCreateModal} className={cn(accentBtn, 'font-footer')}>
-            <Plus className="h-4 w-4" />
-            Add meeting
-          </Button>
-        </div>
-      </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden bg-white/60 dark:bg-slate-900/40">
+              <button
+                type="button"
+                onClick={() => setViewMode('board')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
+                  viewMode === 'board'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+                )}
+              >
+                <Grid3X3 className="h-4 w-4" />
+                Board
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
+                  viewMode === 'list'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+                )}
+              >
+                <LayoutList className="h-4 w-4" />
+                List
+              </button>
+            </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {filterOptions.map((option) => (
+            <Button
+              type="button"
+              onClick={openCreateModal}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-footer"
+            >
+              <Plus className="h-4 w-4" />
+              Add meeting
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={fetchMeetings}
+              disabled={loading}
+              className="font-footer border-slate-200 dark:border-white/10"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-5">
           <button
-            key={option.id}
             type="button"
-            onClick={() => setFilter(option.id)}
+            onClick={() => setStageFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors font-footer',
-              filter === option.id
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+              stageFilter === 'all'
                 ? 'bg-indigo-600 text-white'
-                : 'bg-slate-800 text-gray-300 hover:bg-slate-700 border border-white/10',
+                : 'bg-white/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700',
             )}
           >
-            {option.label}
+            All
           </button>
-        ))}
-      </div>
+          {MEETING_STAGES.map((stage) => (
+            <button
+              key={stage.id}
+              type="button"
+              onClick={() => setStageFilter(stage.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                stageFilter === stage.id
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700',
+              )}
+            >
+              {stage.label}
+            </button>
+          ))}
+        </div>
 
-      <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm border border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2 font-hero">
-            <CalendarDays className="h-5 w-5 text-indigo-400" />
-            Meeting tracker ({meetings.length})
-          </CardTitle>
-          <CardDescription className="font-footer">
-            Upcoming meetings, client calls, and follow-up reminders
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400 font-footer">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400 font-footer">
+            {error}
+          </div>
+        )}
 
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
-            </div>
-          ) : meetings.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 font-footer">
-              <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No meetings found</p>
-              <p className="text-sm mt-2 text-gray-500">Click Add meeting to schedule one.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {meetings.map((meeting) => {
-                const status = statusMeta(meeting.status);
-                const overdue =
-                  meeting.status === 'scheduled' && isPast(new Date(meeting.scheduledAt));
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+          </div>
+        ) : viewMode === 'board' ? (
+          <div className={boardGridClass}>
+            {visibleStages.map((stage) => {
+              const columnMeetings = meetingsByStage[stage.id];
 
-                return (
+              return (
+                <div
+                  key={stage.id}
+                  className="flex min-w-0 flex-col h-full"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(stage.id)}
+                >
                   <div
-                    key={meeting.id}
                     className={cn(
-                      'rounded-lg border bg-slate-800/40 p-4',
-                      overdue ? 'border-red-500/30' : 'border-white/10',
+                      'rounded-t-xl px-4 py-2.5 text-white text-sm font-semibold flex items-center justify-between',
+                      stage.headerClass,
                     )}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-700 text-slate-300">
-                            {meeting.meetingCode}
-                          </span>
-                          <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
-                            {typeLabel(meeting.type)}
-                          </span>
-                          {status && (
-                            <span
-                              className={cn(
-                                'text-[10px] uppercase px-2 py-0.5 rounded border',
-                                status.badgeClass,
-                              )}
-                            >
-                              {status.label}
-                            </span>
-                          )}
-                          {overdue && (
-                            <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">
-                              Overdue
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-white font-semibold font-footer">{meeting.title}</p>
-
-                        <p className="text-sm text-indigo-200/90 font-footer mt-2 flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                          {formatScheduled(meeting.scheduledAt)}
-                        </p>
-
-                        <p className="text-xs text-gray-500 font-footer mt-1">
-                          {formatDistanceToNow(new Date(meeting.scheduledAt), { addSuffix: true })}
-                          {meeting.durationMinutes ? ` · ${meeting.durationMinutes} min` : ''}
-                        </p>
-
-                        {(meeting.attendeeName || meeting.attendeeEmail) && (
-                          <p className="text-sm text-gray-400 font-footer mt-2 flex items-center gap-2">
-                            <User className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">
-                              {meeting.attendeeName}
-                              {meeting.attendeeName && meeting.attendeeEmail ? ' · ' : ''}
-                              {meeting.attendeeEmail}
-                            </span>
-                          </p>
-                        )}
-
-                        {meeting.project && (
-                          <p className="text-xs text-gray-500 font-footer mt-1">
-                            Project: {meeting.project.projectCode} — {meeting.project.projectName}
-                          </p>
-                        )}
-
-                        {meeting.locationOrLink && (
-                          <p className="text-xs text-gray-400 font-footer mt-2 flex items-center gap-2 truncate">
-                            {meeting.locationOrLink.startsWith('http') ? (
-                              <Link2 className="h-3.5 w-3.5 shrink-0" />
-                            ) : (
-                              <MapPin className="h-3.5 w-3.5 shrink-0" />
-                            )}
-                            <span className="truncate">{meeting.locationOrLink}</span>
-                          </p>
-                        )}
-
-                        {meeting.notes && (
-                          <p className="text-sm text-gray-400 font-footer mt-2 line-clamp-2">
-                            {meeting.notes}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col gap-1 shrink-0">
-                        {meeting.status === 'scheduled' && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMarkCompleted(meeting)}
-                            className="text-gray-500 hover:text-emerald-400"
-                            title="Mark completed"
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(meeting)}
-                          className="text-gray-500 hover:text-indigo-400"
-                          title="Edit meeting"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteMeeting(meeting.id)}
-                          className="text-gray-500 hover:text-red-400"
-                          title="Delete meeting"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                    <span>{stage.label}</span>
+                    <span className="bg-black/20 rounded-full px-2 py-0.5 text-xs">
+                      {columnMeetings.length}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <div className="flex-1 rounded-b-xl bg-slate-100/80 dark:bg-slate-800/40 border border-t-0 border-slate-200 dark:border-white/10 p-3 space-y-3 min-h-[360px]">
+                    {columnMeetings.length === 0 ? (
+                      <p className="text-center text-xs text-slate-400 py-8 px-2">
+                        No meetings in this column
+                      </p>
+                    ) : (
+                      columnMeetings.map((meeting) => renderMeetingCard(meeting))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {meetings.length === 0 ? (
+              <p className="text-center text-slate-500 py-12 font-footer">No meetings found</p>
+            ) : (
+              meetings.map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="flex flex-col lg:flex-row lg:items-center gap-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 p-4"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                        {meeting.meetingCode}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatRelativeDate(meeting.scheduledAt)}</span>
+                    </div>
+                    <p className="font-semibold text-slate-900 dark:text-white">{meeting.title}</p>
+                    <p className="text-sm text-slate-500">{formatScheduledDate(meeting.scheduledAt)}</p>
+                    {meeting.attendeeName && (
+                      <p className="text-sm text-slate-500">{meeting.attendeeName}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    {MEETING_STAGES.map((stage) => (
+                      <Button
+                        key={stage.id}
+                        type="button"
+                        size="sm"
+                        variant={meeting.status === stage.id ? 'default' : 'outline'}
+                        disabled={meeting.status === stage.id || saving}
+                        onClick={() => moveMeetingToStage(meeting.id, stage.id)}
+                        className={cn(
+                          'text-xs font-footer',
+                          meeting.status === stage.id && 'bg-indigo-600',
+                        )}
+                      >
+                        {stage.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -491,7 +554,7 @@ export function MeetingsPage() {
             <CardHeader className="border-b border-white/10 sticky top-0 bg-slate-900/95 z-10">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white font-hero">
-                  {editingMeeting ? 'Edit meeting' : 'Schedule meeting'}
+                  {editingMeeting ? 'Edit meeting' : 'Add meeting'}
                 </CardTitle>
                 <Button type="button" variant="ghost" size="sm" onClick={closeModal} className="text-gray-400 hover:text-white">
                   <X className="h-4 w-4" />
@@ -508,67 +571,26 @@ export function MeetingsPage() {
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     className="dark:bg-slate-800 border-white/10"
-                    placeholder="e.g. Client kickoff call"
+                    placeholder="e.g. Client follow-up"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-type" className="text-gray-300">Type</Label>
-                    <select
-                      id="meeting-type"
-                      value={form.type}
-                      onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as MeetingTypeId }))}
-                      className={selectClass}
-                    >
-                      {MEETING_TYPES.map((type) => (
-                        <option key={type.id} value={type.id}>{type.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-status" className="text-gray-300">Status</Label>
-                    <select
-                      id="meeting-status"
-                      value={form.status}
-                      onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as MeetingStatusId }))}
-                      className={selectClass}
-                    >
-                      {MEETING_STATUSES.map((status) => (
-                        <option key={status.id} value={status.id}>{status.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-datetime" className="text-gray-300">Date & time *</Label>
-                    <Input
-                      id="meeting-datetime"
-                      type="datetime-local"
-                      required
-                      value={form.scheduledAt}
-                      onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
-                      className="dark:bg-slate-800 border-white/10"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-duration" className="text-gray-300">Duration (min)</Label>
-                    <Input
-                      id="meeting-duration"
-                      type="number"
-                      min="0"
-                      value={form.durationMinutes}
-                      onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                      className="dark:bg-slate-800 border-white/10"
-                      placeholder="30"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meeting-date" className="text-gray-300">Date *</Label>
+                  <Input
+                    id="meeting-date"
+                    type="date"
+                    required
+                    value={form.scheduledAt}
+                    onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
+                    className="dark:bg-slate-800 border-white/10"
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="meeting-project" className="text-gray-300">Related project</Label>
+                  <Label htmlFor="meeting-project" className="text-gray-300">
+                    Related project <span className="text-gray-500">(optional)</span>
+                  </Label>
                   {projectsLoading ? (
                     <div className="flex items-center gap-2 text-sm text-gray-400 py-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -591,41 +613,23 @@ export function MeetingsPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-attendee" className="text-gray-300">Attendee name</Label>
-                    <Input
-                      id="meeting-attendee"
-                      value={form.attendeeName}
-                      onChange={(e) => setForm((f) => ({ ...f, attendeeName: e.target.value }))}
-                      className="dark:bg-slate-800 border-white/10"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="meeting-email" className="text-gray-300">Attendee email</Label>
-                    <Input
-                      id="meeting-email"
-                      type="email"
-                      value={form.attendeeEmail}
-                      onChange={(e) => setForm((f) => ({ ...f, attendeeEmail: e.target.value }))}
-                      className="dark:bg-slate-800 border-white/10"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="meeting-location" className="text-gray-300">Location or meeting link</Label>
+                  <Label htmlFor="meeting-attendee" className="text-gray-300">
+                    Attendee <span className="text-gray-500">(optional)</span>
+                  </Label>
                   <Input
-                    id="meeting-location"
-                    value={form.locationOrLink}
-                    onChange={(e) => setForm((f) => ({ ...f, locationOrLink: e.target.value }))}
+                    id="meeting-attendee"
+                    value={form.attendeeName}
+                    onChange={(e) => setForm((f) => ({ ...f, attendeeName: e.target.value }))}
                     className="dark:bg-slate-800 border-white/10"
-                    placeholder="Zoom link, office, Google Meet…"
+                    placeholder="Client or team member name"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="meeting-notes" className="text-gray-300">Notes</Label>
+                  <Label htmlFor="meeting-notes" className="text-gray-300">
+                    Notes <span className="text-gray-500">(optional)</span>
+                  </Label>
                   <textarea
                     id="meeting-notes"
                     rows={3}
@@ -635,9 +639,15 @@ export function MeetingsPage() {
                       'dark:bg-slate-800 border-white/10 flex w-full rounded-md border px-3 py-2 text-base md:text-sm outline-none resize-y min-h-[80px]',
                       'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
                     )}
-                    placeholder="Agenda, follow-up points, prep notes…"
+                    placeholder="Agenda or follow-up points…"
                   />
                 </div>
+
+                {!editingMeeting && (
+                  <p className="text-xs text-gray-500">
+                    New meetings are added to the <span className="text-sky-300">Upcoming</span> column.
+                  </p>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={closeModal} className="font-footer">
@@ -652,7 +662,7 @@ export function MeetingsPage() {
                     ) : editingMeeting ? (
                       'Save changes'
                     ) : (
-                      'Schedule meeting'
+                      'Add meeting'
                     )}
                   </Button>
                 </div>

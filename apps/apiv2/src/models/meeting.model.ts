@@ -1,16 +1,20 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose';
 
-export const MEETING_TYPES = ['meeting', 'follow_up', 'call', 'internal'] as const;
-export const MEETING_STATUSES = ['scheduled', 'completed', 'cancelled'] as const;
+export const MEETING_STATUSES = [
+  'upcoming',
+  'follow_up',
+  'cancelled',
+  'completed',
+] as const;
 
-export type MeetingType = (typeof MEETING_TYPES)[number];
+export const LEGACY_MEETING_STATUSES = ['scheduled'] as const;
+
 export type MeetingStatus = (typeof MEETING_STATUSES)[number];
 
 export interface IMeeting extends Document {
   meetingCode: string;
   title: string;
-  type: MeetingType;
-  status: MeetingStatus;
+  status: MeetingStatus | 'scheduled';
   scheduledAt: Date;
   durationMinutes?: number;
   attendeeName?: string;
@@ -26,17 +30,11 @@ const meetingSchema = new Schema<IMeeting>(
   {
     meetingCode: { type: String, required: true, unique: true, trim: true },
     title: { type: String, required: true, trim: true },
-    type: {
-      type: String,
-      required: true,
-      enum: MEETING_TYPES,
-      default: 'meeting',
-    },
     status: {
       type: String,
       required: true,
-      enum: MEETING_STATUSES,
-      default: 'scheduled',
+      enum: [...MEETING_STATUSES, ...LEGACY_MEETING_STATUSES],
+      default: 'upcoming',
     },
     scheduledAt: { type: Date, required: true },
     durationMinutes: { type: Number, min: 0 },
