@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose';
 
-export const PAYMENT_STATUSES = ['pending', 'paid', 'delayed'] as const;
+export const PAYMENT_STATUSES = ['pending', 'delayed', 'paid'] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 

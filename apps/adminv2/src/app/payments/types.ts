@@ -5,14 +5,14 @@ export const PAYMENT_STATUSES = [
     headerClass: 'bg-amber-500',
   },
   {
-    id: 'paid',
-    label: 'Paid',
-    headerClass: 'bg-emerald-600',
-  },
-  {
     id: 'delayed',
     label: 'Delayed',
     headerClass: 'bg-red-500',
+  },
+  {
+    id: 'paid',
+    label: 'Paid',
+    headerClass: 'bg-emerald-600',
   },
 ] as const;
 
