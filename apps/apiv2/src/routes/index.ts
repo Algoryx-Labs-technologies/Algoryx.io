@@ -11,6 +11,7 @@ import noteRoutes from './note.routes';
 import paymentRoutes from './payment.routes';
 import expenseRoutes from './expense.routes';
 import financeRoutes from './finance.routes';
+import dashboardRoutes from './dashboard.routes';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.use('/notes', noteRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/finance', financeRoutes);
+router.use('/dashboard', dashboardRoutes);
 router.use('/landing-requirements', landingRequirementRoutes);
 router.use('/landing-chat', landingChatRoutes);
 router.use('/support', supportRoutes);
