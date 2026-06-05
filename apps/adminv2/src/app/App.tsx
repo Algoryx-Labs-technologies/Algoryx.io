@@ -10,6 +10,7 @@ import { TeamsPage } from './teams/TeamsPage';
 import { NotesPage } from './notes/NotesPage';
 import { PaymentsPage } from './payments/PaymentsPage';
 import { RevenueExpensePage } from './revenue-expense/RevenueExpensePage';
+import { MeetingsPage } from './meetings/MeetingsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -72,10 +73,7 @@ function App() {
           path="/meetings"
           element={
             <ProtectedRoute>
-              <PlaceholderPage
-                title="Meetings"
-                description="Scheduled calls, client meetings, and follow-ups."
-              />
+              <MeetingsPage />
             </ProtectedRoute>
           }
         />
