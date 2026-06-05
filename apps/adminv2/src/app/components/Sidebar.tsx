@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
+  StickyNote,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
@@ -45,6 +46,11 @@ export function Sidebar() {
       icon: Users,
       label: 'Teams',
       path: '/teams',
+    },
+    {
+      icon: StickyNote,
+      label: 'Notes',
+      path: '/notes',
     },
     {
       icon: CalendarDays,

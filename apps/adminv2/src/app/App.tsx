@@ -7,6 +7,7 @@ import { SalesPipelinePage } from './sales-pipeline/SalesPipelinePage';
 import { CurrentProjectsPage } from './current-projects/CurrentProjectsPage';
 import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
 import { TeamsPage } from './teams/TeamsPage';
+import { NotesPage } from './notes/NotesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -54,6 +55,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TeamsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <NotesPage />
             </ProtectedRoute>
           }
         />
