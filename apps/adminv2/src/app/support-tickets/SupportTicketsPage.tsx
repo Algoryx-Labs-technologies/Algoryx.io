@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   User,
+  Trash2,
   X,
 } from 'lucide-react';
 import { AppLayout } from '../components/AppLayout';
@@ -77,6 +78,21 @@ export function SupportTicketsPage() {
     return () => clearTimeout(timer);
   }, [fetchTickets]);
 
+  const handleDeleteTicket = async (id: string) => {
+    const response = await apiClient.delete(`/support/${id}`);
+
+    if (!response.success) {
+      setError(response.error || 'Failed to delete support ticket');
+      return;
+    }
+
+    if (selected?.id === id) {
+      setSelected(null);
+    }
+
+    await fetchTickets();
+  };
+
   return (
     <AppLayout
       title="Support tickets"
@@ -139,12 +155,15 @@ export function SupportTicketsPage() {
           ) : (
             <div className="space-y-4">
               {tickets.map((ticket) => (
-                <button
+                <div
                   key={ticket.id}
-                  type="button"
-                  onClick={() => setSelected(ticket)}
-                  className="w-full text-left bg-slate-800/50 border border-white/10 rounded-lg p-4 hover:border-cyan-500/50 transition-colors"
+                  className="relative bg-slate-800/50 border border-white/10 rounded-lg p-4 hover:border-cyan-500/50 transition-colors"
                 >
+                  <button
+                    type="button"
+                    onClick={() => setSelected(ticket)}
+                    className="w-full text-left pr-10"
+                  >
                   <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
@@ -178,7 +197,18 @@ export function SupportTicketsPage() {
                     <Calendar className="h-3 w-3 shrink-0" />
                     <span>{format(new Date(ticket.createdAt), 'PPp')}</span>
                   </div>
-                </button>
+                  </button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteTicket(ticket.id)}
+                    className="absolute top-3 right-3 text-gray-500 hover:text-red-400"
+                    title="Delete ticket"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               ))}
             </div>
           )}
@@ -264,6 +294,18 @@ export function SupportTicketsPage() {
                     Referer: <span className="text-gray-300">{selected.client.referer}</span>
                   </p>
                 )}
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleDeleteTicket(selected.id)}
+                  className="font-footer text-red-400 border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete ticket
+                </Button>
               </div>
             </CardContent>
           </Card>

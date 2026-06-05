@@ -2,6 +2,7 @@ import {
   ILandingRequirement,
   LandingRequirement,
 } from '@/models/landing-requirement.model';
+import { AppError } from '@/types';
 
 export interface CreateLandingRequirementInput {
   fullName: string;
@@ -48,4 +49,11 @@ export const listLandingRequirements = async (): Promise<
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   }));
+};
+
+export const deleteLandingRequirement = async (id: string): Promise<void> => {
+  const result = await LandingRequirement.findByIdAndDelete(id);
+  if (!result) {
+    throw new AppError(404, 'Requirement not found');
+  }
 };

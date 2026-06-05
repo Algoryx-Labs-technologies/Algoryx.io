@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   createSupportTicket,
+  deleteSupportTicket,
   getSupportTicketById,
   listSupportTickets,
 } from '@/services/support.service';
@@ -99,6 +100,24 @@ export const getSupportTicket = async (
     res.json({
       success: true,
       data: ticket,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeSupportTicket = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = String(req.params.id);
+    await deleteSupportTicket(id);
+
+    res.json({
+      success: true,
+      message: 'Support ticket deleted successfully',
     });
   } catch (error) {
     next(error);

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   getLandingRequirements,
   postLandingRequirement,
+  removeLandingRequirement,
 } from '@/controllers/landing-requirement.controller';
 import { validate } from '@/middleware/validate';
 import { authenticateAdmin } from '@/middleware/authenticateAdmin';
@@ -36,9 +37,21 @@ const createLandingRequirementSchema = {
   }),
 };
 
+const idParamSchema = {
+  params: z.object({
+    id: z.string().trim().min(1, 'Requirement id is required'),
+  }),
+};
+
 const router = Router();
 
 router.get('/', authenticateAdmin, getLandingRequirements);
+router.delete(
+  '/:id',
+  authenticateAdmin,
+  validate(idParamSchema),
+  removeLandingRequirement,
+);
 
 router.post(
   '/',
