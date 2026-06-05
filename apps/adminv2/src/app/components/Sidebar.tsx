@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Users,
   StickyNote,
+  Wallet,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from './ui/utils';
@@ -81,6 +82,11 @@ export function Sidebar() {
       icon: CreditCard,
       label: 'Payments',
       path: '/payments',
+    },
+    {
+      icon: Wallet,
+      label: 'Revenue & Expense',
+      path: '/revenue-expense',
     },
   ];
 

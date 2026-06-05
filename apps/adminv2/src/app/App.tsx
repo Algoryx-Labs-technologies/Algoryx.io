@@ -9,6 +9,7 @@ import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
 import { TeamsPage } from './teams/TeamsPage';
 import { NotesPage } from './notes/NotesPage';
 import { PaymentsPage } from './payments/PaymentsPage';
+import { RevenueExpensePage } from './revenue-expense/RevenueExpensePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -115,6 +116,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PaymentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/revenue-expense"
+          element={
+            <ProtectedRoute>
+              <RevenueExpensePage />
             </ProtectedRoute>
           }
         />
