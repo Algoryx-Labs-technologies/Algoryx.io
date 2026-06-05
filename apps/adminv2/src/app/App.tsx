@@ -8,6 +8,7 @@ import { CurrentProjectsPage } from './current-projects/CurrentProjectsPage';
 import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
 import { TeamsPage } from './teams/TeamsPage';
 import { NotesPage } from './notes/NotesPage';
+import { PaymentsPage } from './payments/PaymentsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -113,7 +114,7 @@ function App() {
           path="/payments"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Payments" description="Payment records and billing." />
+              <PaymentsPage />
             </ProtectedRoute>
           }
         />
