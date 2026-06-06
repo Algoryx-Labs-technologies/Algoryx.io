@@ -18,7 +18,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     initials: 'VP',
     expandedProfile: true,
     bio: [
-      'Varun is a professional trader with an Electrical Engineering background, Automation postgraduate work, and CFA Level 1 candidacy.',
+      'Varun is a professional trader with a B.Tech in Electrical Engineering, a postgraduate degree in Automation Engineering, and CFA Level 1 candidacy.',
       'He founded Squareoff Investtech and joined Algoryx in 2026 as a stakeholder and CEO to lead sales—bringing client relationships and market credibility to the firm.',
       'Varun aligns Algoryx’s engineering with what funds and businesses need—clarity on risk, execution, and growth at the point of adoption.',
     ],
