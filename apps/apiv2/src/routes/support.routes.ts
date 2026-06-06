@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { getSupportTicket, getSupportTickets, postSupportTicket } from '@/controllers/support.controller';
+import {
+  getSupportTicket,
+  getSupportTickets,
+  postSupportTicket,
+  removeSupportTicket,
+} from '@/controllers/support.controller';
 import { validate } from '@/middleware/validate';
 import { authenticateAdmin } from '@/middleware/authenticateAdmin';
 import {
@@ -55,6 +60,13 @@ router.get(
   authenticateAdmin,
   validate(idParamSchema),
   getSupportTicket,
+);
+
+router.delete(
+  '/:id',
+  authenticateAdmin,
+  validate(idParamSchema),
+  removeSupportTicket,
 );
 
 export default router;

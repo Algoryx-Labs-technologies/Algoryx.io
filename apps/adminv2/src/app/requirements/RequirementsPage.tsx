@@ -13,6 +13,7 @@ import {
   X,
   FileText,
   RefreshCw,
+  Trash2,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
@@ -68,6 +69,21 @@ export function RequirementsPage() {
   useEffect(() => {
     fetchRequirements();
   }, [fetchRequirements]);
+
+  const handleDeleteRequirement = async (id: string) => {
+    const response = await apiClient.delete(`/landing-requirements/${id}`);
+
+    if (!response.success) {
+      setError(response.error || 'Failed to delete requirement');
+      return;
+    }
+
+    if (selected?.id === id) {
+      setSelected(null);
+    }
+
+    await fetchRequirements();
+  };
 
   return (
     <AppLayout
@@ -127,12 +143,15 @@ export function RequirementsPage() {
           ) : (
             <div className="space-y-4">
               {requirements.map((item) => (
-                <button
+                <div
                   key={item.id}
-                  type="button"
-                  onClick={() => setSelected(item)}
-                  className="w-full text-left bg-slate-800/50 border border-white/10 rounded-lg p-4 hover:border-blue-500/50 transition-colors"
+                  className="relative bg-slate-800/50 border border-white/10 rounded-lg p-4 hover:border-blue-500/50 transition-colors"
                 >
+                  <button
+                    type="button"
+                    onClick={() => setSelected(item)}
+                    className="w-full text-left pr-10"
+                  >
                   <div className="flex items-center gap-3 mb-2">
                     <User className="h-4 w-4 text-blue-400 shrink-0" />
                     <h3 className="text-white font-semibold font-footer">{item.fullName}</h3>
@@ -169,7 +188,18 @@ export function RequirementsPage() {
                       {new Date(item.createdAt).toLocaleString()}
                     </span>
                   </div>
-                </button>
+                  </button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteRequirement(item.id)}
+                    className="absolute top-3 right-3 text-gray-500 hover:text-red-400"
+                    title="Delete requirement"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               ))}
             </div>
           )}
@@ -253,6 +283,18 @@ export function RequirementsPage() {
                     </span>
                   </span>
                 </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleDeleteRequirement(selected.id)}
+                  className="font-footer text-red-400 border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete requirement
+                </Button>
               </div>
             </CardContent>
           </Card>

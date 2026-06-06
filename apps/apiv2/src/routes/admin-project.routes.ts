@@ -65,6 +65,7 @@ const idParamSchema = {
 const listQuerySchema = {
   query: z.object({
     stage: stageSchema.optional(),
+    excludeStage: stageSchema.optional(),
     search: z.string().trim().optional(),
   }),
 };

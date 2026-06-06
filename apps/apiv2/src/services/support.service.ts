@@ -114,3 +114,10 @@ export const getSupportTicketById = async (id: string): Promise<SupportTicketDet
 
   return toListItem(record as unknown as TicketRecord);
 };
+
+export const deleteSupportTicket = async (id: string): Promise<void> => {
+  const result = await SupportTicket.findByIdAndDelete(id);
+  if (!result) {
+    throw new AppError(404, 'Support ticket not found');
+  }
+};

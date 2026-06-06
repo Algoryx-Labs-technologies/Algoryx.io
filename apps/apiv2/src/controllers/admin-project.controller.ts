@@ -17,9 +17,10 @@ export const getAdminProjects = async (
 ) => {
   try {
     const stage = req.query.stage as AdminProjectStage | undefined;
+    const excludeStage = req.query.excludeStage as AdminProjectStage | undefined;
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
 
-    const projects = await listAdminProjects({ stage, search });
+    const projects = await listAdminProjects({ stage, excludeStage, search });
 
     res.json({
       success: true,

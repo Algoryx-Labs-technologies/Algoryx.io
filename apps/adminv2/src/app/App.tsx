@@ -7,6 +7,10 @@ import { SalesPipelinePage } from './sales-pipeline/SalesPipelinePage';
 import { CurrentProjectsPage } from './current-projects/CurrentProjectsPage';
 import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
 import { TeamsPage } from './teams/TeamsPage';
+import { NotesPage } from './notes/NotesPage';
+import { PaymentsPage } from './payments/PaymentsPage';
+import { RevenueExpensePage } from './revenue-expense/RevenueExpensePage';
+import { MeetingsPage } from './meetings/MeetingsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -58,13 +62,18 @@ function App() {
           }
         />
         <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <NotesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/meetings"
           element={
             <ProtectedRoute>
-              <PlaceholderPage
-                title="Meetings"
-                description="Scheduled calls, client meetings, and follow-ups."
-              />
+              <MeetingsPage />
             </ProtectedRoute>
           }
         />
@@ -104,7 +113,15 @@ function App() {
           path="/payments"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Payments" description="Payment records and billing." />
+              <PaymentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/revenue-expense"
+          element={
+            <ProtectedRoute>
+              <RevenueExpensePage />
             </ProtectedRoute>
           }
         />

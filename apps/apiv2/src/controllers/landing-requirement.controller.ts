@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   createLandingRequirement,
+  deleteLandingRequirement,
   listLandingRequirements,
 } from '@/services/landing-requirement.service';
 
@@ -51,6 +52,24 @@ export const getLandingRequirements = async (
     res.json({
       success: true,
       data: requirements,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeLandingRequirement = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = String(req.params.id);
+    await deleteLandingRequirement(id);
+
+    res.json({
+      success: true,
+      message: 'Requirement deleted successfully',
     });
   } catch (error) {
     next(error);
