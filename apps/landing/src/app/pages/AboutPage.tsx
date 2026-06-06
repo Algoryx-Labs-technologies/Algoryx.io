@@ -10,7 +10,7 @@ import { LeadershipGrid, TeamMemberCard } from '../components/about/TeamMemberCa
 import { ABOUT_INTRO } from '../../data/aboutContent';
 import { TEAM_MEMBERS } from '../../data/teamMembers';
 
-const LEADERSHIP_ORDER = ['varun-pandya', 'abhishek-gupta', 'pratyush-birole'] as const;
+const LEADERSHIP_ORDER = ['pratyush-birole', 'abhishek-gupta', 'varun-pandya'] as const;
 
 const leadershipProfiles = LEADERSHIP_ORDER.map((id) => TEAM_MEMBERS.find((m) => m.id === id)).filter(
   (m): m is (typeof TEAM_MEMBERS)[number] => m !== undefined
