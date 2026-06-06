@@ -4,28 +4,8 @@
 #   docker compose up -d --build
 #
 # Build context is the monorepo root (../../) so npm workspaces resolve correctly.
-
 name: algoryx-apiv2
-
 services:
-  mongodb:
-    image: mongo:7
-    restart: unless-stopped
-    profiles:
-      - with-db
-    environment:
-      MONGO_INITDB_DATABASE: Algoryx
-    volumes:
-      - mongodb_data:/data/db
-    healthcheck:
-      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    networks:
-      - apiv2
-
   apiv2:
     build:
       context: ../..
@@ -34,44 +14,15 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     ports:
-      - '${API_PUBLISH_PORT:-4001}:4001'
+      - '4001:4001'
     env_file:
       - path: .env
         required: false
     environment:
       NODE_ENV: production
       PORT: '4001'
-      # Override in .env when using the bundled MongoDB profile:
-      # MONGODB_URI=mongodb://mongodb:27017/Algoryx
-    depends_on:
-      mongodb:
-        condition: service_healthy
-        required: false
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'node',
-          '-e',
-          "fetch('http://127.0.0.1:4001/api/v2/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
     networks:
       - apiv2
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          memory: 128M
-
-volumes:
-  mongodb_data:
-
 networks:
   apiv2:
     driver: bridge
