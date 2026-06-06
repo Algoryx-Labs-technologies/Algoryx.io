@@ -16,6 +16,7 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
   error?: string;
+  field?: string;
 }
 
 class ApiClient {
@@ -53,6 +54,7 @@ class ApiClient {
         return {
           success: false,
           error: data.error || data.message || 'An error occurred',
+          field: data.field,
         };
       }
 

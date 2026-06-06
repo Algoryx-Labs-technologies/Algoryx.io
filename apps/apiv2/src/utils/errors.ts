@@ -6,6 +6,7 @@ export const handleError = (error: unknown, res: Response) => {
     return res.status(error.statusCode).json({
       success: false,
       error: error.message,
+      ...(error.field ? { field: error.field } : {}),
     });
   }
 

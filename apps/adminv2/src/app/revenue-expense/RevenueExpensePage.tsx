@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { AppLayout } from '../components/AppLayout';
+import { PrivacyMaskToggle } from '../components/PrivacyMaskToggle';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -25,6 +26,8 @@ import {
 } from '../components/ui/card';
 import { cn } from '../components/ui/utils';
 import { apiClient } from '@/lib/api';
+import { formatPrivateAmount } from '@/lib/privacy-mask';
+import { usePrivacyMask } from '../contexts/PrivacyMaskContext';
 import type {
   AdminProjectOption,
   Expense,
@@ -60,17 +63,6 @@ const selectClass = cn(
   'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
 );
 
-function formatAmount(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currency || 'INR',
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
-  }
-}
-
 function formatDate(iso: string): string {
   try {
     return format(new Date(iso), 'MMM d, yyyy');
@@ -80,6 +72,7 @@ function formatDate(iso: string): string {
 }
 
 export function RevenueExpensePage() {
+  const { isMasked } = usePrivacyMask();
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);
   const [projects, setProjects] = useState<AdminProjectOption[]>([]);
@@ -188,6 +181,7 @@ export function RevenueExpensePage() {
           Revenue is calculated from paid payments. Expenses are recorded manually.
         </p>
         <div className="flex gap-2 shrink-0">
+          <PrivacyMaskToggle />
           <Button
             type="button"
             variant="outline"
@@ -228,7 +222,7 @@ export function RevenueExpensePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold font-hero text-white">
-                  {formatAmount(summary?.totalRevenue ?? 0, currency)}
+                  {formatPrivateAmount(summary?.totalRevenue ?? 0, currency, isMasked)}
                 </p>
                 <CardDescription className="font-footer mt-1">From paid payments</CardDescription>
               </CardContent>
@@ -241,7 +235,7 @@ export function RevenueExpensePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold font-hero text-white">
-                  {formatAmount(summary?.totalExpenses ?? 0, currency)}
+                  {formatPrivateAmount(summary?.totalExpenses ?? 0, currency, isMasked)}
                 </p>
                 <CardDescription className="font-footer mt-1">Project + company expenses</CardDescription>
               </CardContent>
@@ -259,7 +253,7 @@ export function RevenueExpensePage() {
                     (summary?.netBalance ?? 0) >= 0 ? 'text-emerald-300' : 'text-red-300',
                   )}
                 >
-                  {formatAmount(summary?.netBalance ?? 0, currency)}
+                  {formatPrivateAmount(summary?.netBalance ?? 0, currency, isMasked)}
                 </p>
                 <CardDescription className="font-footer mt-1">Revenue minus expenses</CardDescription>
               </CardContent>
@@ -292,7 +286,7 @@ export function RevenueExpensePage() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <p className="text-white font-semibold text-sm font-footer">
-                              {formatAmount(payment.amount, payment.currency)}
+                              {formatPrivateAmount(payment.amount, payment.currency, isMasked)}
                             </p>
                             <p className="text-xs text-gray-400 truncate">
                               {payment.project.projectName} · {payment.project.clientName}
@@ -344,7 +338,9 @@ export function RevenueExpensePage() {
                               : 'Company expense'}
                           </p>
                           <p className="text-xs text-red-300 mt-1 font-footer">
-                            -{formatAmount(expense.amount, expense.currency)}
+                            {formatPrivateAmount(expense.amount, expense.currency, isMasked, {
+                              prefix: '-',
+                            })}
                           </p>
                         </div>
                         <Button
@@ -410,8 +406,9 @@ export function RevenueExpensePage() {
                             entry.type === 'revenue' ? 'text-emerald-300' : 'text-red-300',
                           )}
                         >
-                          {entry.type === 'revenue' ? '+' : '-'}
-                          {formatAmount(entry.amount, entry.currency)}
+                          {formatPrivateAmount(entry.amount, entry.currency, isMasked, {
+                            prefix: entry.type === 'revenue' ? '+' : '-',
+                          })}
                         </p>
                         {entry.type === 'expense' && (
                           <Button
