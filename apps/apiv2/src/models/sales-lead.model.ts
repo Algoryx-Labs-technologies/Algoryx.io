@@ -2,8 +2,8 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export const SALES_LEAD_STAGES = [
   'discovery',
-  'deal_closed',
   'in_progress',
+  'deal_closed',
   'completed',
 ] as const;
 
