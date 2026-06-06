@@ -6,6 +6,7 @@ import { RequirementsPage } from './requirements/RequirementsPage';
 import { SalesPipelinePage } from './sales-pipeline/SalesPipelinePage';
 import { CurrentProjectsPage } from './current-projects/CurrentProjectsPage';
 import { SupportTicketsPage } from './support-tickets/SupportTicketsPage';
+import { FeedbackPage } from './feedback/FeedbackPage';
 import { TeamsPage } from './teams/TeamsPage';
 import { NotesPage } from './notes/NotesPage';
 import { PaymentsPage } from './payments/PaymentsPage';
@@ -89,7 +90,7 @@ function App() {
           path="/feedback"
           element={
             <ProtectedRoute>
-              <PlaceholderPage title="Feedback" description="User feedback and reviews." />
+              <FeedbackPage />
             </ProtectedRoute>
           }
         />

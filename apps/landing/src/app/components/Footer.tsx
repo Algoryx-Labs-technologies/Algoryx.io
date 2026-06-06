@@ -14,12 +14,14 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { BrandLogo } from './BrandLogo';
 import { HelpSupportDialog } from './HelpSupportDialog';
+import { FeedbackDialog } from './FeedbackDialog';
 
 export function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
   const [isFooterInView, setIsFooterInView] = useState(false);
@@ -100,9 +102,9 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors text-sm">
+                <Link to="/#work-with-labs" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Contact
-                </a>
+                </Link>
               </li>
               <li>
                 <button
@@ -110,7 +112,16 @@ export function Footer() {
                   onClick={() => setHelpOpen(true)}
                   className="text-gray-400 hover:text-white transition-colors text-sm text-left"
                 >
-                  Help
+                  Help & Support
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(true)}
+                  className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                >
+                  Share Feedback
                 </button>
               </li>
             </ul>
@@ -133,16 +144,6 @@ export function Footer() {
               <li>
                 <a href="#prime" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Prime
-                </a>
-              </li>
-              <li>
-                <a href="#tools" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Tools
-                </a>
-              </li>
-              <li>
-                <a href="#research" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Research
                 </a>
               </li>
             </ul>
@@ -289,6 +290,7 @@ export function Footer() {
       </div>
 
       <HelpSupportDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
 
       {/* Privacy Policy Dialog */}
       <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>

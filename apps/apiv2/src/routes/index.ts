@@ -3,6 +3,7 @@ import healthRoutes from './health.routes';
 import landingRequirementRoutes from './landing-requirement.routes';
 import landingChatRoutes from './landing-chat.routes';
 import supportRoutes from './support.routes';
+import feedbackRoutes from './feedback.routes';
 import adminAuthRoutes from './admin-auth.routes';
 import salesLeadRoutes from './sales-lead.routes';
 import adminProjectRoutes from './admin-project.routes';
@@ -30,5 +31,6 @@ router.use('/meetings', meetingRoutes);
 router.use('/landing-requirements', landingRequirementRoutes);
 router.use('/landing-chat', landingChatRoutes);
 router.use('/support', supportRoutes);
+router.use('/feedback', feedbackRoutes);
 
 export default router;
