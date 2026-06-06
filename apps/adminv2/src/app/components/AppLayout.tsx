@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
+import { MobileNavbar } from './MobileNavbar';
 import { useSidebar } from '../contexts/SidebarContext';
 import { cn } from './ui/utils';
 
@@ -15,10 +16,11 @@ export function AppLayout({ children, title, description }: AppLayoutProps) {
   return (
     <div className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 flex overflow-hidden">
       <Sidebar />
+      <MobileNavbar />
 
       <div
         className={cn(
-          'flex-1 relative transition-all duration-300 h-screen overflow-auto',
+          'flex-1 relative transition-all duration-300 h-screen overflow-auto pt-14 md:pt-0',
           isCollapsed ? 'md:ml-20' : 'md:ml-80',
         )}
       >
