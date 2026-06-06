@@ -23,6 +23,7 @@ interface AdminLoginResponse {
 
 interface AuthError {
   message: string;
+  field?: string;
 }
 
 interface AuthContextType {
@@ -85,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!response.success || !response.data) {
       return {
         admin: null,
-        error: { message: response.error || 'Login failed' },
+        error: {
+          message: response.error || 'Login failed',
+          field: response.field,
+        },
       };
     }
 

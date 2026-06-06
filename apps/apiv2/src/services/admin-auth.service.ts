@@ -28,8 +28,16 @@ export function loginAdmin(input: AdminLoginInput): AdminSession {
   const passwordMatch = secureCompare(input.password, env.ADMIN_PASSWORD);
   const mpinMatch = secureCompare(input.mpin, env.ADMIN_MPIN);
 
-  if (!idMatch || !passwordMatch || !mpinMatch) {
-    throw new AppError(401, 'Invalid admin credentials');
+  if (!idMatch) {
+    throw new AppError(401, 'Invalid Admin ID', true, 'adminId');
+  }
+
+  if (!passwordMatch) {
+    throw new AppError(401, 'Invalid password', true, 'password');
+  }
+
+  if (!mpinMatch) {
+    throw new AppError(401, 'Invalid MPIN', true, 'mpin');
   }
 
   const payload: AdminTokenPayload = {

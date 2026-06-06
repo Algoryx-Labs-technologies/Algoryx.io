@@ -5,14 +5,14 @@ export const PIPELINE_STAGES = [
     headerClass: 'bg-slate-500',
   },
   {
-    id: 'deal_closed',
-    label: 'Deal Closed',
-    headerClass: 'bg-amber-500',
-  },
-  {
     id: 'in_progress',
     label: 'In Progress',
     headerClass: 'bg-emerald-600',
+  },
+  {
+    id: 'deal_closed',
+    label: 'Deal Closed',
+    headerClass: 'bg-amber-500',
   },
   {
     id: 'completed',

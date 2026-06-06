@@ -16,6 +16,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { AppLayout } from '../components/AppLayout';
+import { PrivacyMaskToggle } from '../components/PrivacyMaskToggle';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -26,19 +27,9 @@ import {
 } from '../components/ui/card';
 import { cn } from '../components/ui/utils';
 import { apiClient } from '@/lib/api';
+import { formatPrivateAmount, formatPrivateDate, formatPrivateNumber, maskDigitsInText } from '@/lib/privacy-mask';
+import { usePrivacyMask } from '../contexts/PrivacyMaskContext';
 import type { DashboardSummary, StageCount } from './types';
-
-function formatAmount(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currency || 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(0)}`;
-  }
-}
 
 function formatDate(iso: string): string {
   try {
@@ -48,10 +39,14 @@ function formatDate(iso: string): string {
   }
 }
 
-function StageBar({ stages }: { stages: StageCount[] }) {
+function StageBar({ stages, isMasked }: { stages: StageCount[]; isMasked: boolean }) {
   const total = stages.reduce((sum, row) => sum + row.count, 0);
 
-  if (!total) {
+  if (!total && !isMasked) {
+    return <p className="text-xs text-gray-500 font-footer">No data yet</p>;
+  }
+
+  if (isMasked && !stages.length) {
     return <p className="text-xs text-gray-500 font-footer">No data yet</p>;
   }
 
@@ -61,12 +56,16 @@ function StageBar({ stages }: { stages: StageCount[] }) {
         <div key={row.stage}>
           <div className="flex justify-between text-xs font-footer mb-1">
             <span className="text-gray-400">{row.label}</span>
-            <span className="text-gray-300">{row.count}</span>
+            <span className="text-gray-300">{formatPrivateNumber(row.count, isMasked)}</span>
           </div>
           <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
             <div
               className="h-full rounded-full bg-blue-500/80"
-              style={{ width: `${Math.max((row.count / total) * 100, row.count ? 8 : 0)}%` }}
+              style={{
+                width: isMasked
+                  ? '30%'
+                  : `${Math.max((row.count / total) * 100, row.count ? 8 : 0)}%`,
+              }}
             />
           </div>
         </div>
@@ -109,6 +108,7 @@ function WidgetHeader({ title, description, icon, path, onNavigate }: WidgetHead
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const { isMasked } = usePrivacyMask();
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +141,8 @@ export function DashboardPage() {
       title="Dashboard"
       description="Overview of sales, projects, payments, support, and finances."
     >
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <PrivacyMaskToggle />
         <Button
           type="button"
           variant="outline"
@@ -180,7 +181,9 @@ export function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold font-hero text-white">
-                  {formatAmount(data.finance.totalRevenue, currency)}
+                  {formatPrivateAmount(data.finance.totalRevenue, currency, isMasked, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
                 <CardDescription className="font-footer mt-1">From paid payments</CardDescription>
               </CardContent>
@@ -201,10 +204,15 @@ export function DashboardPage() {
                     data.finance.netBalance >= 0 ? 'text-emerald-300' : 'text-red-300',
                   )}
                 >
-                  {formatAmount(data.finance.netBalance, currency)}
+                  {formatPrivateAmount(data.finance.netBalance, currency, isMasked, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
                 <CardDescription className="font-footer mt-1">
-                  Expenses: {formatAmount(data.finance.totalExpenses, currency)}
+                  Expenses:{' '}
+                  {formatPrivateAmount(data.finance.totalExpenses, currency, isMasked, {
+                    maximumFractionDigits: 0,
+                  })}
                 </CardDescription>
               </CardContent>
             </Card>
@@ -218,9 +226,11 @@ export function DashboardPage() {
                 <GitBranch className="h-4 w-4 text-blue-400" />
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold font-hero text-white">{data.salesPipeline.active}</p>
+                <p className="text-2xl font-bold font-hero text-white">
+                  {formatPrivateNumber(data.salesPipeline.active, isMasked)}
+                </p>
                 <CardDescription className="font-footer mt-1">
-                  {data.salesPipeline.total} total in pipeline
+                  {formatPrivateNumber(data.salesPipeline.total, isMasked)} total in pipeline
                 </CardDescription>
               </CardContent>
             </Card>
@@ -234,9 +244,11 @@ export function DashboardPage() {
                 <FolderKanban className="h-4 w-4 text-cyan-400" />
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold font-hero text-white">{data.projects.active}</p>
+                <p className="text-2xl font-bold font-hero text-white">
+                  {formatPrivateNumber(data.projects.active, isMasked)}
+                </p>
                 <CardDescription className="font-footer mt-1">
-                  {data.projects.total} total projects
+                  {formatPrivateNumber(data.projects.total, isMasked)} total projects
                 </CardDescription>
               </CardContent>
             </Card>
@@ -254,15 +266,21 @@ export function DashboardPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-center">
-                    <p className="text-lg font-bold text-amber-300">{data.payments.pending}</p>
+                    <p className="text-lg font-bold text-amber-300">
+                      {formatPrivateNumber(data.payments.pending, isMasked)}
+                    </p>
                     <p className="text-[10px] text-gray-400 uppercase">Pending</p>
                   </div>
                   <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-2 text-center">
-                    <p className="text-lg font-bold text-red-300">{data.payments.delayed}</p>
+                    <p className="text-lg font-bold text-red-300">
+                      {formatPrivateNumber(data.payments.delayed, isMasked)}
+                    </p>
                     <p className="text-[10px] text-gray-400 uppercase">Delayed</p>
                   </div>
                   <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-center">
-                    <p className="text-lg font-bold text-emerald-300">{data.payments.paid}</p>
+                    <p className="text-lg font-bold text-emerald-300">
+                      {formatPrivateNumber(data.payments.paid, isMasked)}
+                    </p>
                     <p className="text-[10px] text-gray-400 uppercase">Paid</p>
                   </div>
                 </div>
@@ -275,10 +293,14 @@ export function DashboardPage() {
                         className="rounded-lg border border-white/10 bg-slate-800/40 px-3 py-2"
                       >
                         <p className="text-sm text-white font-footer">
-                          {formatAmount(payment.amount, payment.currency)}
+                          {formatPrivateAmount(payment.amount, payment.currency, isMasked, {
+                            maximumFractionDigits: 0,
+                          })}
                         </p>
                         <p className="text-xs text-gray-400 truncate">{payment.projectName}</p>
-                        <p className="text-[10px] text-gray-500">Due {formatDate(payment.deadline)}</p>
+                        <p className="text-[10px] text-gray-500">
+                          Due {formatPrivateDate(payment.deadline, isMasked, formatDate)}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -297,7 +319,7 @@ export function DashboardPage() {
                 onNavigate={navigate}
               />
               <CardContent className="space-y-4">
-                <StageBar stages={data.salesPipeline.byStage} />
+                <StageBar stages={data.salesPipeline.byStage} isMasked={isMasked} />
                 {data.salesPipeline.recent.length ? (
                   <div className="space-y-2 pt-2 border-t border-white/10">
                     <p className="text-xs text-gray-500 font-footer uppercase tracking-wide">Recent</p>
@@ -305,7 +327,9 @@ export function DashboardPage() {
                       <div key={lead.id} className="flex items-center justify-between gap-2 text-sm">
                         <div className="min-w-0">
                           <p className="text-white font-footer truncate">{lead.name}</p>
-                          <p className="text-[10px] text-gray-500">{lead.leadCode}</p>
+                          <p className="text-[10px] text-gray-500">
+                            {maskDigitsInText(lead.leadCode, isMasked)}
+                          </p>
                         </div>
                         <span className="text-[10px] text-blue-300 shrink-0">{lead.stageLabel}</span>
                       </div>
@@ -324,7 +348,7 @@ export function DashboardPage() {
                 onNavigate={navigate}
               />
               <CardContent className="space-y-4">
-                <StageBar stages={data.projects.byStage} />
+                <StageBar stages={data.projects.byStage} isMasked={isMasked} />
                 {data.projects.recent.length ? (
                   <div className="space-y-2 pt-2 border-t border-white/10">
                     <p className="text-xs text-gray-500 font-footer uppercase tracking-wide">Recent</p>
@@ -347,7 +371,7 @@ export function DashboardPage() {
             <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 border border-white/10">
               <WidgetHeader
                 title="Support Tickets"
-                description={`${data.support.urgent} urgent of ${data.support.total} total`}
+                description={`${formatPrivateNumber(data.support.urgent, isMasked)} urgent of ${formatPrivateNumber(data.support.total, isMasked)} total`}
                 icon={<MessageSquare className="h-4 w-4 text-orange-400" />}
                 path="/support-tickets"
                 onNavigate={navigate}
@@ -386,7 +410,7 @@ export function DashboardPage() {
             <Card className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 border border-white/10">
               <WidgetHeader
                 title="Requirements"
-                description={`${data.requirements.total} landing submissions`}
+                description={`${formatPrivateNumber(data.requirements.total, isMasked)} landing submissions`}
                 icon={<FileText className="h-4 w-4 text-indigo-400" />}
                 path="/requirements"
                 onNavigate={navigate}
@@ -400,7 +424,9 @@ export function DashboardPage() {
                         className="rounded-lg border border-white/10 bg-slate-800/40 px-3 py-2"
                       >
                         <p className="text-sm text-white font-footer">{req.fullName}</p>
-                        <p className="text-xs text-gray-400 truncate">{req.email}</p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {maskDigitsInText(req.email, isMasked)}
+                        </p>
                         {req.companyOrg && (
                           <p className="text-[10px] text-gray-500 mt-1">{req.companyOrg}</p>
                         )}
@@ -424,7 +450,9 @@ export function DashboardPage() {
                 <Users className="h-4 w-4 text-blue-400" />
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold font-hero text-white">{data.teams.total}</p>
+                <p className="text-2xl font-bold font-hero text-white">
+                  {formatPrivateNumber(data.teams.total, isMasked)}
+                </p>
                 <CardDescription className="font-footer mt-1">People on the team</CardDescription>
               </CardContent>
             </Card>
@@ -438,7 +466,9 @@ export function DashboardPage() {
                 <StickyNote className="h-4 w-4 text-yellow-400" />
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold font-hero text-white">{data.notes.total}</p>
+                <p className="text-2xl font-bold font-hero text-white">
+                  {formatPrivateNumber(data.notes.total, isMasked)}
+                </p>
                 <CardDescription className="font-footer mt-1">Admin reminders saved</CardDescription>
               </CardContent>
             </Card>
