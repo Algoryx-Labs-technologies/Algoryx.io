@@ -92,9 +92,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#careers" className="text-gray-400 hover:text-white transition-colors text-sm">
+                {/* <a href="#careers" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Careers
-                </a>
+                </a> */}
               </li>
               <li>
                 {/* <a href="#blog" className="text-gray-400 hover:text-white transition-colors text-sm">
