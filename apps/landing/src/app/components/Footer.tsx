@@ -97,9 +97,9 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#blog" className="text-gray-400 hover:text-white transition-colors text-sm">
+                {/* <a href="#blog" className="text-gray-400 hover:text-white transition-colors text-sm">
                   Blog
-                </a>
+                </a> */}
               </li>
               <li>
                 <Link to="/#work-with-labs" className="text-gray-400 hover:text-white transition-colors text-sm">
