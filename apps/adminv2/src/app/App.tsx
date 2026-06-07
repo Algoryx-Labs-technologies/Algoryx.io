@@ -12,6 +12,7 @@ import { NotesPage } from './notes/NotesPage';
 import { PaymentsPage } from './payments/PaymentsPage';
 import { RevenueExpensePage } from './revenue-expense/RevenueExpensePage';
 import { MeetingsPage } from './meetings/MeetingsPage';
+import { PortfolioPage } from './portfolio/PortfolioPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -75,6 +76,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MeetingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/portfolio"
+          element={
+            <ProtectedRoute>
+              <PortfolioPage />
             </ProtectedRoute>
           }
         />

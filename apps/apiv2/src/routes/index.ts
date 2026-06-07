@@ -14,6 +14,7 @@ import expenseRoutes from './expense.routes';
 import financeRoutes from './finance.routes';
 import dashboardRoutes from './dashboard.routes';
 import meetingRoutes from './meeting.routes';
+import portfolioRoutes from './portfolio.routes';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/landing-requirements', landingRequirementRoutes);
 router.use('/landing-chat', landingChatRoutes);
 router.use('/support', supportRoutes);
 router.use('/feedback', feedbackRoutes);
+router.use('/portfolio', portfolioRoutes);
 
 export default router;

@@ -23,6 +23,10 @@ const envSchema = z.object({
     .default('mongodb://127.0.0.1:27017/Algoryx'),
   /** Comma-separated resolvers for mongodb+srv (fixes querySrv on some Windows/VPN DNS) */
   MONGODB_DNS_SERVERS: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  CLOUDINARY_FOLDER: z.string().default('algoryx/portfolio'),
 });
 
 export type Env = z.infer<typeof envSchema>;
