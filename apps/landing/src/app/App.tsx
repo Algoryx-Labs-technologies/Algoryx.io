@@ -6,6 +6,7 @@ import { ServiceDetailsPage } from './pages/ServiceDetailsPage';
 import { AlgoryxPrimePage } from './pages/AlgoryxPrimePage';
 import { AlgoryxPrimeDetailPage } from './pages/AlgoryxPrimeDetailPage';
 import { AboutPage } from './pages/AboutPage';
+import { PortfolioPage } from './pages/PortfolioPage';
 import { CalEmbedProvider } from './contexts/CalEmbedProvider';
 import { AlgoryxChatWidget } from './components/chat/AlgoryxChatWidget';
 
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/algoryx-prime" element={<AlgoryxPrimePage />} />
           <Route path="/algoryx-prime/:serviceId" element={<AlgoryxPrimeDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
         </Routes>
         <AlgoryxChatWidget />
       </CalEmbedProvider>

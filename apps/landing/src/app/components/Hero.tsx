@@ -1,10 +1,8 @@
 import React from 'react';
-import { Button } from './ui/button';
-import { ArrowRight, CalendarCheck } from 'lucide-react';
+import { BookConsultationButton } from './BookConsultationButton';
 import { ScrollReveal } from './ScrollReveal';
 import { Spotlight } from './ui/spotlight';
 import { EncryptedText } from './ui/encrypted-text';
-import { getCalButtonProps } from '../../lib/cal';
 import { MetricsRibbon } from './MetricsRibbon';
 
 const heroMetrics = [
@@ -71,16 +69,10 @@ export function Hero() {
             </p>
 
             <div className="flex justify-center">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 text-base md:text-lg px-8 md:px-9 h-12"
+              <BookConsultationButton
+                className="h-12 px-8 text-base md:px-9 md:text-lg"
                 style={{ fontFamily: 'Inter, sans-serif' }}
-                {...getCalButtonProps()}
-              >
-                <CalendarCheck className="mr-2 w-5 h-5" />
-                Book Free Consultation
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              />
             </div>
 
             <MetricsRibbon metrics={heroMetrics} className="mt-10" />

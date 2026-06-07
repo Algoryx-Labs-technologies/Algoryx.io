@@ -228,3 +228,47 @@ export async function submitFeedback(
     };
   }
 }
+
+export type PortfolioCategory = 'recent' | 'ongoing' | 'past';
+
+export interface PortfolioProject {
+  id: string;
+  title: string;
+  description?: string;
+  category: PortfolioCategory;
+  imageUrl: string;
+  techStack: string[];
+  clientName?: string;
+}
+
+export interface PublicPortfolio {
+  recent: PortfolioProject[];
+  ongoing: PortfolioProject[];
+  past: PortfolioProject[];
+}
+
+export async function fetchPublicPortfolio(): Promise<ApiResponse<PublicPortfolio>> {
+  const url = `${API_BASE_URL}/portfolio/public`;
+
+  try {
+    const response = await fetch(url);
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result.error || result.message || 'Failed to load portfolio',
+      };
+    }
+
+    return {
+      success: true,
+      data: result.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error occurred',
+    };
+  }
+}

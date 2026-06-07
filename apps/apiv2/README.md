@@ -47,6 +47,12 @@ npm run dev
 | POST | `/api/v2/support` | Submit support ticket (multipart form) |
 | POST | `/api/v2/auth/admin/login` | Admin login (ID, password, MPIN from env) |
 | GET | `/api/v2/auth/admin/me` | Verify JWT (`Authorization: Bearer`) |
+| GET | `/api/v2/portfolio/public` | Published portfolio for landing page |
+| GET | `/api/v2/portfolio` | List portfolio projects (admin JWT) |
+| POST | `/api/v2/portfolio` | Create portfolio project (admin JWT) |
+| POST | `/api/v2/portfolio/upload-image` | Upload project image to Cloudinary (admin JWT, multipart) |
+| PATCH | `/api/v2/portfolio/:id` | Update portfolio project (admin JWT) |
+| DELETE | `/api/v2/portfolio/:id` | Delete portfolio project (admin JWT) |
 
 Default port: **4001** (v1 API uses 4000).
 

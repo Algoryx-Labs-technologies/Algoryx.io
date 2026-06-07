@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
+  Briefcase,
   CreditCard,
   MessageSquare,
   Star,
@@ -28,6 +29,7 @@ const menuItems: { icon: LucideIcon; label: string; path: string }[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: GitBranch, label: 'Sales Pipeline', path: '/sales-pipeline' },
   { icon: FolderKanban, label: 'Current Projects', path: '/current-projects' },
+  { icon: Briefcase, label: 'Portfolio', path: '/portfolio' },
   { icon: Users, label: 'Teams', path: '/teams' },
   { icon: StickyNote, label: 'Notes', path: '/notes' },
   { icon: CalendarDays, label: 'Meetings', path: '/meetings' },
@@ -101,7 +103,7 @@ function SidebarPanel({
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+      <nav className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);

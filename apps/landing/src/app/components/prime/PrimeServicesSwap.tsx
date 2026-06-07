@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PRIME_SERVICES, type PrimeService } from '../../../data/primeServices';
+import { PrimeCardBackground } from './PrimeCardBackground';
 
 const VISIBLE_COUNT = 3;
 const SWAP_INTERVAL_MS = 1600;
@@ -20,13 +21,14 @@ function ServiceCard({ service, index }: ServiceCardProps) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -24, scale: 0.96 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-900/90 to-slate-800/85 px-4 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm"
+      className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-white/[0.09] px-4 py-3.5 shadow-[0_16px_48px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
     >
+      <PrimeCardBackground index={index} variant="inline" />
       <motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.04, duration: 0.2 }}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-blue-600/25 to-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.12)]"
+        className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm"
       >
         <Icon className="h-4 w-4 text-cyan-300" />
       </motion.div>
@@ -35,7 +37,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
         initial={{ opacity: 0, x: -6 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.06, duration: 0.2 }}
-        className="min-w-0 flex-1 text-left"
+        className="relative z-10 min-w-0 flex-1 text-left"
       >
         <p className="truncate text-sm font-semibold text-white">{service.title}</p>
         <p className="truncate text-xs text-gray-400">{service.tagline}</p>
@@ -45,7 +47,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.08, duration: 0.18 }}
-        className="shrink-0 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-cyan-300/90"
+        className="relative z-10 shrink-0 rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-gray-400 backdrop-blur-sm"
       >
         {String(index + 1).padStart(2, '0')}
       </motion.span>

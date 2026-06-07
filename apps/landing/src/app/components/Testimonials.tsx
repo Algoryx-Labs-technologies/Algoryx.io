@@ -24,9 +24,6 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 
       <div className="relative z-10 mt-4">
         <p className="font-semibold text-white">{item.name}</p>
-        <p className="mt-0.5 text-xs text-gray-500">
-          {item.role}, {item.company}
-        </p>
       </div>
     </article>
   );

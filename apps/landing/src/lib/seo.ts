@@ -36,6 +36,12 @@ export const STATIC_PAGE_SEO: Record<string, PageSeoConfig> = {
       'Learn about Algoryx Labs—our journey from traders to a technology and markets firm delivering disciplined, research-backed engineering for clients in India and Canada.',
     path: '/about',
   },
+  '/portfolio': {
+    title: `Portfolio | ${BRAND_LABS} | ${SITE_NAME}`,
+    description:
+      'Explore recent launches, active builds, and selected past projects from Algoryx Labs—trading systems, AI products, and production-grade engineering.',
+    path: '/portfolio',
+  },
   '/service-details': {
     title: `Services | ${BRAND_LABS} & ${BRAND_TECH} | ${SITE_NAME}`,
     description:
