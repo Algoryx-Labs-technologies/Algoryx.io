@@ -258,7 +258,7 @@ export function Footer() {
         <div className="pt-8 border-t border-white/10 dark:border-white/10 border-gray-300/30">
           <div className="flex flex-col gap-2">
             <p className="text-gray-300 dark:text-gray-400 text-gray-700 text-sm">
-              © 2026 Algoryx Labs & Technologies Inc. All rights reserved.
+              © 2026 Algoryx Labs and Technologies & Co. All rights reserved.
             </p>
             <p className="text-gray-400 dark:text-gray-500 text-gray-600 text-xs leading-relaxed">
               A financial technology solutions company. Licensed and regulated financial services provider.
