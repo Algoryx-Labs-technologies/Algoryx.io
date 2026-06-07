@@ -1,16 +1,15 @@
 import React, { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, TrendingUp } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Button } from '../components/ui/button';
+import { BookConsultationButton } from '../components/BookConsultationButton';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { Spotlight } from '../components/ui/spotlight';
 import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { PrimeFlipCard } from '../components/prime/PrimeFlipCard';
 import { PrimeServicesSwap } from '../components/prime/PrimeServicesSwap';
 import { PRIME_SERVICES } from '../../data/primeServices';
-import { getCalButtonProps } from '../../lib/cal';
 
 const TradingDemo = lazy(() =>
   import('../components/TradingDemo').then((m) => ({ default: m.TradingDemo }))
@@ -119,14 +118,7 @@ export function AlgoryxPrimePage() {
                 <p className="mx-auto mb-8 max-w-lg text-gray-500">
                   We will map your broker, markets, and goals to the right Prime services.
                 </p>
-                <Button
-                  size="lg"
-                  className="h-11 rounded-full border-0 bg-white px-7 text-black hover:bg-gray-100"
-                  {...getCalButtonProps()}
-                >
-                  Book Free Consultation
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <BookConsultationButton />
               </div>
             </ScrollReveal>
           </div>

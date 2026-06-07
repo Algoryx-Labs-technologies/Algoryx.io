@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { BookConsultationButton } from '../components/BookConsultationButton';
 import { Button } from '../components/ui/button';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { Spotlight } from '../components/ui/spotlight';
 import { ServiceStackCard } from '../components/ServiceStackCard';
 import { cn } from '../components/ui/utils';
 import { SERVICES, type Service } from '../../data/services';
-import { getCalButtonProps } from '../../lib/cal';
 
 function serviceNavLabel(title: string): string {
   return title.replace(/\s+Agency$/i, '').replace(/\s+Services$/i, '').trim();
@@ -245,14 +245,7 @@ export function ServiceDetailsPage() {
                       engineered with the polish and reliability of a premium SaaS product.
                     </p>
                     <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                      <Button
-                        size="lg"
-                        className="h-11 rounded-full border-0 bg-white px-7 text-black hover:bg-gray-100"
-                        {...getCalButtonProps()}
-                      >
-                        Book Free Consultation
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
+                      <BookConsultationButton />
                       <Button
                         size="lg"
                         variant="outline"
@@ -314,14 +307,7 @@ export function ServiceDetailsPage() {
                     Book a free consultation and we will help you choose the right service mix for your goals.
                   </p>
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                    <Button
-                      size="lg"
-                      className="h-11 rounded-full border-0 bg-gradient-to-r from-blue-600 to-cyan-500 px-7 text-white hover:from-blue-700 hover:to-cyan-600"
-                      {...getCalButtonProps()}
-                    >
-                      Book Free Consultation
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                    <BookConsultationButton />
                     <Button
                       size="lg"
                       variant="outline"

@@ -12,11 +12,10 @@ import {
 import type { PrimeService } from '../../../data/primeServices';
 import { PRIME_SERVICES } from '../../../data/primeServices';
 import { getPrimeStackIcons } from '../../../data/primeStackIcons';
-import { Button } from '../ui/button';
+import { BookConsultationButton } from '../BookConsultationButton';
 import { ScrollReveal } from '../ScrollReveal';
 import { Spotlight } from '../ui/spotlight';
 import { PrimeStackLogoRow } from './PrimeStackLogos';
-import { getCalButtonProps } from '../../../lib/cal';
 
 type PrimeServiceDetailProps = {
   service: PrimeService;
@@ -219,14 +218,7 @@ export function PrimeServiceDetail({ service }: PrimeServiceDetailProps) {
             <p className="text-gray-400 mb-8 max-w-md mx-auto text-sm md:text-base">
               Book a consultation and we will scope your market, broker, and timeline.
             </p>
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/20"
-              {...getCalButtonProps()}
-            >
-              Start your project
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <BookConsultationButton>Start your project</BookConsultationButton>
           </div>
         </ScrollReveal>
 

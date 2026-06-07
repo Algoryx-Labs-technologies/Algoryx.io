@@ -6,7 +6,6 @@ import {
   Send,
   Sparkles,
   Loader2,
-  CalendarCheck,
   Minimize2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,7 +14,7 @@ import {
   submitLandingEnquiry,
   submitSupportTicket,
 } from '@/lib/api';
-import { getCalButtonProps } from '@/lib/cal';
+import { BookConsultationButton } from '../BookConsultationButton';
 import { ScrollArea } from '../ui/scroll-area';
 import { ConsultationCta } from './ConsultationCta';
 import {
@@ -415,14 +414,9 @@ export function AlgoryxChatWidget() {
                 </p>
               )}
               {!activeFlow && (
-                <button
-                  type="button"
-                  className="mt-2 w-full flex items-center justify-center gap-1.5 text-[11px] text-cyan-400/90 hover:text-cyan-300 transition-colors"
-                  {...getCalButtonProps()}
-                >
-                  <CalendarCheck className="h-3.5 w-3.5" />
+                <BookConsultationButton className="mt-2 h-9 w-full text-xs">
                   Book a free consultation
-                </button>
+                </BookConsultationButton>
               )}
             </form>
           </motion.div>
