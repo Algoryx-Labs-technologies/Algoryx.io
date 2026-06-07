@@ -6,7 +6,6 @@ import { Footer } from '../components/Footer';
 import { Button } from '../components/ui/button';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { Spotlight } from '../components/ui/spotlight';
-import { MirrorShine } from '../components/prime/MirrorShine';
 import { PrimePageShell } from '../components/prime/PrimePageShell';
 import { PrimeFlipCard } from '../components/prime/PrimeFlipCard';
 import { PrimeServicesSwap } from '../components/prime/PrimeServicesSwap';
@@ -69,52 +68,66 @@ export function AlgoryxPrimePage() {
           </ScrollReveal>
         </section>
 
-        <section className="container mx-auto px-6 max-w-6xl pb-6">
+        <section className="container mx-auto max-w-6xl px-6 pb-6">
           <ScrollReveal delay={0.08}>
-            <MirrorShine
-              auto
-              className="rounded-2xl border border-white/10 bg-slate-900/40 px-6 py-4 text-center backdrop-blur-sm"
-            >
-              <p className="relative z-10 text-sm text-gray-400">
-                Indian &amp; global equities · Forex &amp; CFDs · Commodities &amp; futures · Crypto where
-                relevant
+            <div className="mx-auto max-w-4xl rounded-full border border-white/[0.08] bg-slate-950/60 px-6 py-3.5 text-center shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-md md:px-10">
+              <p className="text-xs font-medium tracking-wide text-gray-500 md:text-sm">
+                Indian &amp; global equities
+                <span className="mx-2 text-white/20">·</span>
+                Forex &amp; CFDs
+                <span className="mx-2 text-white/20">·</span>
+                Commodities &amp; futures
+                <span className="mx-2 text-white/20">·</span>
+                Crypto where relevant
               </p>
-            </MirrorShine>
+            </div>
           </ScrollReveal>
         </section>
 
-        <section className="container mx-auto px-6 max-w-6xl pb-20">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-            {PRIME_SERVICES.map((service, index) => (
-              <ScrollReveal key={service.id} delay={index * 0.05} className="h-full">
-                <PrimeFlipCard service={service} index={index} />
-              </ScrollReveal>
-            ))}
+        <section className="container mx-auto max-w-6xl px-6 pb-20">
+          <ScrollReveal delay={0.06}>
+            <div className="mb-10 text-center md:mb-12">
+              <p className="mb-3 text-xs uppercase tracking-[0.2em] text-gray-500">Platform capabilities</p>
+              <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">
+                Everything serious traders need
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-gray-500 md:text-base">
+                Hover a card to reveal the stack behind each service, then explore the full scope.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="rounded-[2rem] border border-white/[0.06] bg-gradient-to-b from-slate-950/40 to-black/20 p-5 shadow-[0_24px_64px_rgba(0,0,0,0.35)] backdrop-blur-sm md:p-8">
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+              {PRIME_SERVICES.map((service, index) => (
+                <ScrollReveal key={service.id} delay={index * 0.04} className="h-full">
+                  <PrimeFlipCard service={service} index={index} />
+                </ScrollReveal>
+              ))}
+            </div>
           </div>
         </section>
 
         <section className="pb-24">
           <div className="container mx-auto px-6 max-w-3xl">
             <ScrollReveal>
-              <MirrorShine
-                auto
-                className="text-center rounded-3xl border border-blue-500/25 bg-gradient-to-br from-slate-900/90 to-slate-800/70 p-10 md:p-12 backdrop-blur-md"
-              >
-                <div className="relative z-10">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Not sure where to start?</h2>
-                  <p className="text-gray-400 mb-8 max-w-lg mx-auto">
-                    We will map your broker, markets, and goals to the right Prime services.
-                  </p>
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/25"
-                    {...getCalButtonProps()}
-                  >
-                    Book Free Consultation
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </div>
-              </MirrorShine>
+              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-slate-950/90 via-slate-900/80 to-slate-950/90 p-10 text-center shadow-[0_24px_64px_rgba(0,0,0,0.4)] backdrop-blur-md md:p-12">
+                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-gray-500">Get started</p>
+                <h2 className="mb-4 text-2xl font-bold tracking-tight text-white md:text-3xl">
+                  Not sure where to start?
+                </h2>
+                <p className="mx-auto mb-8 max-w-lg text-gray-500">
+                  We will map your broker, markets, and goals to the right Prime services.
+                </p>
+                <Button
+                  size="lg"
+                  className="h-11 rounded-full border-0 bg-white px-7 text-black hover:bg-gray-100"
+                  {...getCalButtonProps()}
+                >
+                  Book Free Consultation
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
             </ScrollReveal>
           </div>
         </section>

@@ -20,13 +20,13 @@ function ServiceCard({ service, index }: ServiceCardProps) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -24, scale: 0.96 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950/95 via-slate-900/90 to-slate-800/85 px-4 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm"
+      className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-950/98 to-black/90 px-4 py-3.5 shadow-[0_12px_40px_rgba(0,0,0,0.4)] backdrop-blur-md"
     >
       <motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.04, duration: 0.2 }}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-blue-600/25 to-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.12)]"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
       >
         <Icon className="h-4 w-4 text-cyan-300" />
       </motion.div>
@@ -45,7 +45,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.08, duration: 0.18 }}
-        className="shrink-0 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-cyan-300/90"
+        className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold tabular-nums text-gray-500"
       >
         {String(index + 1).padStart(2, '0')}
       </motion.span>
