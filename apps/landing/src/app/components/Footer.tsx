@@ -268,9 +268,9 @@ export function Footer() {
       </div>
 
       {/* Large background "Algoryx" text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-4">
         <motion.h1 
-          className="text-9xl md:text-[200px] font-bold text-gray-800 dark:text-gray-800 tracking-wider" 
+          className="w-full max-w-full text-center text-[clamp(5rem,22vw,8rem)] md:text-[200px] font-bold text-gray-800 dark:text-gray-800 tracking-wide md:tracking-wider leading-none md:leading-tight" 
           style={{
             textShadow: `
               0 0 20px rgba(59, 130, 246, 0.15),
@@ -285,7 +285,8 @@ export function Footer() {
             ease: [0.25, 0.1, 0.25, 1]
           }}
         >
-          Algoryx Labs
+          <span className="block md:inline">Algoryx</span>{' '}
+          <span className="block md:inline">Labs</span>
         </motion.h1>
       </div>
 
